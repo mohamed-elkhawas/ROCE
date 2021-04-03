@@ -40,10 +40,13 @@ always @(posedge clk ) begin
 	end 
 	else begin
 		curr_state <= next_state ;
+
 		read_counter <= 0;
 		write_counter <= 0;
+		
 		read_done <= 0;
 		write_done <= 0;
+		data <= 0;
 	end
 end
 
@@ -72,6 +75,7 @@ always @(*) begin
 			end
 			else begin
 				read_done = 0;
+				data = 0;
 			end
 			*/
 			if (write_return_array [write_counter] == 1 ) begin
@@ -88,12 +92,13 @@ always @(*) begin
 		idle : begin
 			write_done = 0 ;
 			read_done = 0 ;
-
+			data = 0;
 		end
 
 		default : begin
 			write_done = 0 ;
 			read_done = 0 ;
+			data = 0;
 		end
 	
 	endcase
