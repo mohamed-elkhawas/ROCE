@@ -21,8 +21,8 @@ typedef enum logic { idle , working } state ;
 state curr_state , next_state ; 
 
 
-logic [6:0]	read_counter;
-logic [6:0]	write_counter;
+logic [5:0]	read_counter;
+logic [5:0]	write_counter;
 
 
 //		valid + address
@@ -34,11 +34,11 @@ logic [0:63]						write_return_array;
 
 
 always_ff @(posedge clk ) begin
-	if(~rst) begin
-		curr_state <= idle;
+	if(rst) begin
+		curr_state <= next_state ;
 	end 
 	else begin
-		curr_state <= next_state ;
+		curr_state <= idle;
 		
 		read_counter <= 0;
 		write_counter <= 0;
@@ -70,6 +70,7 @@ always_comb begin
 			if (read_return_array [read_counter][0] == 1 ) begin
 				data = read_return_array [read_counter][data_width:1] ;
 				read_done = 1 ;
+				read_return_array [read_counter][0] = 0;
 				read_counter ++ ;
 			end
 
@@ -80,6 +81,7 @@ always_comb begin
 
 			if (write_return_array [write_counter] == 1 ) begin
 				write_done = 1 ;
+				write_return_array [write_counter] = 0 ;
 				write_counter ++ ;
 			end
 
