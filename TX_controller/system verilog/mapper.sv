@@ -11,6 +11,12 @@ package types_def;
 
 } address_type;
 
+  typedef struct packed {
+	logic valid ;
+	r_type req_type ;
+	address_type address ;
+	logic [data_width:0] data ;
+  } request ;
 
 endpackage
 
@@ -36,7 +42,7 @@ module mapper import types_def::*;
 	input logic [address_width:0] address,
 
 	output out_busy,
-	output logic  [0:15] [ 1 + 6 : 0 ] out_req
+	output logic  [0:15] [ 1 + 5 : 0 ] out_req
 
 
 	);
@@ -45,8 +51,8 @@ module mapper import types_def::*;
 state curr_state , next_state ; 
 
 
-logic [6:0]	read_counter;
-logic [6:0]	write_counter;
+logic [5:0]	read_counter;
+logic [5:0]	write_counter;
 
 
 //		valid + address
@@ -56,7 +62,7 @@ logic [0:read_entries][ 1 + address_width : 0]					read_global_array;
 logic [0:write_entries][ 1 + address_width + data_width + 1 : 0]	write_global_array;
 
 // 		valid + type + + address + data
-logic [ 1 + 1 + address_width + data_width + 1 : 0] 	waiting_req;
+request 	waiting_req;
 
 
 address_type output_adress;
@@ -73,7 +79,7 @@ always_ff @(posedge clk ) begin
 
 		out_busy <= 0;
 		for (int i = 0; i < 16; i++) begin
-			out_req[i][0] <= 0;
+			out_req[i] <= 0;
 		end
 
 	end
@@ -84,21 +90,29 @@ always_comb begin
 
 	if (~in_busy) begin
 
-		if (sending) begin
-			if (req_type == read) begin
-				next_state = read_state;
-			end
+		if (waiting_req.valid == 0 ) begin
+
+			if (sending) begin
+				if (req_type == read) begin
+					next_state = read_state;
+				end
 			
-			else begin
-				next_state = write_state;
+				else begin
+					next_state = write_state;
+				end
+
 			end
 
+			else begin
+				next_state = idle ;
+			end		
+		
 		end
 
 		else begin
-			next_state = idle ;
+			next_state = busy_state ;
 		end	
-
+		
 	end
 	
 	else begin
@@ -131,17 +145,21 @@ always_comb begin
 				
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						out_req [i] = read_counter;					
+						out_req [i] ={ 1 + read_counter };					
 					end
-					out_req[i][0] = 0;
+					else begin
+						out_req[i] = 0;
+					end
 				end
 
 				read_counter ++ ;
 			end
 
 			else begin
-				// do not know yet
-
+				waiting_req.valid = 1;
+				waiting_req.req_type = req_type;
+				waiting_req.address =  output_adress  ;
+				waiting_req.data = data  ;
 			end
 		end
 		
@@ -152,42 +170,88 @@ always_comb begin
 
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						out_req [i] = write_counter;					
+						out_req [i] = { 1 +  write_counter };					
 					end
-					out_req[i][0] = 0;
+					else begin
+						out_req[i] = 0;
+					end
 				end
 
 				write_counter ++ ;
 			end
 
 			else begin
-				// do not know yet
-
+				waiting_req.valid = 1;
+				waiting_req.req_type = req_type;
+				waiting_req.address =  output_adress  ;
+				waiting_req.data = data  ;
 			end
 		end
 		
 		busy_state : begin
-
-
-			// do not know yet
-
+			
 			out_busy = 1;
-			for (int i = 0; i < 16; i++) begin
-				out_req[i][0] = 0;
+			
+			if (waiting_req.valid == 0) begin
+				for (int i = 0; i < 16; i++) begin
+					out_req[i] = 0;
+				end
+			end
+			
+			else begin
+
+
+				if (waiting_req.req_type == read) begin
+
+					if (read_global_array [read_counter][0] == 0 ) begin
+						read_global_array [read_counter] = { 1 , waiting_req.address } ;
+				
+						for (int i = 0; i < 16; i++) begin
+							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
+								out_req [i] ={ 1 + read_counter };					
+							end
+							else begin
+								out_req[i] = 0;
+							end
+						end
+
+					read_counter ++ ;
+					end
+							
+				end
+
+				else begin
+
+					if (write_global_array [write_counter][0] == 0 ) begin
+						write_global_array [write_counter] = { 1 , waiting_req.address , waiting_req.data } ;
+
+						for (int i = 0; i < 16; i++) begin
+							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
+							out_req [i] = { 1 +  write_counter };					
+							end
+							else begin
+								out_req[i] = 0;
+							end
+						end
+
+						write_counter ++ ;
+					end
+				end
+
 			end
 		end
 		
 		idle : begin
 			out_busy = 0;
 			for (int i = 0; i < 16; i++) begin
-				out_req[i][0] = 0;
+				out_req[i] = 0;
 			end
 		end
 
 		default : begin
 			out_busy = 0;
 			for (int i = 0; i < 16; i++) begin
-				out_req[i][0] = 0;
+				out_req[i] = 0;
 			end
 		end
 	
