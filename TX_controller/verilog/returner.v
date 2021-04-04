@@ -22,8 +22,8 @@ parameter working =1;
 reg curr_state , next_state ; 
 
 
-reg [6:0]	read_counter;
-reg [6:0]	write_counter;
+reg [5:0]	read_counter;
+reg [5:0]	write_counter;
 
 /*
 //		valid + address
@@ -35,11 +35,11 @@ reg [0:63]						write_return_array;
 
 
 always @(posedge clk ) begin
-	if(~rst) begin
-		curr_state <= idle;
+	if(rst) begin
+		curr_state <= next_state ;
 	end 
 	else begin
-		curr_state <= next_state ;
+		curr_state <= idle;
 
 		read_counter <= 0;
 		write_counter <= 0;
@@ -63,7 +63,7 @@ end
 end
 
 
-always @(*) begin
+always @( posedge clk ) begin
 	case (curr_state)
 		
 		working : begin ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,8 @@ always @(*) begin
 			if (read_return_array [read_counter][0] == 1 ) begin
 				data = read_return_array [read_counter][data_width:1] ;
 				read_done = 1 ;
-				read_counter =1+read_counter ;
+				read_return_array [read_counter][0] = 0;
+				read_counter = 1 + read_counter ;
 			end
 			else begin
 				read_done = 0;
@@ -80,7 +81,8 @@ always @(*) begin
 			*/
 			if (write_return_array [write_counter] == 1 ) begin
 				write_done = 1 ;
-				write_counter =1+write_counter ;
+				write_return_array [write_counter] = 0 ;
+				write_counter = 1 + write_counter ;
 			end
 			
 			else begin
