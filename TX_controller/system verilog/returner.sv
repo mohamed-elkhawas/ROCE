@@ -62,7 +62,7 @@ always_comb begin
 end
 
 
-always_comb begin //////////////////////////  don't know if it will work ///////////////////////////////
+always_comb begin 
 	case (curr_state)
 		
 		working : begin
