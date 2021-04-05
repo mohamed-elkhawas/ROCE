@@ -28,8 +28,8 @@ logic [5:0]	write_counter;
 //		valid + address
 logic [0:63][ 1 + data_width : 0]	read_return_array;
 
-//		valid + address + data
-logic [0:63]						write_return_array;
+//		valid
+logic [0:63]				write_return_array;
 
 
 
