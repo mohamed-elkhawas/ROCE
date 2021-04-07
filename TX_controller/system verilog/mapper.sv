@@ -28,7 +28,8 @@ module mapper import types_def::*;
 		data_width = 5'd31, 	// 32 bit
 		address_width = 5'd29, 	// 30 bit
 		read_entries = 63,
-		write_entries = 63
+		write_entries = 63,
+		permutation_param_t = 5 /////////////// add the right  t number here
 	)
 
 
@@ -42,7 +43,7 @@ module mapper import types_def::*;
 	input logic [address_width:0] address,
 
 	output out_busy,
-	output logic  [0:15] [ 1 + 5 : 0 ] out_req
+	output logic  [0:15] [ 5 + 1 + 16 : 0 ] out_req
 
 
 	);
@@ -127,8 +128,8 @@ end
 //						2			2		16		10
 
 always_comb begin
-	output_adress.bank_group 	= address [5:4]		;
-	output_adress.bank 			= address [13:12]	; 
+	output_adress.bank_group 	= address [5:4]	 ^ address[29 - t+3 :29 - t+2 ]	;
+	output_adress.bank 			= address [13:12] ^ address[29 - t+1 :29 - t ]	; 
 	output_adress.row 			= address [29:14]	;
 	output_adress.column 		= { address [11:6] , address [3:0] }	;
 end
@@ -145,7 +146,7 @@ always_comb begin
 				
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						out_req [i] ={ 1 + read_counter };					
+						out_req [i] ={ read_counter , req_type , output_adress.row };					
 					end
 					else begin
 						out_req[i] = 0;
@@ -170,7 +171,7 @@ always_comb begin
 
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						out_req [i] = { 1 +  write_counter };					
+						out_req [i] = { write_counter , req_type , output_adress.row};					
 					end
 					else begin
 						out_req[i] = 0;
@@ -208,7 +209,7 @@ always_comb begin
 				
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-								out_req [i] ={ 1 + read_counter };					
+								out_req [i] ={ read_counter  , waiting_req.req_type , waiting_req.adress.row  };					
 							end
 							else begin
 								out_req[i] = 0;
@@ -227,7 +228,7 @@ always_comb begin
 
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-							out_req [i] = { 1 +  write_counter };					
+							out_req [i] = { write_counter , waiting_req.req_type , waiting_req.adress.row };					
 							end
 							else begin
 								out_req[i] = 0;
