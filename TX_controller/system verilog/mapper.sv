@@ -217,6 +217,7 @@ always_comb begin
 						end
 
 					read_counter ++ ;
+					waiting_req.valid = 0;
 					end
 							
 				end
@@ -236,6 +237,7 @@ always_comb begin
 						end
 
 						write_counter ++ ;
+						waiting_req.valid = 0;
 					end
 				end
 
