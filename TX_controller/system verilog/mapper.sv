@@ -1,7 +1,17 @@
 package types_def;
 
-  typedef enum enum {read , write} r_type;
-  typedef enum logic [1:0] { idle , read_state , write_state , busy_state } state ;
+
+
+parameter
+
+	data_width = 5'd31, 	// 32 bit
+	address_width = 5'd29, 	// 30 bit
+	read_entries = 63,
+	write_entries = 63,
+	t = 5 ;		///////////////  add the right  permutation_param_t number here
+
+  typedef enum logic {read , write} r_type;
+  typedef enum logic [2:0] { idle , read_state , write_state , busy_state , reset_state } state ;
 
   typedef struct packed {
 	logic [1:0] bank_group ;
@@ -23,15 +33,17 @@ endpackage
 
 
 module mapper import types_def::*;
+	
+/*
 	#( parameter
 
 		data_width = 5'd31, 	// 32 bit
 		address_width = 5'd29, 	// 30 bit
 		read_entries = 63,
 		write_entries = 63,
-		permutation_param_t = 5 /////////////// add the right  t number here
+		t = 5 ///////////////  add the right  permutation_param_t number here
 	)
-
+*/
 
 	(
 	input clk,    	// Clock
@@ -42,7 +54,7 @@ module mapper import types_def::*;
 	input logic [data_width:0] data,
 	input logic [address_width:0] address,
 
-	output out_busy,
+	output logic out_busy,
 	output logic  [0:15] [ 5 + 1 + 16 : 0 ] out_req
 
 
@@ -73,8 +85,8 @@ always_ff @(posedge clk ) begin
 		curr_state <= next_state ;
 	end 
 	else begin
-		curr_state <= idle;
-
+		curr_state <= reset_state;
+		/*
 		read_counter <= 0;
 		write_counter <= 0;
 
@@ -82,7 +94,7 @@ always_ff @(posedge clk ) begin
 		for (int i = 0; i < 16; i++) begin
 			out_req[i] <= 0;
 		end
-
+		*/
 	end
 end
 
@@ -126,6 +138,16 @@ end
 
 // output_adress =  { bank_group , bank , row , column }
 //						2			2		16		10
+
+// scheme   row   	bank 	column  bank_group	column	////////// 	the first scheme
+//			16		2			6		2			4
+
+
+// scheme   row   column	bank 	column  bank_group	column	////////// 	the second scheme
+//			16		4		2			2		2			4
+
+
+
 
 always_comb begin
 	output_adress.bank_group 	= address [5:4]	 ^ address[29 - t+3 :29 - t+2 ]	;
@@ -209,7 +231,7 @@ always_comb begin
 				
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-								out_req [i] ={ read_counter  , waiting_req.req_type , waiting_req.adress.row  };					
+								out_req [i] ={ read_counter  , waiting_req.req_type , waiting_req.address.row  };					
 							end
 							else begin
 								out_req[i] = 0;
@@ -229,7 +251,7 @@ always_comb begin
 
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-							out_req [i] = { write_counter , waiting_req.req_type , waiting_req.adress.row };					
+							out_req [i] = { write_counter , waiting_req.req_type , waiting_req.address.row };					
 							end
 							else begin
 								out_req[i] = 0;
@@ -251,6 +273,15 @@ always_comb begin
 			end
 		end
 
+		reset_state : begin
+			read_counter = 0;
+			write_counter = 0;
+			out_busy = 0;
+			for (int i = 0; i < 16; i++) begin
+				out_req[i] = 0;
+			end
+		end
+
 		default : begin
 			out_busy = 0;
 			for (int i = 0; i < 16; i++) begin
@@ -262,3 +293,4 @@ always_comb begin
 end
 
 endmodule
+
