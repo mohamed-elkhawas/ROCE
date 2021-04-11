@@ -9,14 +9,14 @@ module returner
 	(
 	input clk,    	// Clock
 	input rst,  	// synchronous reset active low
-	output write_done,
-	output read_done,
+	output logic write_done,
+	output logic read_done,
 	output logic  [ data_width : 0 ] data
 
 	);
 
 
-typedef enum logic { idle , working } state ;
+typedef enum logic [1:0] { idle , working ,reset_s } state ;
 
 state curr_state , next_state ; 
 
@@ -28,8 +28,8 @@ logic [5:0]	write_counter;
 //		valid + address
 logic [0:63][ 1 + data_width : 0]	read_return_array;
 
-//		valid
-logic [0:63]				write_return_array;
+//		valid + address + data
+logic [0:63]						write_return_array;
 
 
 
@@ -38,14 +38,15 @@ always_ff @(posedge clk ) begin
 		curr_state <= next_state ;
 	end 
 	else begin
-		curr_state <= idle;
-		
+		curr_state <= reset_s;
+		/*
 		read_counter <= 0;
 		write_counter <= 0;
 		
 		read_done <= 0;
 		write_done <= 0;
-		data <= 0;		
+		data <= 0;	
+		*/	
 	end
 end
 
@@ -96,6 +97,15 @@ always_comb begin
 			data = 0;
 		end
 
+		reset_s : begin
+			
+			read_counter = 0;
+			write_counter = 0;
+			write_done = 0 ;
+			read_done = 0 ;
+			data = 0;
+		end
+
 		default : begin
 			write_done = 0 ;
 			read_done = 0 ;
@@ -106,3 +116,4 @@ always_comb begin
 end
 
 endmodule
+
