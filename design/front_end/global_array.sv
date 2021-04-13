@@ -27,7 +27,7 @@ typedef enum logic [1:0] {idle,working,reset_state} my_states ;
 my_states curr_state , next_state ; 
 
 //		valid + address
-logic [0:read_entries][ 1 + address_width : 0]					read_global_array;
+logic [0:read_entries][ 1 + address_width : 0]				read_global_array;
 
 //		valid + address + data
 logic [0:write_entries][ 1 + address_width + data_width + 1 : 0]	write_global_array;
