@@ -137,14 +137,14 @@ end
 // scheme applier
 
 // output_adress =  { bank_group , bank , row , column }
-//						2			2		16		10
+//			2  	   2	  16	 10
 
 // scheme   row   	bank 	column  bank_group	column	////////// 	the first scheme
-//			16		2			6		2			4
+//	    16		  2	  6	  2	 	 4
 
 
 // scheme   row   column	bank 	column  bank_group	column	////////// 	the second scheme
-//			16		4		2			2		2			4
+//	    16	   4		 2	  2	  2		  4
 
 
 
