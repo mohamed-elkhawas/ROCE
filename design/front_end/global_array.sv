@@ -7,12 +7,16 @@ module global_array import types_def::*;
 	input rst,
 	input request in_request,	// from mapper
 	input logic [read_entries_log:0] in_request_index, // from mapper
-	input logic [1:0] in_enable,	  	// en [0] mapper , en[1] scheduler
 	input r_type the_mapper_type,  	// the mapper request type
+
+	input logic [1:0] in_enable,	  	// en [0] mapper , en[1] scheduler
+
+	input logic [read_entries_log:0] out_request_index, // from scheduler
+	input r_type the_scheduler_type,  	// the scheduler request type
+
 	input [1:0] done,  			// done [0] read_done  done[1] write_done from returner
+	
 	output request out_request, // to scheduler
-	output logic [read_entries_log:0] out_request_index, // to scheduler
-	output r_type the_scheduler_type,  	// the mapper request type
 	output logic sending, 		// to scheduler
 	output logic [1:0] busy_out // busy read and write
 	
