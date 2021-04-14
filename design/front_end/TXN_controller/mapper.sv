@@ -1,17 +1,17 @@
 package types_def;
 
-
-
 parameter
 
 	data_width = 5'd31, 	// 32 bit
 	address_width = 5'd29, 	// 30 bit
 	read_entries = 63,
+	read_entries_log = 5,
 	write_entries = 63,
+	write_entries_log = 5,
+
 	t = 5 ;		///////////////  add the right  permutation_param_t number here
 
   typedef enum logic {read , write} r_type;
-  typedef enum logic [2:0] { idle , read_state , write_state , busy_state , reset_state } state ;
 
   typedef struct packed {
 	logic [1:0] bank_group ;
@@ -22,11 +22,17 @@ parameter
 } address_type;
 
   typedef struct packed {
-	logic valid ;
 	r_type req_type ;
 	address_type address ;
 	logic [data_width:0] data ;
   } request ;
+
+  typedef struct packed {
+	logic valid ;
+	r_type req_type ;
+	address_type address ;
+	logic [data_width:0] data ;
+  } waiting_request ;
 
 endpackage
 
@@ -34,49 +40,42 @@ endpackage
 
 module mapper import types_def::*;
 	
-/*
-	#( parameter
-
-		data_width = 5'd31, 	// 32 bit
-		address_width = 5'd29, 	// 30 bit
-		read_entries = 63,
-		write_entries = 63,
-		t = 5 ///////////////  add the right  permutation_param_t number here
-	)
-*/
-
 	(
 	input clk,    	// Clock
-	input sending, 	// sending Enable
-	input in_busy,
-	input rst,  	// synchronous reset active low
-	input r_type req_type,
-	input logic [data_width:0] data,
-	input logic [address_width:0] address,
 
-	output logic out_busy,
-	output logic  [0:15] [ 5 + 1 + 16 : 0 ] out_req
+	input rst,  	// synchronous reset active low
+
+	input in_sending, 	// from rnic
+	input request in_request, // from rnic
+	output logic out_busy, // to rnic
+
+	input stop_reading, // from global array
+	input stop_writing, // from global array
+	output logic  array_enable, // to global array
+	output request the_req,// to global array
+	output logic [read_entries_log:0] out_index,// to global array
+
+
+	input [0:15] in_busy, // from bank
+	output logic  [0:15] bank_out_sending, // to bank 
+	output logic  [0:15] [ 5 + 1 + 16 : 0 ] bank_out_req // to bank
 
 
 	);
 
 
-state curr_state , next_state ; 
+typedef enum logic [2:0] { idle , read_state , write_state , busy_state , reset_state } my_states ;
 
 
-logic [5:0]	read_counter;
-logic [5:0]	write_counter;
+my_states curr_state , next_state ; 
 
 
-//		valid + address
-logic [0:read_entries][ 1 + address_width : 0]					read_global_array;
+logic [read_entries_log:0]	read_counter;
+logic [write_entries_log:0]	write_counter;
 
-//		valid + address + data
-logic [0:write_entries][ 1 + address_width + data_width + 1 : 0]	write_global_array;
 
-// 		valid + type + + address + data
-request 	waiting_req;
 
+waiting_request 	waiting_req;
 
 address_type output_adress;
 
@@ -86,74 +85,58 @@ always_ff @(posedge clk ) begin
 	end 
 	else begin
 		curr_state <= reset_state;
-		/*
-		read_counter <= 0;
-		write_counter <= 0;
-
-		out_busy <= 0;
-		for (int i = 0; i < 16; i++) begin
-			out_req[i] <= 0;
-		end
-		*/
 	end
 end
 
 
 always_comb begin
 
-	if (~in_busy) begin
+	if (waiting_req.valid == 0 ) begin
 
-		if (waiting_req.valid == 0 ) begin
-
-			if (sending) begin
-				if (req_type == read) begin
-					next_state = read_state;
-				end
+		if (in_sending) begin
+			if (in_request.req_type == read) begin
+				next_state = read_state;
+			end
 			
-				else begin
-					next_state = write_state;
-				end
-
+			else begin
+				next_state = write_state;
 			end
 
-			else begin
-				next_state = idle ;
-			end		
-		
 		end
 
 		else begin
-			next_state = busy_state ;
-		end	
+			next_state = idle ;
+		end		
 		
 	end
-	
+
 	else begin
 		next_state = busy_state ;
-	end	
+	end
+	
 end
 
 
 // scheme applier
 
 // output_adress =  { bank_group , bank , row , column }
-//			2  	   2	  16	 10
+//						2			2		16		10
 
 // scheme   row   	bank 	column  bank_group	column	////////// 	the first scheme
-//	    16		  2	  6	  2	 	 4
+//			16		2			6		2			4
 
 
 // scheme   row   column	bank 	column  bank_group	column	////////// 	the second scheme
-//	    16	   4		 2	  2	  2		  4
+//			16		4		2			2		2			4
 
 
 
 
 always_comb begin
-	output_adress.bank_group 	= address [5:4]	 ^ address[29 - t+3 :29 - t+2 ]	;
-	output_adress.bank 			= address [13:12] ^ address[29 - t+1 :29 - t ]	; 
-	output_adress.row 			= address [29:14]	;
-	output_adress.column 		= { address [11:6] , address [3:0] }	;
+	output_adress.bank_group 	= in_request.address [5:4]	 ^ in_request.address[29 - t+3 :29 - t+2 ]	;
+	output_adress.bank 			= in_request.address [13:12] ^ in_request.address[29 - t+1 :29 - t ]	; 
+	output_adress.row 			= in_request.address [29:14]	;
+	output_adress.column 		= { in_request.address [11:6] , in_request.address [3:0] }	;
 end
 
 
@@ -163,15 +146,18 @@ always_comb begin
 		
 		read_state : begin
 
-			if (read_global_array [read_counter][0] == 0 ) begin
-				read_global_array [read_counter] = { 1 , output_adress } ;
+			if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
+			
+				array_enable = 1;
+				the_req.address = output_adress;
+				the_req.req_type = read;				
 				
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						out_req [i] ={ read_counter , req_type , output_adress.row };					
+						bank_out_req [i] ={ read_counter , in_request.req_type , output_adress.row };					
 					end
 					else begin
-						out_req[i] = 0;
+						bank_out_req[i] = 0;
 					end
 				end
 
@@ -180,23 +166,27 @@ always_comb begin
 
 			else begin
 				waiting_req.valid = 1;
-				waiting_req.req_type = req_type;
+				waiting_req.req_type = in_request.req_type;
 				waiting_req.address =  output_adress  ;
-				waiting_req.data = data  ;
+				waiting_req.data = in_request.data  ;
 			end
 		end
 		
 		write_state : begin
 
-			if (write_global_array [write_counter][0] == 0 ) begin
-				write_global_array [write_counter] = { 1 , output_adress , data } ;
+			if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
+
+				array_enable = 1;
+				the_req.address = output_adress;
+				the_req.req_type = write;
+				the_req.data = in_request.data;
 
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						out_req [i] = { write_counter , req_type , output_adress.row};					
+						bank_out_req [i] = { write_counter , in_request.req_type , output_adress.row};					
 					end
 					else begin
-						out_req[i] = 0;
+						bank_out_req[i] = 0;
 					end
 				end
 
@@ -205,9 +195,9 @@ always_comb begin
 
 			else begin
 				waiting_req.valid = 1;
-				waiting_req.req_type = req_type;
+				waiting_req.req_type = in_request.req_type;
 				waiting_req.address =  output_adress  ;
-				waiting_req.data = data  ;
+				waiting_req.data = in_request.data  ;
 			end
 		end
 		
@@ -216,9 +206,13 @@ always_comb begin
 			out_busy = 1;
 			
 			if (waiting_req.valid == 0) begin
+				bank_out_sending = 0;
 				for (int i = 0; i < 16; i++) begin
-					out_req[i] = 0;
+					bank_out_req[i] = 0;
 				end
+				array_enable = 0;
+				the_req = 0;
+				out_index = 0;
 			end
 			
 			else begin
@@ -226,15 +220,18 @@ always_comb begin
 
 				if (waiting_req.req_type == read) begin
 
-					if (read_global_array [read_counter][0] == 0 ) begin
-						read_global_array [read_counter] = { 1 , waiting_req.address } ;
+					if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
+
+						array_enable = 1;
+						the_req.address = output_adress;
+						the_req.req_type = read;
 				
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-								out_req [i] ={ read_counter  , waiting_req.req_type , waiting_req.address.row  };					
+								bank_out_req [i] ={ read_counter  , waiting_req.req_type , waiting_req.address.row  };					
 							end
 							else begin
-								out_req[i] = 0;
+								bank_out_req[i] = 0;
 							end
 						end
 
@@ -246,15 +243,19 @@ always_comb begin
 
 				else begin
 
-					if (write_global_array [write_counter][0] == 0 ) begin
-						write_global_array [write_counter] = { 1 , waiting_req.address , waiting_req.data } ;
+					if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0) begin
 
+						array_enable = 1;
+						the_req.address = output_adress;
+						the_req.req_type = write;
+						the_req.data = in_request.data;
+						
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-							out_req [i] = { write_counter , waiting_req.req_type , waiting_req.address.row };					
+							bank_out_req [i] = { write_counter , waiting_req.req_type , waiting_req.address.row };					
 							end
 							else begin
-								out_req[i] = 0;
+								bank_out_req[i] = 0;
 							end
 						end
 
@@ -268,25 +269,37 @@ always_comb begin
 		
 		idle : begin
 			out_busy = 0;
+			bank_out_sending = 0;
 			for (int i = 0; i < 16; i++) begin
-				out_req[i] = 0;
+				bank_out_req[i] = 0;
 			end
+			array_enable = 0;
+			the_req = 0;
+			out_index = 0;
 		end
 
 		reset_state : begin
 			read_counter = 0;
 			write_counter = 0;
 			out_busy = 0;
+			bank_out_sending = 0;
 			for (int i = 0; i < 16; i++) begin
-				out_req[i] = 0;
+				bank_out_req[i] = 0;
 			end
+			array_enable = 0;
+			the_req = 0;
+			out_index = 0;
 		end
 
 		default : begin
 			out_busy = 0;
+			bank_out_sending = 0;
 			for (int i = 0; i < 16; i++) begin
-				out_req[i] = 0;
+				bank_out_req[i] = 0;
 			end
+			array_enable = 0;
+			the_req = 0;
+			out_index = 0;
 		end
 	
 	endcase
