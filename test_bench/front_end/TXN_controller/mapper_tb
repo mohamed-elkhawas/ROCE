@@ -1,0 +1,78 @@
+module mapper_tb import types_def::*; ();
+ 
+
+logic clk,rst;
+
+request in_request;
+logic [0:15] in_busy;
+
+logic in_valid , stop_reading ,stop_writing ;
+
+mapper m (clk,rst,in_valid,in_request,out_busy,stop_reading ,stop_writing,array_enable,the_req,out_index,in_busy,bank_out_valid,bank_out_req);
+
+
+// Clock generator
+  always
+  begin
+    #1 clk = 1;
+    #1 clk = 0;
+  end
+
+
+initial begin 
+
+	rst = 0;
+	# 10 rst = 1;
+	#10
+
+	in_busy =0 ;
+	stop_reading =0;
+	stop_writing =0;
+	
+	in_valid =1;
+
+	in_request.req_type =read;
+	in_request.address = 0;
+	in_request.data = 10;
+
+	#2
+	in_valid =0;
+
+
+	#100 
+	in_valid =1;
+
+	in_request.req_type =read;
+	in_request.address = 0;
+	in_request.data = 10;
+
+	#2
+	in_valid =0;
+
+	#100 
+	in_valid =1;
+
+	in_request.req_type =write;
+	in_request.address = 0;
+	in_request.data = 10;
+
+	#2
+	in_valid =0;
+
+	#100 
+	in_valid =1;
+
+	in_request.req_type =write;
+	in_request.address = 0;
+	in_request.data = 15;
+
+	#2
+	in_valid =0;
+
+	#100
+	$stop;
+
+end
+
+endmodule
+
