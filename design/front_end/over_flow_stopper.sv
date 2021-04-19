@@ -2,11 +2,14 @@ module over_flow_stopper import types_def::*;
 
 (
 	input clk,
-	input rst, 
-	input mapper_enable,
-	input the_mapper_req_type,
+	input rst,
+	 
+	input mapper_valid,
+	input the_req_type, 
+
 	input read_done,
 	input  write_done,
+
 	output logic stop_reading,
 	output logic stop_writing
 
@@ -19,9 +22,9 @@ logic [write_entries_log:0] the_diffrence_in_write_counters ;
 always_ff @(posedge clk  ) begin
 
 	if (rst) begin
-		if (mapper_enable) begin // mapper is sending req
+		if (mapper_valid) begin // mapper is sending req
 
-			if (the_mapper_req_type == read && read_done == 0) begin
+			if (the_req_type == read && read_done == 0) begin
 				the_diffrence_in_read_counters ++;
 			end
 
@@ -60,7 +63,7 @@ always_comb begin
 	end
 
 	if (the_diffrence_in_write_counters == write_entries) begin
-				stop_writing = 1;
+		stop_writing = 1;
 	end	
 	else begin
 		stop_writing = 0;
