@@ -1,4 +1,4 @@
-module returner  import types_def::*;
+module returner_v2  import types_def::*;
 
 	#( parameter data_Width = 5'd31 
 
@@ -9,12 +9,12 @@ module returner  import types_def::*;
 	input rst,  	// synchronous reset active low
 	input valid,
 	input the_type,
-	input [ data_Width  : 0 ] in_data,
+	input [ data_Width  : 0 ] data_in,
 	input [ read_entries_log : 0 ] index,
 
 	output logic write_done,
 	output logic read_done,
-	output logic  [ data_Width : 0 ] out_data
+	output logic  [ data_Width : 0 ] data_out
 
 	);
 
@@ -28,12 +28,11 @@ logic [5:0]	read_counter;
 logic [5:0]	write_counter;
 
 
-//		valid + address
+//		valid + data
 logic [0:63][ 1 + data_Width : 0]	read_return_array;
 
-//		valid + address + data
+//		valid 
 logic [0:63]						write_return_array;
-
 
 
 always_ff @(posedge clk ) begin
@@ -65,55 +64,73 @@ always_comb begin
 
 			if (valid) begin
 				if (the_type == read) begin
-					read_return_array [index] = in_data;
+
+					if ( read_counter == index ) begin
+						data_out = data_in ;
+						read_done = 1 ;
+						read_counter ++ ;
+					end
+
+					else begin
+						read_done = 0;
+						data_out = 0;
+						read_return_array [index] = { 1 , data_in };
+					end
+
+				end
+				
+				else begin
+					if ( write_counter == index ) begin
+						write_done = 1 ;
+						write_counter ++ ;
+					end
+
+					else begin
+						write_done = 0;
+						write_return_array [index] = 1;
+					end	
+				end
+			end
+
+			else begin
+				if (read_return_array [read_counter][0] == 1) begin
+					data_out = read_return_array [read_counter][data_Width:0];
+					read_done =1;
+					read_counter ++ ;
 				end
 				else begin
-					write_return_array [index] = 1;
+					data_out = 0;
+					read_done = 0;
 				end
-			end
-
-			if (read_return_array [read_counter][0] == 1 ) begin
-				out_data = read_return_array [read_counter][data_Width:1] ;
-				read_done = 1 ;
-				read_return_array [read_counter][0] = 0;
-				read_counter ++ ;
-			end
-
-			else begin
-				read_done = 0;
-				out_data = 0;
-			end
-
-			if (write_return_array [write_counter] == 1 ) begin
-				write_done = 1 ;
-				write_return_array [write_counter] = 0 ;
-				write_counter ++ ;
-			end
-
-			else begin
-				write_done = 0;
+				if (write_return_array [write_counter] == 1) begin
+					write_done = 1 ;
+					write_return_array [write_counter] = 0 ;
+					write_counter ++ ;					
+				end
+				else begin
+					write_done = 0;
+				end
 			end
 		end
 		
 		idle : begin
 			write_done = 0 ;
 			read_done = 0 ;
-			out_data = 0;
+			data_out = 0;
 		end
 
 		reset_s : begin
-			
 			read_counter = 0;
 			write_counter = 0;
 			write_done = 0 ;
 			read_done = 0 ;
-			out_data = 0;
+			data_out = 0;
 		end
 
 		default : begin
 			write_done = 0 ;
 			read_done = 0 ;
-			out_data = 0;
+			data_out = 0;
 		end
 	
 	endcase
