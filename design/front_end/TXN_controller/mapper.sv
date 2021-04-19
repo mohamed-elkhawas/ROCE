@@ -23,8 +23,8 @@ parameter
 
   typedef struct packed {
 	r_type req_type ;
-	address_type address ;
 	logic [data_width:0] data ;
+	address_type address ;
   } request ;
 
   typedef struct packed {
@@ -45,19 +45,19 @@ module mapper import types_def::*;
 
 	input rst,  	// synchronous reset active low
 
-	input in_sending, 	// from rnic
+	input in_valid, 	// from rnic
 	input request in_request, // from rnic
 	output logic out_busy, // to rnic
 
 	input stop_reading, // from global array
 	input stop_writing, // from global array
 	output logic  array_enable, // to global array
-	output request the_req,// to global array
+	output request golbal_array_out_req,// to global array
 	output logic [read_entries_log:0] out_index,// to global array
 
 
 	input [0:15] in_busy, // from bank
-	output logic  [0:15] bank_out_sending, // to bank 
+	output logic  [0:15] bank_out_valid, // to bank 
 	output logic  [0:15] [ 5 + 1 + 16 : 0 ] bank_out_req // to bank
 
 
@@ -93,7 +93,7 @@ always_comb begin
 
 	if (waiting_req.valid == 0 ) begin
 
-		if (in_sending) begin
+		if (in_valid) begin
 			if (in_request.req_type == read) begin
 				next_state = read_state;
 			end
@@ -149,8 +149,8 @@ always_comb begin
 			if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
 			
 				array_enable = 1;
-				the_req.address = output_adress;
-				the_req.req_type = read;				
+				golbal_array_out_req.address = output_adress;
+				golbal_array_out_req.req_type = read;				
 				
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
@@ -177,9 +177,9 @@ always_comb begin
 			if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
 
 				array_enable = 1;
-				the_req.address = output_adress;
-				the_req.req_type = write;
-				the_req.data = in_request.data;
+				golbal_array_out_req.address = output_adress;
+				golbal_array_out_req.req_type = write;
+				golbal_array_out_req.data = in_request.data;
 
 				for (int i = 0; i < 16; i++) begin
 					if (i == { output_adress.bank_group , output_adress.bank} ) begin
@@ -206,12 +206,12 @@ always_comb begin
 			out_busy = 1;
 			
 			if (waiting_req.valid == 0) begin
-				bank_out_sending = 0;
+				bank_out_valid = 0;
 				for (int i = 0; i < 16; i++) begin
 					bank_out_req[i] = 0;
 				end
 				array_enable = 0;
-				the_req = 0;
+				golbal_array_out_req = 0;
 				out_index = 0;
 			end
 			
@@ -223,8 +223,8 @@ always_comb begin
 					if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
 
 						array_enable = 1;
-						the_req.address = output_adress;
-						the_req.req_type = read;
+						golbal_array_out_req.address = output_adress;
+						golbal_array_out_req.req_type = read;
 				
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
@@ -246,9 +246,9 @@ always_comb begin
 					if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0) begin
 
 						array_enable = 1;
-						the_req.address = output_adress;
-						the_req.req_type = write;
-						the_req.data = in_request.data;
+						golbal_array_out_req.address = output_adress;
+						golbal_array_out_req.req_type = write;
+						golbal_array_out_req.data = in_request.data;
 						
 						for (int i = 0; i < 16; i++) begin
 							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
@@ -269,12 +269,12 @@ always_comb begin
 		
 		idle : begin
 			out_busy = 0;
-			bank_out_sending = 0;
+			bank_out_valid = 0;
 			for (int i = 0; i < 16; i++) begin
 				bank_out_req[i] = 0;
 			end
 			array_enable = 0;
-			the_req = 0;
+			golbal_array_out_req = 0;
 			out_index = 0;
 		end
 
@@ -282,23 +282,23 @@ always_comb begin
 			read_counter = 0;
 			write_counter = 0;
 			out_busy = 0;
-			bank_out_sending = 0;
+			bank_out_valid = 0;
 			for (int i = 0; i < 16; i++) begin
 				bank_out_req[i] = 0;
 			end
 			array_enable = 0;
-			the_req = 0;
+			golbal_array_out_req = 0;
 			out_index = 0;
 		end
 
 		default : begin
 			out_busy = 0;
-			bank_out_sending = 0;
+			bank_out_valid = 0;
 			for (int i = 0; i < 16; i++) begin
 				bank_out_req[i] = 0;
 			end
 			array_enable = 0;
-			the_req = 0;
+			golbal_array_out_req = 0;
 			out_index = 0;
 		end
 	
