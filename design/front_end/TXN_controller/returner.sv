@@ -35,6 +35,26 @@ logic [0:63][ 1 + data_Width : 0]	read_return_array;
 logic [0:63]						write_return_array;
 
 
+typedef struct packed {
+	logic the_type ;
+	logic [ data_Width  : 0 ] data_in;
+	logic [ read_entries_log : 0 ] index;
+	logic valid;
+
+} previous_input_type;
+
+previous_input_type previous_input;
+
+
+task save_the_input ();
+	previous_input.the_type = the_type;
+	previous_input.data_in = data_in;
+	previous_input.index = index;
+	previous_input.valid = valid;
+endtask
+
+
+
 always_ff @(posedge clk ) begin
 	if(rst) begin
 		curr_state <= next_state ;
@@ -51,6 +71,7 @@ always_comb begin
 		idle: begin
 			if (valid) begin
 				next_state = working_with_new_req ;
+				save_the_input ();
 			end
 			else begin
 					next_state = idle ;
@@ -59,6 +80,7 @@ always_comb begin
 		reset_s: begin
 			if (valid) begin
 				next_state = working_with_new_req ;
+				save_the_input ();
 			end
 			else begin
 					next_state = idle ;
@@ -67,10 +89,12 @@ always_comb begin
 		working_with_new_req: begin
 			if (read_return_array[read_counter][0] == 1 || write_return_array[write_counter] == 1 ) begin
 				next_state = working_with_old_req ;
+				save_the_input ();
 			end
 			else begin
 				if (valid) begin
 					next_state = working_with_new_req ;
+					save_the_input ();
 				end
 				else begin
 					next_state = idle ;
@@ -80,10 +104,12 @@ always_comb begin
 		working_with_old_req: begin
 			if (read_return_array[read_counter][0] == 1 || write_return_array[write_counter] == 1 ) begin
 				next_state = working_with_old_req ;
+				save_the_input ();
 			end
 			else begin
 				if (valid) begin
 					next_state = working_with_new_req ;
+					save_the_input ();
 				end
 				else begin
 					next_state = idle ;
@@ -102,9 +128,9 @@ always_comb begin
 	case (curr_state)
 		
 		working_with_new_req : begin
-			if (the_type == read) begin
-				if ( read_counter == index ) begin
-					data_out = data_in ;
+			if (previous_input.the_type == read) begin
+				if ( read_counter == previous_input.index ) begin
+					data_out = previous_input.data_in ;
 					read_done = 1 ;
 					read_counter ++ ;
 				end
@@ -112,19 +138,19 @@ always_comb begin
 				else begin
 					read_done = 0;
 					data_out = 0;
-					read_return_array [index] = { 1 , data_in };
+					read_return_array [previous_input.index] = { 1 , previous_input.data_in };
 				end					
 			end
 				
 			else begin
-				if ( write_counter == index ) begin
+				if ( write_counter == previous_input.index ) begin
 					write_done = 1 ;
 					write_counter ++ ;
 				end
 
 				else begin
 					write_done = 0;
-					write_return_array [index] = 1;
+					write_return_array [previous_input.index] = 1;
 				end	
 			end
 		end
@@ -148,12 +174,12 @@ always_comb begin
 				write_done = 0;
 			end
 
-			if (the_type == read) begin
-				read_return_array [index] = { 1 , data_in };
+			if (previous_input.the_type == read) begin
+				read_return_array [previous_input.index] = { 1 , previous_input.data_in };
 			end
 				
 			else begin
-				write_return_array [index] = 1;
+				write_return_array [previous_input.index] = 1;
 			end
 		end
 		
@@ -182,4 +208,3 @@ end
 
 
 endmodule
-
