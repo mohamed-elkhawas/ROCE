@@ -12,7 +12,7 @@ logic  [ 5 : 0 ] index;
 logic  [ 31 : 0 ] out_data;
 
 
-returner r (clk,rst,valid,the_type,in_data,index,wd,rd,data);
+returner_v2 r (clk,rst,valid,the_type,in_data,index,wd,rd,data);
 
 
 
@@ -29,7 +29,7 @@ initial begin
 
 	rst = 0;
 	# 10 rst = 1;
-	#10
+	#11
 	
 	valid =1;
 	the_type =0;
