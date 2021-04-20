@@ -24,8 +24,10 @@ always_ff @(posedge clk  ) begin
 	if (rst) begin
 		if (mapper_valid) begin // mapper is sending req
 
-			if (the_req_type == read && read_done == 0) begin
-				the_diffrence_in_read_counters ++;
+			if (the_req_type == read ) begin
+				if (read_done == 0) begin
+					the_diffrence_in_read_counters ++;
+				end	
 			end
 
 			else begin
@@ -55,14 +57,14 @@ end
 
 always_comb begin 
 
-	if (the_diffrence_in_read_counters == read_entries) begin
-				stop_reading = 1;
+	if (the_diffrence_in_read_counters == read_entries ) begin
+		stop_reading = 1;
 	end	
 	else begin
 		stop_reading = 0;
 	end
 
-	if (the_diffrence_in_write_counters == write_entries) begin
+	if (the_diffrence_in_write_counters == write_entries ) begin
 		stop_writing = 1;
 	end	
 	else begin
