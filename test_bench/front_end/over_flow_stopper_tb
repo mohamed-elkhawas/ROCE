@@ -19,7 +19,7 @@ initial begin
 
 	rst = 0;
 	# 10 rst = 1;
-	#10
+	#11
 	
 	read_done =0;
 	write_done =0;
@@ -31,6 +31,8 @@ initial begin
 		#2 the_req_type = 0;
 		
 	end
+	read_done = 1; 
+	#2 read_done = 1;
 
 	mapper_valid =0;
 
