@@ -23,7 +23,7 @@ initial begin
 
 	rst = 0;
 	# 10 rst = 1;
-	#10
+	#11
 
 	in_busy =0 ;
 	stop_reading =0;
