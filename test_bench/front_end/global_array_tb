@@ -8,7 +8,7 @@ logic [read_entries_log:0] in_request_index , out_request_index;
 logic mapper_valid ,scheduler_valid;
 r_type the_scheduler_req_type;
 
-global_array g (clk,rst, in_request,in_request_index,mapper_valid,stop_reading,stop_writing,scheduler_valid,out_request_index,
+global_array g (clk,rst, in_request,in_request_index,mapper_valid,scheduler_valid,out_request_index,
  the_scheduler_req_type,out_request,sending);
 
 
@@ -25,7 +25,7 @@ initial begin
 
 	rst = 0;
 	# 10 rst = 1;
-	#10
+	#11
 
 	scheduler_valid=0;
 	the_scheduler_req_type = read;
