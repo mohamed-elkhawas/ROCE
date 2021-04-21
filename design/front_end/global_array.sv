@@ -1,4 +1,3 @@
-
 module global_array import types_def::*;
 
 (
@@ -8,8 +7,6 @@ module global_array import types_def::*;
 	input request in_request,							// from mapper
 	input logic [read_entries_log:0] in_request_index,  // from mapper
 	input mapper_valid,									// from mapper
-	output logic stop_reading, 							// to mapper busy read 
-	output logic stop_writing,							// to mapper busy write
 
 	input scheduler_valid,								// from scheduler
 	input logic [read_entries_log:0] out_request_index, // from scheduler
@@ -39,6 +36,34 @@ logic [0:read_entries][ address_width : 0]					read_global_array;
 request_without_type [0:write_entries]					write_global_array;
 
 
+
+
+typedef struct packed {
+	request in_request;
+	logic [read_entries_log:0] in_request_index;
+	logic mapper_valid, scheduler_valid;
+	logic [read_entries_log:0] out_request_index;
+	r_type the_scheduler_req_type;
+
+} previous_input_type;
+
+previous_input_type previous_input;
+
+
+task save_the_input ();
+	previous_input.in_request = in_request;
+	previous_input.in_request_index = in_request_index;
+	previous_input.mapper_valid = mapper_valid;
+	previous_input.scheduler_valid = scheduler_valid;
+	previous_input.out_request_index = out_request_index;
+	previous_input.the_scheduler_req_type = the_scheduler_req_type;
+endtask
+
+
+
+
+
+
 always_ff @(posedge clk ) begin
 	if(rst) begin
 		curr_state <= next_state ;
@@ -52,6 +77,7 @@ always_comb begin
 
 	if (mapper_valid || scheduler_valid) begin
 		next_state = working ;
+		save_the_input ();
 	end	
 	
 	else begin
@@ -63,27 +89,27 @@ always_comb begin
 	case (curr_state)
 		
 		working : begin
-			if (mapper_valid) begin
+			if (previous_input.mapper_valid) begin
 
-				if (in_request.req_type == read) begin
-					read_global_array [in_request_index] = in_request.address ;
+				if (previous_input.in_request.req_type == read) begin
+					read_global_array [previous_input.in_request_index] = previous_input.in_request.address ;
 				end
 				else begin
-					write_global_array [in_request_index].address = in_request.address ;
-					write_global_array [in_request_index].data = in_request.data ;
+					write_global_array [previous_input.in_request_index].address = previous_input.in_request.address ;
+					write_global_array [previous_input.in_request_index].data = previous_input.in_request.data ;
 				end
 
 			end
 
-			if (scheduler_valid) begin
+			if (previous_input.scheduler_valid) begin
 
-				if (the_scheduler_req_type == read) begin
-					out_request.address = read_global_array [out_request_index];
+				if (previous_input.the_scheduler_req_type == read) begin
+					out_request.address = read_global_array [previous_input.out_request_index];
 					out_request_valid = 1;
 				end
 				else begin
-					out_request.address = write_global_array [out_request_index].address;
-					out_request.data = write_global_array [out_request_index].data;
+					out_request.address = write_global_array [previous_input.out_request_index].address;
+					out_request.data = write_global_array [previous_input.out_request_index].data;
 					out_request_valid = 1;
 				end
 
