@@ -56,9 +56,9 @@ module mapper import types_def::*;
 	output logic [read_entries_log:0] out_index,// to global array
 
 
-	input [0:15] in_busy, // from bank
-	output logic  [0:15] bank_out_valid, // to bank 
-	output logic  [0:15] [ 5 + 1 + 16 : 0 ] bank_out_req // to bank
+	input [15:0] in_busy, // from bank
+	output logic  [15:0] bank_out_valid, // to bank 
+	output logic  [ 5 + 1 + 16 : 0 ] bank_out_req // to bank {index , type ,row}
 
 
 	);
@@ -75,9 +75,34 @@ logic [write_entries_log:0]	write_counter;
 
 
 
-waiting_request 	waiting_req;
+waiting_request waiting_req;
 
 address_type output_adress;
+
+
+
+
+typedef struct packed {
+
+	logic in_valid,
+		stop_reading,
+		stop_writing;
+	logic [0:15] in_busy;
+	request in_request;
+
+} previous_input_type;
+
+previous_input_type previous_input;
+
+
+task save_the_input ();
+	previous_input.in_valid = in_valid;
+	previous_input.stop_reading = stop_reading;
+	previous_input.stop_writing = stop_writing;
+	previous_input.in_busy = in_busy;
+	previous_input.in_request = in_request;
+endtask
+
 
 always_ff @(posedge clk ) begin
 	if(rst) begin
@@ -96,10 +121,12 @@ always_comb begin
 		if (in_valid) begin
 			if (in_request.req_type == read) begin
 				next_state = read_state;
+				save_the_input ();
 			end
 			
 			else begin
 				next_state = write_state;
+				save_the_input ();
 			end
 
 		end
@@ -122,21 +149,15 @@ end
 // output_adress =  { bank_group , bank , row , column }
 //						2			2		16		10
 
-// scheme   row   	bank 	column  bank_group	column	////////// 	the first scheme
+// scheme   row   	bank 	column  bank_group	column	////////// 	the mapping scheme
 //			16		2			6		2			4
 
 
-// scheme   row   column	bank 	column  bank_group	column	////////// 	the second scheme
-//			16		4		2			2		2			4
-
-
-
-
 always_comb begin
-	output_adress.bank_group 	= in_request.address [5:4]	 ^ in_request.address[29 - t+3 :29 - t+2 ]	;
-	output_adress.bank 			= in_request.address [13:12] ^ in_request.address[29 - t+1 :29 - t ]	; 
-	output_adress.row 			= in_request.address [29:14]	;
-	output_adress.column 		= { in_request.address [11:6] , in_request.address [3:0] }	;
+	output_adress.bank_group 	= previous_input.in_request.address [5:4]	 ^ previous_input.in_request.address[29 - t+3 :29 - t+2 ]	;
+	output_adress.bank 			= previous_input.in_request.address [13:12] ^ previous_input.in_request.address[29 - t+1 :29 - t ]	; 
+	output_adress.row 			= previous_input.in_request.address [29:14]	;
+	output_adress.column 		= { previous_input.in_request.address [11:6] , previous_input.in_request.address [3:0] }	;
 end
 
 
@@ -146,125 +167,103 @@ always_comb begin
 		
 		read_state : begin
 
-			if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
+			if ( previous_input.stop_reading == 0  &&  previous_input.in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
 			
 				array_enable = 1;
 				golbal_array_out_req.address = output_adress;
-				golbal_array_out_req.req_type = read;				
-				
-				for (int i = 0; i < 16; i++) begin
-					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						bank_out_req [i] ={ read_counter , in_request.req_type , output_adress.row };					
-					end
-					else begin
-						bank_out_req[i] = 0;
-					end
-				end
+				golbal_array_out_req.req_type = read;
+				out_index = read_counter;
+
+				bank_out_req ={ read_counter , previous_input.in_request.req_type , output_adress.row };				
+
+				bank_out_valid =0;
+				bank_out_valid[{ output_adress.bank_group , output_adress.bank}]=1;
 
 				read_counter ++ ;
 			end
 
 			else begin
 				waiting_req.valid = 1;
-				waiting_req.req_type = in_request.req_type;
+				waiting_req.req_type = previous_input.in_request.req_type;
 				waiting_req.address =  output_adress  ;
-				waiting_req.data = in_request.data  ;
+				waiting_req.data = previous_input.in_request.data  ;
+
+				bank_out_valid = 0;
+				array_enable = 0;
 			end
 		end
 		
 		write_state : begin
 
-			if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
+			if ( previous_input.stop_writing == 0  &&  previous_input.in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
 
 				array_enable = 1;
 				golbal_array_out_req.address = output_adress;
 				golbal_array_out_req.req_type = write;
-				golbal_array_out_req.data = in_request.data;
+				golbal_array_out_req.data = previous_input.in_request.data;
+				out_index = write_counter;
 
-				for (int i = 0; i < 16; i++) begin
-					if (i == { output_adress.bank_group , output_adress.bank} ) begin
-						bank_out_req [i] = { write_counter , in_request.req_type , output_adress.row};					
-					end
-					else begin
-						bank_out_req[i] = 0;
-					end
-				end
+				bank_out_req = { write_counter , previous_input.in_request.req_type , output_adress.row};
+
+				bank_out_valid =0;
+				bank_out_valid[{ output_adress.bank_group , output_adress.bank}]=1;
 
 				write_counter ++ ;
 			end
 
 			else begin
 				waiting_req.valid = 1;
-				waiting_req.req_type = in_request.req_type;
+				waiting_req.req_type = previous_input.in_request.req_type;
 				waiting_req.address =  output_adress  ;
-				waiting_req.data = in_request.data  ;
+				waiting_req.data = previous_input.in_request.data  ;
+
+				bank_out_valid = 0;
+				array_enable = 0;
 			end
 		end
 		
 		busy_state : begin
 			
 			out_busy = 1;
-			
-			if (waiting_req.valid == 0) begin
-				bank_out_valid = 0;
-				for (int i = 0; i < 16; i++) begin
-					bank_out_req[i] = 0;
-				end
-				array_enable = 0;
-				golbal_array_out_req = 0;
-				out_index = 0;
-			end
-			
-			else begin
+			if (waiting_req.req_type == read) begin
 
+				if ( stop_reading == 0  &&  in_busy [{ waiting_req.address.bank_group , waiting_req.address.bank}] == 0 ) begin
 
-				if (waiting_req.req_type == read) begin
+					array_enable = 1;
+					golbal_array_out_req.address = waiting_req.address;
+					golbal_array_out_req.req_type = read;
+					out_index =read_counter;
 
-					if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
-
-						array_enable = 1;
-						golbal_array_out_req.address = output_adress;
-						golbal_array_out_req.req_type = read;
+					bank_out_req ={ read_counter  , waiting_req.req_type , waiting_req.address.row  };
 				
-						for (int i = 0; i < 16; i++) begin
-							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-								bank_out_req [i] ={ read_counter  , waiting_req.req_type , waiting_req.address.row  };					
-							end
-							else begin
-								bank_out_req[i] = 0;
-							end
-						end
+					bank_out_valid =0;
+					bank_out_valid[{waiting_req.address.bank_group , waiting_req.address.bank}]=1;
 
 					read_counter ++ ;
 					waiting_req.valid = 0;
-					end
+				end
 							
+			end	
+
+			else begin
+				if ( previous_input.stop_writing == 0  &&  previous_input.in_busy [{ waiting_req.address.bank_group , waiting_req.address.bank}] == 0) begin
+
+					array_enable = 1;
+					golbal_array_out_req.address = waiting_req.address;
+					golbal_array_out_req.req_type = write;
+					golbal_array_out_req.data = previous_input.in_request.data;
+					out_index = write_counter;
+
+					bank_out_req ={ write_counter  , waiting_req.req_type , waiting_req.address.row  };
+
+					bank_out_valid =0;
+					bank_out_valid[{waiting_req.address.bank_group , waiting_req.address.bank}]=1;
+
+					write_counter ++ ;
+					waiting_req.valid = 0;
 				end
+			end		
 
-				else begin
-
-					if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0) begin
-
-						array_enable = 1;
-						golbal_array_out_req.address = output_adress;
-						golbal_array_out_req.req_type = write;
-						golbal_array_out_req.data = in_request.data;
-						
-						for (int i = 0; i < 16; i++) begin
-							if (i == { waiting_req.address.bank_group , waiting_req.address.bank} ) begin
-							bank_out_req [i] = { write_counter , waiting_req.req_type , waiting_req.address.row };					
-							end
-							else begin
-								bank_out_req[i] = 0;
-							end
-						end
-
-						write_counter ++ ;
-						waiting_req.valid = 0;
-					end
-				end
-
-			end
 		end
 		
 		idle : begin
@@ -279,6 +278,7 @@ always_comb begin
 		end
 
 		reset_state : begin
+			waiting_req =0;
 			read_counter = 0;
 			write_counter = 0;
 			out_busy = 0;
@@ -292,11 +292,12 @@ always_comb begin
 		end
 
 		default : begin
+			waiting_req =0;
 			out_busy = 0;
 			bank_out_valid = 0;
-			for (int i = 0; i < 16; i++) begin
-				bank_out_req[i] = 0;
-			end
+			
+			bank_out_req = 0;
+			
 			array_enable = 0;
 			golbal_array_out_req = 0;
 			out_index = 0;
