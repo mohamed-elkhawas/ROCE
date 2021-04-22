@@ -12,10 +12,7 @@ logic  [ 5 : 0 ] index;
 logic  [ 31 : 0 ] out_data;
 
 
-returner_v2 r (clk,rst,valid,the_type,in_data,index,wd,rd,data);
-
-
-
+returner r (clk,rst,valid,the_type,in_data,index,wd,rd,data);
 
 // Clock generator
   always
@@ -30,80 +27,89 @@ initial begin
 	rst = 0;
 	# 10 rst = 1;
 	#11
-	
+
+	@(posedge clk)
 	valid =1;
 	the_type =0;
 	in_data =1;
-	index =0; /////////0
-	#2
+	index =0; /////////read with index 0
+	@(posedge clk)
 	valid =0;
 
 
 	#100 
+	@(posedge clk)
 	valid =1;
 	the_type =0;
 	in_data =2;
-	index =1; /////////1
-	#2
+	index =1; /////////read with index 1
+	@(posedge clk)
 	valid =0;
 
 	#100 
+	@(posedge clk)
 	valid =1;
 	the_type =0;
 	in_data =3;
-	index =3; /////////3
-	#2
+	index =3; /////////read with index 3
+	@(posedge clk)
 	valid =0;
 
 	#100 
+	@(posedge clk)
 	valid =1;
 	the_type =0;
 	in_data =4;
-	index =2; /////////2
-	#2
+	index =2; /////////read with index 2
+	@(posedge clk)
 	valid =0;
 	
 	#100 
+	@(posedge clk)
 
 	valid =1;
 	the_type =1;
 	in_data =1;
-	index =0; /////////0
-	#2
+	index =0; /////////write with index 0
+	@(posedge clk)
 	valid =0;
 
 
 	#100 
+	@(posedge clk)
 	valid =1;
 	the_type =1;
 	in_data =1;
-	index =1; /////////1
-	#2
+	index =1; /////////write with index 1
+	@(posedge clk)
 	valid =0;
 
 	#100 
+	@(posedge clk)
 	valid =1;
 	the_type =1;
 	in_data =1;
-	index =0; /////////4
-	#2
+	index =0; /////////write with index 4
+	@(posedge clk)
 	valid =0;
 
 	#100 
+	@(posedge clk)
 	valid =1;
 	the_type =1;
 	in_data =1;
-	index =3; /////////3
-	#2
+	index =3; /////////write with index 3
+	@(posedge clk)
 	valid =0;
 
 
 	#100 
+	@(posedge clk)
 	valid =1;
 	the_type =1;
 	in_data =1;
-	index =2; /////////2
-	#2
+	index =2; /////////write with index 2
+	@(posedge clk)
 	valid =0;
 
 	#100
