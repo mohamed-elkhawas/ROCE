@@ -4,16 +4,16 @@ module global_array import types_def::*;
 	input clk,    
 	input rst,
 	
-	input request in_request,							// from mapper
+	input request in_request,			    // from mapper
 	input logic [read_entries_log:0] in_request_index,  // from mapper
-	input mapper_valid,									// from mapper
+	input mapper_valid,				    // from mapper
 
-	input scheduler_valid,								// from scheduler
+	input scheduler_valid,				    // from scheduler
 	input logic [read_entries_log:0] out_request_index, // from scheduler
-	input r_type the_scheduler_req_type,  				// the scheduler request type
+	input r_type the_scheduler_req_type,  		    // the scheduler request type
 
-	output request out_request, 						// to scheduler
-	output logic out_request_valid 								// to scheduler
+	output request out_request, 			    // to scheduler
+	output logic out_request_valid 			    // to scheduler
 	
 );
 
@@ -30,10 +30,10 @@ typedef struct packed {
 
 
 //		address
-logic [0:read_entries][ address_width : 0]					read_global_array;
+logic [0:read_entries][ address_width : 0]	read_global_array;
 
 //		 address + data
-request_without_type [0:write_entries]					write_global_array;
+request_without_type [0:write_entries]		write_global_array;
 
 
 
@@ -51,22 +51,18 @@ previous_input_type previous_input;
 
 
 task save_the_input ();
-	previous_input.in_request = in_request;
-	previous_input.in_request_index = in_request_index;
-	previous_input.mapper_valid = mapper_valid;
-	previous_input.scheduler_valid = scheduler_valid;
-	previous_input.out_request_index = out_request_index;
-	previous_input.the_scheduler_req_type = the_scheduler_req_type;
+	previous_input.in_request <= in_request;
+	previous_input.in_request_index <= in_request_index;
+	previous_input.mapper_valid <= mapper_valid;
+	previous_input.scheduler_valid <= scheduler_valid;
+	previous_input.out_request_index <= out_request_index;
+	previous_input.the_scheduler_req_type <= the_scheduler_req_type;
 endtask
-
-
-
-
-
 
 always_ff @(posedge clk ) begin
 	if(rst) begin
 		curr_state <= next_state ;
+		save_the_input ();
 	end 
 	else begin
 		curr_state <= reset_state;
@@ -77,7 +73,7 @@ always_comb begin
 
 	if (mapper_valid || scheduler_valid) begin
 		next_state = working ;
-		save_the_input ();
+		
 	end	
 	
 	else begin
