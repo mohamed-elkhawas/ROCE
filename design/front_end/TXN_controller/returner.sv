@@ -1,4 +1,4 @@
-module returner_v2  import types_def::*;
+module returner  import types_def::*;
 
 	#( parameter data_Width = 5'd31 
 
@@ -47,20 +47,31 @@ previous_input_type previous_input;
 
 
 task save_the_input ();
-	previous_input.the_type = the_type;
-	previous_input.data_in = data_in;
-	previous_input.index = index;
-	previous_input.valid = valid;
+	previous_input.the_type <= the_type;
+	previous_input.data_in <= data_in;
+	previous_input.index <= index;
+	previous_input.valid <= valid;
 endtask
 
+
+logic read_counter_up , write_counter_up;
 
 
 always_ff @(posedge clk ) begin
 	if(rst) begin
 		curr_state <= next_state ;
+		save_the_input ();
+		if(read_counter_up) begin
+			read_counter ++;
+		end
+		if(write_counter_up) begin
+			write_counter ++;
+		end
 	end 
 	else begin
 		curr_state <= reset_s;
+		read_counter <= 0;
+		write_counter <= 0;
 	end
 end
 
@@ -71,7 +82,6 @@ always_comb begin
 		idle: begin
 			if (valid) begin
 				next_state = working_with_new_req ;
-				save_the_input ();
 			end
 			else begin
 					next_state = idle ;
@@ -80,7 +90,6 @@ always_comb begin
 		reset_s: begin
 			if (valid) begin
 				next_state = working_with_new_req ;
-				save_the_input ();
 			end
 			else begin
 					next_state = idle ;
@@ -89,12 +98,10 @@ always_comb begin
 		working_with_new_req: begin
 			if (read_return_array[read_counter][0] == 1 || write_return_array[write_counter] == 1 ) begin
 				next_state = working_with_old_req ;
-				save_the_input ();
 			end
 			else begin
 				if (valid) begin
 					next_state = working_with_new_req ;
-					save_the_input ();
 				end
 				else begin
 					next_state = idle ;
@@ -104,12 +111,10 @@ always_comb begin
 		working_with_old_req: begin
 			if (read_return_array[read_counter][0] == 1 || write_return_array[write_counter] == 1 ) begin
 				next_state = working_with_old_req ;
-				save_the_input ();
 			end
 			else begin
 				if (valid) begin
 					next_state = working_with_new_req ;
-					save_the_input ();
 				end
 				else begin
 					next_state = idle ;
@@ -125,6 +130,10 @@ end
 
 
 always_comb begin 
+
+	read_counter_up = 0;
+	write_counter_up = 0;
+
 	case (curr_state)
 		
 		working_with_new_req : begin
@@ -132,7 +141,7 @@ always_comb begin
 				if ( read_counter == previous_input.index ) begin
 					data_out = previous_input.data_in ;
 					read_done = 1 ;
-					read_counter ++ ;
+					read_counter_up = 1;
 				end
 
 				else begin
@@ -145,7 +154,7 @@ always_comb begin
 			else begin
 				if ( write_counter == previous_input.index ) begin
 					write_done = 1 ;
-					write_counter ++ ;
+					write_counter_up = 1;
 				end
 
 				else begin
@@ -159,7 +168,7 @@ always_comb begin
 			if (read_return_array [read_counter][0] == 1) begin
 				data_out = read_return_array [read_counter][data_Width:0];
 				read_done =1;
-				read_counter ++ ;
+				read_counter_up = 1;
 			end
 			else begin
 				data_out = 0;
@@ -168,7 +177,7 @@ always_comb begin
 			if (write_return_array [write_counter] == 1) begin
 				write_done = 1 ;
 				write_return_array [write_counter] = 0 ;
-				write_counter ++ ;					
+				write_counter_up = 1;					
 			end
 			else begin
 				write_done = 0;
@@ -190,8 +199,6 @@ always_comb begin
 		end
 
 		reset_s : begin
-			read_counter = 0;
-			write_counter = 0;
 			write_done = 0 ;
 			read_done = 0 ;
 			data_out = 0;
