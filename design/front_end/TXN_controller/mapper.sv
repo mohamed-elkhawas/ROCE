@@ -49,9 +49,9 @@ module mapper import types_def::*;
 	input request in_request, // from rnic
 	output logic out_busy, // to rnic
 
-	input stop_reading, // from global array
-	input stop_writing, // from global array
-	output logic  array_enable, // to global array
+	input stop_reading, // from over flow stopper
+	input stop_writing, // from over flow stopper
+	output logic  valid_out, // to global array and over flow stopper
 	
 	output request out_req,// to global array
 	output logic [read_entries_log:0] out_index,// to global array and to the bank {index , type ,row}
@@ -179,10 +179,10 @@ end
 // scheme applier
 
 // output_adress =  { bank_group , bank , row , column }
-//			2	    2	  16	 10
+//						2			2		16		10
 
 // scheme   row   	bank 	column  bank_group	column	////////// 	the mapping scheme
-// bits_no. 16		 2	  6	   2		 4
+// bits_no.	 16		 2			6		2			4
 
 
 always_comb begin
@@ -197,9 +197,10 @@ always_comb begin
 
 	read_counter_up = 0;
 	write_counter_up = 0;
-	array_enable = 0;
+	valid_out = 0;
 	out_busy = 0;
 	update_waiting_req= 0;
+	bank_out_valid =0;
 
 	case (curr_state)
 		
@@ -207,12 +208,12 @@ always_comb begin
 
 			if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
 			
-				array_enable = 1;
+				valid_out = 1;
 				out_req.address = output_adress;
 				out_req.req_type = read;
 				out_index = read_counter;
 
-				bank_out_valid =0;
+				
 				bank_out_valid[{ output_adress.bank_group , output_adress.bank}]=1;
 
 				read_counter_up =1;
@@ -227,13 +228,12 @@ always_comb begin
 
 			if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
 
-				array_enable = 1;
+				valid_out = 1;
 				out_req.address = output_adress;
 				out_req.req_type = write;
 				out_req.data = previous_input.in_request.data;
 				out_index = write_counter;
 
-				bank_out_valid =0;
 				bank_out_valid[{ output_adress.bank_group , output_adress.bank}]=1;
 
 				write_counter_up = 1;
@@ -252,12 +252,11 @@ always_comb begin
 
 				if ( stop_reading == 0  &&  in_busy [{ waiting_req.address.bank_group , waiting_req.address.bank}] == 0 ) begin
 
-					array_enable = 1;
+					valid_out = 1;
 					out_req.address = waiting_req.address;
 					out_req.req_type = read;
 					out_index =read_counter;
 				
-					bank_out_valid =0;
 					bank_out_valid[{waiting_req.address.bank_group , waiting_req.address.bank}]=1;
 
 					read_counter_up =1;
@@ -274,13 +273,12 @@ always_comb begin
 			else begin
 				if ( stop_writing == 0  &&  in_busy [{ waiting_req.address.bank_group , waiting_req.address.bank}] == 0) begin
 
-					array_enable = 1;
+					valid_out = 1;
 					out_req.address = waiting_req.address;
 					out_req.req_type = write;
 					out_req.data = previous_input.in_request.data;
 					out_index = write_counter;
 
-					bank_out_valid =0;
 					bank_out_valid[{waiting_req.address.bank_group , waiting_req.address.bank}]=1;
 
 					write_counter_up = 1;
@@ -295,9 +293,6 @@ always_comb begin
 		end
 		
 		idle : begin
-
-			bank_out_valid = 0;
-
 			out_req = 0;
 			out_index = 0;
 		end
@@ -306,7 +301,6 @@ always_comb begin
 			update_waiting_req =0;
 			save_waiting_req = 0;
 						
-			bank_out_valid = 0;
 			out_req = 0;
 			out_index = 0;
 		end
@@ -314,9 +308,7 @@ always_comb begin
 		default : begin
 			update_waiting_req =0;
 			save_waiting_req = 0;
-			
-			bank_out_valid = 0;
-						
+									
 			out_req = 0;
 			out_index = 0;
 		end
