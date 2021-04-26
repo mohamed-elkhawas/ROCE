@@ -15,8 +15,8 @@ module over_flow_stopper import types_def::*;
 
 );
 
-logic [read_entries_log:0] the_diffrence_in_read_counters ;
-logic [write_entries_log:0] the_diffrence_in_write_counters ;
+logic [read_entries_log+1:0] the_diffrence_in_read_counters ;
+logic [write_entries_log+1:0] the_diffrence_in_write_counters ;
 
 
 always_ff @(posedge clk  ) begin
@@ -57,22 +57,19 @@ end
 
 always_comb begin 
 
-	if (the_diffrence_in_read_counters == read_entries ) begin
+	if (the_diffrence_in_read_counters == read_entries +1 ) begin
 		stop_reading = 1;
 	end	
 	else begin
 		stop_reading = 0;
 	end
 
-	if (the_diffrence_in_write_counters == write_entries ) begin
+	if (the_diffrence_in_write_counters == write_entries +1 ) begin
 		stop_writing = 1;
 	end	
 	else begin
 		stop_writing = 0;
 	end
-
 end
 
-
 endmodule
-
