@@ -2,12 +2,12 @@ package types_def;
 
 	parameter
 
-		data_width = 5'd31, 	// 32 bit
-		address_width = 5'd29, 	// 30 bit
-		read_entries = 63,
-		read_entries_log = 5,
-		write_entries = 63,
-		write_entries_log = 5,
+		data_width  = 32, 	
+		address_width = 30,
+		read_entries  = 64,
+		read_entries_log = 6,
+		write_entries = 64,
+		write_entries_log = 6,
 
 		t = 5 ;		///////////////  add the right  permutation_param_t number here
 
@@ -23,7 +23,7 @@ package types_def;
 
   typedef struct packed {
 	r_type req_type ;
-	logic [data_width:0] data ;
+	logic [data_width -1:0] data ;
 	address_type address ;
   } request ;
 
@@ -31,7 +31,7 @@ package types_def;
 	logic valid ;
 	r_type req_type ;
 	address_type address ;
-	logic [data_width:0] data ;
+	logic [data_width -1:0] data ;
   } waiting_request ;
 
 endpackage
@@ -54,7 +54,7 @@ module mapper import types_def::*;
 	output logic  valid_out, // to global array and over flow stopper
 	
 	output request out_req,// to global array
-	output logic [read_entries_log:0] out_index,// to global array and to the bank {index , type ,row}
+	output logic [read_entries_log -1:0] out_index,// to global array and to the bank {index , type ,row}
 
 
 	input [15:0] in_busy, // from bank
@@ -70,8 +70,8 @@ typedef enum logic [2:0] { idle , read_state , write_state , busy_state , reset_
 my_states curr_state , next_state ; 
 
 
-logic [read_entries_log:0]	read_counter;
-logic [write_entries_log:0]	write_counter;
+logic [read_entries_log -1:0]	read_counter;
+logic [write_entries_log -1:0]	write_counter;
 
 
 
