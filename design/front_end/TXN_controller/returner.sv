@@ -1,6 +1,6 @@
 module returner  import types_def::*;
 
-	#( parameter data_Width = 5'd31 
+	#( parameter data_width  = 32 
 
 	)
 
@@ -9,12 +9,12 @@ module returner  import types_def::*;
 	input rst,  	// synchronous reset active low
 	input valid,
 	input the_type,
-	input [ data_Width  : 0 ] data_in,
-	input [ read_entries_log : 0 ] index,
+	input [ data_width -1  : 0 ] data_in,
+	input [ read_entries_log -1 : 0 ] index,
 
 	output logic write_done,
 	output logic read_done,
-	output logic  [ data_Width : 0 ] data_out
+	output logic  [ data_width -1 : 0 ] data_out
 
 	);
 
@@ -29,7 +29,7 @@ logic [5:0]	write_counter;
 
 
 //		valid + data
-logic [0:63][ 1 + data_Width : 0]	read_return_array;
+logic [0:63][ 1 + data_width -1 : 0]	read_return_array;
 
 //		valid 
 logic [0:63]						write_return_array;
@@ -37,8 +37,8 @@ logic [0:63]						write_return_array;
 
 typedef struct packed {
 	logic the_type ;
-	logic [ data_Width  : 0 ] data_in;
-	logic [ read_entries_log : 0 ] index;
+	logic [ data_width -1  : 0 ] data_in;
+	logic [ read_entries_log -1 : 0 ] index;
 	logic valid;
 
 } previous_input_type;
@@ -166,7 +166,7 @@ always_comb begin
 
 		working_with_old_req : begin
 			if (read_return_array [read_counter][0] == 1) begin
-				data_out = read_return_array [read_counter][data_Width:0];
+				data_out = read_return_array [read_counter][data_width -1:0];
 				read_done =1;
 				read_counter_up = 1;
 			end
