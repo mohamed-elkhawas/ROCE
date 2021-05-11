@@ -9,10 +9,8 @@ logic  [ 31 : 0 ] in_data;
 logic  [ 5 : 0 ] index;
 
 
-logic  [ 31 : 0 ] out_data;
-
-
 returner r (clk,rst,valid,the_type,in_data,index,wd,rd,data);
+
 
 // Clock generator
   always
@@ -35,6 +33,7 @@ initial begin
 	index =0; /////////read with index 0
 	@(posedge clk)
 	valid =0;
+	in_data =10;
 
 
 	#100 
