@@ -2,7 +2,7 @@ module over_flow_stopper import types_def::*;
 
 (
 	input clk,
-	input rst,
+	input rst_n,
 	 
 	input mapper_valid,
 	input the_req_type, 
@@ -15,13 +15,13 @@ module over_flow_stopper import types_def::*;
 
 );
 
-logic [read_entries_log -1 +1:0] diff_read_counter ;
-logic [write_entries_log -1 +1:0] diff_write_counter ;
+logic [read_entries_log -1 +1:0] diff_read_counter ;     // +1 for the over flow
+logic [write_entries_log -1 +1:0] diff_write_counter ;   // +1 for the over flow
 
 
 always_ff @(posedge clk  ) begin
 
-	if (rst) begin
+	if (rst_n) begin
 		if (mapper_valid) begin // mapper is sending req
 
 			if (the_req_type == read ) begin
@@ -55,16 +55,16 @@ always_ff @(posedge clk  ) begin
 
 end
 
-always_comb begin 
+always_ff @(posedge clk  ) begin 
 
-	if (diff_read_counter == read_entries -1 +1 ) begin
+	if (diff_read_counter == read_entries -1 +1 ) begin // +1 for the over flow
 		stop_reading = 1;
 	end	
 	else begin
 		stop_reading = 0;
 	end
 
-	if (diff_write_counter == write_entries +1 ) begin
+	if (diff_write_counter == write_entries -1 +1 ) begin // +1 for the over flow
 		stop_writing = 1;
 	end	
 	else begin
@@ -72,7 +72,6 @@ always_comb begin
 	end
 
 end
-
 
 endmodule
 
