@@ -3,11 +3,16 @@ module modified_fifo_tb import types_def::*; ();
 
 logic clk,rst;
 
-request request_in ;
+//request request_in ;
+
+
+logic [data_width + address_width :0]request_in; //////////// concatenated input works
+
 logic [read_entries_log -1:0]            index_i;
 logic valid_in , grant_in;
 
-
+request request_o ;
+logic [read_entries_log -1:0]            index_o;
 
 
 modified_fifo m (clk,rst,request_in,index_i,valid_in,grant_o ,request_o,index_o,valid_o, grant_in);
@@ -28,6 +33,22 @@ initial begin
 	#11
 
 	grant_in =0;
+
+
+
+	@(posedge clk)
+	valid_in =1;
+
+	request_in[data_width + address_width] = 1; // write
+	request_in[address_width -1:0] = 19; // address
+	index_i = 5;
+
+	request_in[data_width + address_width -1:address_width] = 2; //data
+
+	@(posedge clk)
+	valid_in =0;
+
+/*
 	@(posedge clk)
 	valid_in =1;
 
@@ -82,7 +103,7 @@ initial begin
 	@(posedge clk)
 	valid_in =0;
 	end
-	
+*/	
 	#100
 	$stop;
 
