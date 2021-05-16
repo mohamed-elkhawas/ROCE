@@ -34,7 +34,7 @@ module txn_controller import types_def::*;
 );
 
 
-mapper input_controller (.clk(clk),.rst_n(rst_n),.in_valid(in_valid),.in_request(in_request),.out_busy(out_busy),.stop_reading(stop_reading) ,.stop_writing(stop_writing),.valid_out(valid_out),.out_req(out_req),.out_index(out_index),.in_busy(in_busy),.bank_out_valid(bank_out_valid));
+mapper input_controller (.clk(clk),.rst_n(rst_n),.in_valid(in_valid),.in_request(in_request),.out_busy_o(out_busy),.stop_reading(stop_reading) ,.stop_writing(stop_writing),.valid_out_o(valid_out),.out_req_o(out_req),.out_index_o(out_index),.in_busy(in_busy),.bank_out_valid_o(bank_out_valid));
 
 
 returner #(.data_width(data_width)) output_controller (.clk(clk),.rst_n(rst_n),.valid(request_done_valid),.the_type(the_type),.data_in(data_in),.index(index),.write_done(write_done),.read_done(read_done),.data_out(data_out));
