@@ -8,6 +8,8 @@ package types_def;
 		read_entries_log = 6,
 		write_entries = 64,
 		write_entries_log = 6,
+		banks_no = 16,
+		row_addres_len =16,
 
 		t = 5 ;		///////////////  add the right  permutation_param_t number here
 
@@ -26,6 +28,11 @@ package types_def;
 	logic [data_width -1:0] data ;
 	address_type address ;
   } request ;
+
+
+  typedef enum logic [2:0] {activate , read_cmd , write_cmd , change_mode ,  precharge , none} command ; /* change_mode from rd to wr or vise versa*/
+  
+  typedef enum logic [2:0] {started_filling , almost_done, full , empty , returning_data} burst_states_type ;
 
 endpackage
 
