@@ -34,8 +34,8 @@ initial begin
 	index =0;
 
 	for (int i = 0; i < 64; i++) begin
-
-  @(posedge clk)
+		////////////////////////////// single read
+	@(posedge clk)
 	in_valid =1;
 
 	in_request.req_type =read;
@@ -58,7 +58,7 @@ initial begin
 	the_type = read;
 
 	for (int i = 0; i < 64; i++) begin
-		
+		////////////////////////////// single write
 	@(posedge clk)
 	in_valid =1;
 
