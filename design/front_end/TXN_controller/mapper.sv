@@ -30,7 +30,7 @@ package types_def;
   } request ;
 
 
-  typedef enum logic [2:0] {activate , read_cmd , write_cmd , change_mode ,  precharge , none} command ; /* change_mode from rd to wr or vise versa*/
+  typedef enum logic [2:0] {activate , read_cmd , write_cmd  ,  precharge , none} command ;
   
   typedef enum logic [2:0] {started_filling , almost_done, full , empty , returning_data} burst_states_type ;
 
