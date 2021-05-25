@@ -128,8 +128,8 @@ always_ff @(posedge clk) begin
 						burst_last_cmd[i] <= activate;
 						global_last_cmd[i] <= activate;
 						
-						bank_active_row <= in_burst_address[i[1:0]].row;
-						bank_active_row_valid[i[1:0]] <= 1;	
+						bank_active_row[burst_bank_add[i]] <= in_burst_address[i[1:0]].row;
+						bank_active_row_valid[burst_bank_add[i]] <= 1;	
 					end
 					read_cmd: begin
 						bank_counter_rd[i] <=0; bank_group_counter_rd[i] <=0; global_counter_rd <= 0; 
@@ -149,7 +149,7 @@ always_ff @(posedge clk) begin
 						burst_last_cmd[i] <= precharge;
 						global_last_cmd[i] <= precharge;
 						
-						bank_active_row_valid[i[1:0]] <= 0;  
+						bank_active_row_valid[burst_bank_add[i]] <= 0;  
 					end
 				endcase
 			end
