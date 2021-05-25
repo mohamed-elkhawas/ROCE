@@ -14,41 +14,37 @@ module timing_controller import types_def::*;
 	output command [no_of_bursts-1:0] burst_cmd_o	// start cmd 
 	);
 
-command [no_of_bursts-1:0] burst_cmd;
+command [no_of_bursts-1:0] burst_cmd, burst_cmd_temp;
 
 //////////////////////////////// timing params \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 localparam  
-			max_time   = 39,
+			max_time   = 20,
 			max_time_log = $clog2(max_time),
 
 			//////////////////////////////same bank \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 			
-			act_to_rd  =11, // or write
-			pre_to_act =11,
-			act_to_act_same_bank =39,
-			act_to_pre =28,
-			wr_to_data =8,
-			rd_to_data =11,
-			rd_to_pre =6,
-			wr_to_pre =12,
+			act_to_rd  =6, // or write
+			pre_to_act =6,
+			act_to_act_same_bank =20,
+			act_to_pre =14,
+			wr_to_data =4,
+			rd_to_data =6, // 11 so not sure what to do
+			rd_to_pre =3,
+			wr_to_pre =6,
 
 			//////////////////////////////diff bank \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-			act_to_act_diff_bank =6,
-
+			act_to_act_diff_bank =3,
 
 			//////////////////////////////any bank \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-			rd_to_wr =9,
-			wr_to_rd =18,
-			rd_to_rd =4,
+			rd_to_wr =5,
+			wr_to_rd =9,
+			rd_to_rd =2,
 
 			burst_time = 8;
 
 //////////////////////////////// declarations \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-
-//command [banks_no-1:0] bank_last_cmd , bank_next_cmd;
 
 logic [banks_no-1:0] [row_addres_len-1:0] bank_active_row ; 
 logic [banks_no-1:0] bank_active_row_valid ;
@@ -64,11 +60,9 @@ logic [banks_no-1:0] [max_time_log-1:0] bank_counter_pre ;
 logic [4-1:0] [max_time_log-1:0] bank_group_counter_act ;
 logic [4-1:0] [max_time_log-1:0] bank_group_counter_rd ;
 logic [4-1:0] [max_time_log-1:0] bank_group_counter_wr ;
-//logic [4-1:0] [max_time_log:0] bank_group_counter_pre ;
 
 logic [max_time_log-1:0] global_counter_rd ; // for rd to wr delay
 logic [max_time_log-1:0] global_counter_wr ; // for wr to rd delay
-//logic [max_time_log:0] global_counter_data ;
 
 r_type last_cmd_type;
 
@@ -79,8 +73,8 @@ always_comb begin
 	end
 end
 
-logic [2:0] start_i;
-logic stop;
+logic [$clog2(no_of_bursts):0] start_i;
+logic [no_of_bursts-1:0] rr_in, rr_temp, rr_out;
 
 
 //////////////////////////////////////////////// the state of art \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -126,11 +120,37 @@ always_ff @(posedge clk) begin
 
 		for (int i = 0; i < no_of_bursts; i++) begin
 			if (burst_cmd[i] != none) begin
+				start_i <= start_i +1 ;
 				case (burst_cmd[i])
-					activate: begin   bank_counter_act[i] <=0; bank_group_counter_act[i] <=0; end
-					read_cmd: begin   bank_counter_rd[i] <=0; bank_group_counter_rd[i] <=0; global_counter_rd <= 0; end // global_counter_data <= 0; end
-					write_cmd: begin  bank_counter_wr[i] <=0; bank_group_counter_wr[i] <=0; global_counter_wr <= 0; end //global_counter_data <= 0; end
-					precharge: begin  bank_counter_pre[i] <=0;  end
+					activate: begin
+						bank_counter_act[i] <=0; bank_group_counter_act[i] <=0; 
+						
+						burst_last_cmd[i] <= activate;
+						global_last_cmd[i] <= activate;
+						
+						bank_active_row <= in_burst_address[i[1:0]].row;
+						bank_active_row_valid[i[1:0]] <= 1;	
+					end
+					read_cmd: begin
+						bank_counter_rd[i] <=0; bank_group_counter_rd[i] <=0; global_counter_rd <= 0; 
+						
+						burst_last_cmd[i] <= read_cmd;
+						global_last_cmd[i] <= read_cmd;
+					end
+					write_cmd: begin
+						bank_counter_wr[i] <=0; bank_group_counter_wr[i] <=0; global_counter_wr <= 0;
+						
+						burst_last_cmd[i] <= write_cmd;
+						global_last_cmd[i] <= write_cmd; 
+					end
+					precharge: begin	
+						bank_counter_pre[i] <=0;
+
+						burst_last_cmd[i] <= precharge;
+						global_last_cmd[i] <= precharge;
+						
+						bank_active_row_valid[i[1:0]] <= 0;  
+					end
 				endcase
 			end
 		end
@@ -144,6 +164,7 @@ always_ff @(posedge clk) begin
 			bank_counter_rd[i] <=  0;
 			bank_counter_wr[i] <=  0;
 			bank_counter_pre[i] <=  0;
+			bank_active_row_valid[i] = 0;
 		end
 		for (int i = 0; i < 4; i++) begin
 			bank_group_counter_act[i] <= 0;
@@ -152,6 +173,14 @@ always_ff @(posedge clk) begin
 		end
 		global_counter_rd <= 0;
 		global_counter_wr <= 0;
+
+		start_i = 0;
+		for (int i = 0; i < no_of_bursts; i++) begin
+			burst_last_cmd[i] = none;
+		end
+		bank_active_row_valid = 0;
+		global_last_cmd = none;
+		last_cmd_type = read;
 		
 	end
 	
@@ -167,18 +196,14 @@ function do_the_magic (int i );
 									
 										if (in_burst_type[i[1:0]] == read) begin
 											if (in_burst_state[i[1:0]] == almost_done || in_burst_state[i[1:0]] == full ) begin
-												stop = 1; 
-												burst_cmd[i[1:0]] = read_cmd ;
-												burst_last_cmd[i[1:0]] = read_cmd;
-												global_last_cmd = read_cmd;
+												rr_in[i[1:0]] = 1;
+												burst_cmd_temp[i[1:0]] = read_cmd ;
 											end
 										end
 										else begin
 											if (in_burst_state[i[1:0]] == full ) begin
-												stop = 1; 
-												burst_cmd[i[1:0]] = write_cmd ;
-												burst_last_cmd[i[1:0]] = write_cmd ;
-												global_last_cmd = write_cmd;
+												rr_in[i[1:0]] = 1;
+												burst_cmd_temp[i[1:0]] = write_cmd ;
 											end
 										end
 									end
@@ -189,24 +214,16 @@ function do_the_magic (int i );
 							else begin  // diff active row
 
 								if (bank_counter_act[burst_bank_add[i[1:0]]] > act_to_pre-2 && bank_counter_rd[burst_bank_add[i[1:0]]] > rd_to_pre-2  && bank_counter_wr[burst_bank_add[i[1:0]]] > wr_to_pre-2 ) begin
-									stop = 1; 
-									burst_cmd[i[1:0]] = precharge ;
-									burst_last_cmd[i[1:0]] = precharge ;
-									global_last_cmd = precharge;
-									bank_active_row = in_burst_address[i[1:0]].row;
-									bank_active_row_valid[i[1:0]] = 1;
+									rr_in[i[1:0]] = 1;
+									burst_cmd_temp[i[1:0]] = precharge ;
 								end
 							end
 						end
 						else begin // no active row
 							
 							if (bank_counter_pre[burst_bank_add[i[1:0]]] > pre_to_act-2 && bank_group_counter_act[burst_bank_add[i[1:0]]] > act_to_act_diff_bank-2  && bank_counter_act[burst_bank_add[i[1:0]]] > act_to_act_same_bank-2 ) begin
-								stop = 1; 
-								burst_cmd[i[1:0]] = activate;
-								burst_last_cmd[i[1:0]] = activate;
-								global_last_cmd = activate;
-								bank_active_row = in_burst_address[i[1:0]].row;
-								bank_active_row_valid = 1 ;
+								rr_in[i[1:0]] = 1;
+								burst_cmd_temp[i[1:0]] = precharge ;
 							end
 						end
 	
@@ -214,16 +231,14 @@ endfunction
 
 ///////////////////// burst block \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-//always_ff @(posedge clk) begin
 always_comb begin 
 
-if (rst_n) begin
-	
-	for (int i = start_i; i < start_i+no_of_bursts; i++) begin // round roubin
-		
-		burst_cmd[i[1:0]] = none;
+rr_in = 0;
 
-		if (stop == 0 && global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free
+	if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
+		
+		for (int i = 0; i < no_of_bursts; i++) begin 
+				
 			if (in_burst_state[i[1:0]] != empty && in_burst_state[i[1:0]] != returning_data) begin //  there is requests to be sent
 
 				case (burst_last_cmd[i[1:0]])
@@ -233,28 +248,20 @@ if (rst_n) begin
 
 								if (in_burst_type[i[1:0]] == read) begin
 									if (in_burst_state[i[1:0]] == almost_done || in_burst_state[i[1:0]] == full ) begin
-										stop = 1; 
-										burst_cmd[i[1:0]] = read_cmd ;
-										burst_last_cmd[i[1:0]] = read_cmd;
-										global_last_cmd = read_cmd;
+										
+										rr_in[i[1:0]] = 1;
+										burst_cmd_temp[i[1:0]] = read_cmd ;
+										
 									end
 								end
 								else begin
 									if (in_burst_state[i[1:0]] == full ) begin
-										stop = 1; 
-										burst_cmd[i[1:0]] = write_cmd ;
-										burst_last_cmd[i[1:0]] = write_cmd ;
-										global_last_cmd = write_cmd;
+										rr_in[i[1:0]] = 1;
+										burst_cmd_temp[i[1:0]] = write_cmd ;
 									end
 								end
 							end
 						end
-						/*else begin
-							stop = 1; 
-							burst_cmd[i[1:0]] = change_mode ;
-							burst_last_cmd[i[1:0]] = change_mode ;
-							global_last_cmd = change_mode;
-						end*/
 
 					end
 					read_cmd: begin
@@ -265,62 +272,62 @@ if (rst_n) begin
 					end
 					precharge: begin
 						if (bank_counter_pre[burst_bank_add[i[1:0]]] > pre_to_act-2 && bank_group_counter_act[burst_bank_add[i[1:0]]] > act_to_act_diff_bank-2  && bank_counter_act[burst_bank_add[i[1:0]]] > act_to_act_same_bank-2 ) begin
-							stop = 1; 
-							burst_cmd[i[1:0]] = activate;
-							burst_last_cmd[i[1:0]] = activate;
-							global_last_cmd = activate;
-							bank_active_row = in_burst_address[i[1:0]].row;
-							bank_active_row_valid = 1 ;
+							rr_in[i[1:0]] = 1;
+							burst_cmd_temp[i[1:0]] = activate ;
 						end
 					end
 					none: begin
 						if (bank_group_counter_act[burst_bank_add[i[1:0]]] > act_to_act_diff_bank-2) begin
-							stop = 1; 
-							burst_cmd[i[1:0]] = activate;
-							burst_last_cmd[i[1:0]] = activate;
-							global_last_cmd = activate;
-							bank_active_row = in_burst_address[i[1:0]].row;
-							bank_active_row_valid = 1 ;
+							rr_in[i[1:0]] = 1;
+							burst_cmd_temp[i[1:0]] = activate ;
 						end
-					end
-				
-					default: begin
-						burst_cmd[i[1:0]] = none;
-						
-						bank_active_row_valid = 0;
-						burst_last_cmd[i[1:0]] = none;
-						global_last_cmd = none;
 					end
 				endcase
 			end
 		end
 	end
 
-	if (stop) begin
-		start_i ++;
-		stop = 0;
-	end	
-end
-
-else begin
-	start_i = 0;
-	stop = 0;
-	for (int i = 0; i < no_of_bursts; i++) begin
-		burst_last_cmd[i] = none;
+	else begin
+		for (int i = 0; i < no_of_bursts; i++) begin
+			burst_cmd_temp[i[1:0]] = none;		
+		end
 	end
+
+end
+
+//////////////////////////////////////////////////// made by : mohamed khaled mohamed elkhawas \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//////////////////////////////////////////////////// 			All rights reserved				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+always_comb begin // working way for round robin
+	rr_out = 0;
+	if (rr_in != 0) begin
+		rr_temp = {rr_in,rr_in} >> start_i;	// rotate right to start from the next 1
+		rr_temp = ( ~rr_temp +1'b1 ) & rr_temp ; // find first one after shifting
+		rr_out = {rr_temp,rr_temp} >> (4-start_i) ; // rotational shift left 
+	end
+end
+
+//////////////////////////////////////////////////// mohamed khaled mohamed elkhawas \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+always_comb begin
 	
-	bank_active_row_valid = 0;
-	global_last_cmd = none;
-	last_cmd_type = read;
+	for (int i = 0; i < no_of_bursts; i++) begin
+		burst_cmd[i] = none;
+	end
+
+	if (rr_out != 0) begin
+		for (int i = 0; i < no_of_bursts; i++) begin
+			if (rr_out[i]) begin
+				burst_cmd[i] = burst_cmd_temp[i];
+			end
+		end
+	end
 
 end
-
-end
-
 
 ///////////////////////////////////////////////// output update \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-always_ff @(posedge clk or negedge rst_n) begin : proc_
+always_ff @(posedge clk) begin 
 	if(rst_n) begin
 		burst_cmd_o <= burst_cmd;
 	end 
