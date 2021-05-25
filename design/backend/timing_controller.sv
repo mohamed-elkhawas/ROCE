@@ -332,7 +332,9 @@ always_ff @(posedge clk) begin
 		burst_cmd_o <= burst_cmd;
 	end 
 	else begin
-		burst_cmd_o <= none;
+		for (int i = 0; i < no_of_bursts; i++) begin
+			burst_cmd_o[i] <= none;
+		end
 	end
 end
 
