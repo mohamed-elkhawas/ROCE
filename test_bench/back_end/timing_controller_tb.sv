@@ -41,18 +41,43 @@ initial begin
 	in_burst_state[0] = started_filling;
 	in_burst_address = 0;
 
-	#7
-	@(posedge clk)
-	in_burst_state[0] = almost_done;
-
-	#8
 	@(posedge clk)
 	in_burst_state[0] = full;
+
+	@(posedge clk) 
+	in_burst_state[1] = started_filling;
+	in_burst_address[1].bank = 0;
+	in_burst_address[1].bank_group = 0;
+
+	@(posedge clk)
+	in_burst_state[1] = full;
+
+	@(posedge clk) 
+	in_burst_state[2] = started_filling;
+	in_burst_address[2].bank = 1;
+	in_burst_address[2].bank_group = 0;
+
+	@(posedge clk)
+	in_burst_state[2] = full;
+
+	@(posedge clk) 
+	in_burst_state[3] = started_filling;
+	in_burst_address[3].bank = 2;
+	in_burst_address[3].bank_group = 1;
+	
+	in_burst_type[3] = write;
+
+	@(posedge clk)
+	in_burst_state[3] = full;
+
 
 
 	#100 
 	@(posedge clk)
 	
+	
+	@(posedge clk)
+
 
 
 	
