@@ -6,7 +6,7 @@ module timing_controller import types_def::*;
 	input clk,    // Clock
 	input rst_n,  // synchronous reset active low
 
-	input burst_states_type [no_of_bursts-1:0] in_burst_state, // started_filling , full , empty , returning_data
+	input burst_states_type [no_of_bursts-1:0] in_burst_state, // started_filling ,almost_done , full , empty , returning_data
 	input r_type [no_of_bursts-1:0] in_burst_type,
 	input address_type [no_of_bursts-1:0] in_burst_address, /// I need the row , bank and bank_group bits
 
@@ -50,15 +50,15 @@ logic [banks_no-1:0] bank_active_row_valid ;
 
 command global_last_cmd;
 
-logic [banks_no-1:0] [$clog2(act_to_act_same_bank-1)-1:0] bank_counter_act ; // all the counter's max = max -1 because of the out's 1 clk delay
-logic [banks_no-1:0] [$clog2(rd_to_data-1)-1:0] bank_counter_rd ;
-logic [banks_no-1:0] [$clog2(wr_to_pre-1)-1:0] bank_counter_wr ;
-logic [banks_no-1:0] [$clog2(pre_to_act-1)-1:0] bank_counter_pre ; 
+logic [banks_no-1:0] [$clog2(act_to_act_same_bank)-1:0] bank_counter_act ; // all the counter's max = max -1 because of the out's 1 clk delay
+logic [banks_no-1:0] [$clog2(rd_to_data)-1:0] bank_counter_rd ;
+logic [banks_no-1:0] [$clog2(wr_to_pre)-1:0] bank_counter_wr ;
+logic [banks_no-1:0] [$clog2(pre_to_act)-1:0] bank_counter_pre ; 
 
-logic [4-1:0] [$clog2(act_to_act_diff_bank-1)-1:0] bank_group_counter_act ;
+logic [4-1:0] [$clog2(act_to_act_diff_bank)-1:0] bank_group_counter_act ;
 
-logic [$clog2(burst_time+rd_to_data-1)-1:0] global_counter_rd ; // for rd to wr delay
-logic [$clog2(burst_time+wr_to_data-1)-1:0] global_counter_wr ; // for wr to rd delay
+logic [$clog2(burst_time+rd_to_data)-1:0] global_counter_rd ; // for rd to wr delay
+logic [$clog2(burst_time+wr_to_data)-1:0] global_counter_wr ; // for wr to rd delay
 
 r_type last_cmd_type;
 
@@ -160,7 +160,7 @@ always_ff @(posedge clk) begin
 end
 
 
-///////////////////// burst block \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+///////////////////// burst timing block \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 always_comb begin 
 
@@ -176,7 +176,7 @@ always_comb begin
 		
 					if (bank_active_row[burst_bank_add[i]] == in_burst_address[i].row) begin // same active row
 					
-						if (in_burst_type[i] == last_cmd_type  ||  ( ( last_cmd_type == read_cmd && global_counter_wr > wr_to_rd-2 ) && ( last_cmd_type == write && global_counter_rd > rd_to_wr-2 ) ) ) begin // same type or rd_to_wr delays are done
+						if (in_burst_type[i] == last_cmd_type  ||  ( ( last_cmd_type == read_cmd && global_counter_rd > rd_to_wr-2 ) && ( last_cmd_type == write && global_counter_wr > wr_to_rd-2 ) ) ) begin // same type or rd_to_wr delays are done
 					
 							if ( bank_counter_rd[burst_bank_add[i]] > rd_to_rd-2 ) begin // column to column time
 					
@@ -241,7 +241,7 @@ end
 
 //////////////////////////////////////////////////// 			All rights reserved				\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-always_comb begin
+always_comb begin // continue round roubin
 
 	for (int i = 0; i < no_of_bursts; i++) begin
 		if (rr_out[i]) begin
@@ -252,8 +252,8 @@ always_comb begin
 
 end
 
-///////////////////////////////////////////////// output update \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+///////////////////////////////////////////////// output update \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 always_ff @(posedge clk) begin 
 	
 	if(rst_n) begin
@@ -267,7 +267,6 @@ always_ff @(posedge clk) begin
 	end
 
 end
-
+///////////////////////////////////////////////// output update \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 endmodule
-
