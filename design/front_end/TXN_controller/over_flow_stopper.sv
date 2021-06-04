@@ -1,65 +1,77 @@
-module over_flow_stopper_tb ();
- 
+module over_flow_stopper import types_def::*;
 
-logic clk,rst,the_req_type,mapper_valid,write_done,read_done;
+(
+	input clk,
+	input rst_n,
+	 
+	input mapper_valid,
+	input the_req_type, 
 
+	input read_done,
+	input  write_done,
 
-over_flow_stopper o (clk,rst, mapper_valid, the_req_type, read_done,  write_done,stop_reading, stop_writing);
+	output logic stop_reading,
+	output logic stop_writing
 
+);
 
-// Clock generator
-  always
-  begin
-    #1 clk = 1;
-    #1 clk = 0;
-  end
-
-
-initial begin 
-
-	rst = 0;
-	# 10 rst = 1;
-	#11
-	@(posedge clk)
-	read_done =0;
-	write_done =0;
-
-	mapper_valid =1;
-	the_req_type = 0;
-
-	for (int i = 0; i < 64; i++) begin
-		@(posedge clk)
-		the_req_type = 0;
-		
-	end
-	read_done = 1; 
-
-	@(posedge clk)
-	read_done = 0;
-	mapper_valid =0;
-
-	@(posedge clk)
-	read_done = 1;
+logic [read_entries_log -1 +1:0] diff_read_counter ;     // +1 for the over flow
+logic [write_entries_log -1 +1:0] diff_write_counter ;   // +1 for the over flow
 
 
-	#10
-	@(posedge clk)
+always_ff @(posedge clk  ) begin
 
+	if (rst_n) begin
+		if (mapper_valid) begin // mapper is sending req
 
+			if (the_req_type == read ) begin
+				if (read_done == 0) begin
+					diff_read_counter ++;
+				end	
+			end
 
-	for (int i = 0; i < 10; i++) begin
-		@(posedge clk)
-		read_done = 1;
-		
+			else begin
+				if (write_done == 0) begin
+					diff_write_counter ++;
+				end
+			end
+			
+		end
+
+		else begin
+			if (read_done) begin
+				diff_read_counter --;
+			end	
+			if (write_done) begin
+				diff_write_counter --;
+			end
+		end
 	end
 
-	@(posedge clk)
-	read_done = 0;
-	
-
-	#100
-	$stop;
+	else begin
+		diff_read_counter = 0;
+		diff_write_counter = 0;
+	end
 
 end
+
+always_ff @(posedge clk  ) begin 
+
+	if (diff_read_counter == read_entries -1 +1 ) begin // +1 for the over flow
+		stop_reading = 1;
+	end	
+	else begin
+		stop_reading = 0;
+	end
+
+	if (diff_write_counter == write_entries -1 +1 ) begin // +1 for the over flow
+		stop_writing = 1;
+	end	
+	else begin
+		stop_writing = 0;
+	end
+
+end
+
 
 endmodule
