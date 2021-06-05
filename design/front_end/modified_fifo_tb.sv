@@ -3,10 +3,10 @@ module modified_fifo_tb import types_def::*; ();
 
 logic clk,rst;
 
-//request request_in ;
+opt_request request_in ;
 
 
-logic [data_width + address_width :0]request_in; //////////// concatenated input works
+//logic [data_width + address_width :0]request_in; //////////// concatenated input works
 
 logic [read_entries_log -1:0]            index_i;
 logic valid_in , grant_in;
@@ -35,7 +35,7 @@ initial begin
 	grant_in =0;
 
 
-
+/*
 	@(posedge clk)
 	valid_in =1;
 
@@ -48,7 +48,7 @@ initial begin
 	@(posedge clk)
 	valid_in =0;
 
-/*
+*/
 	@(posedge clk)
 	valid_in =1;
 
@@ -103,7 +103,7 @@ initial begin
 	@(posedge clk)
 	valid_in =0;
 	end
-*/	
+	
 	#100
 	$stop;
 
