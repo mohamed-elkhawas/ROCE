@@ -33,11 +33,13 @@ module front_end import types_def::*;
 localparam BANK_NUM = 16;
 		  
 /*************************************************************************************************************/
-request request_out; 
+
+
+opt_request request_out; 
 wire [read_entries_log-1:0] out_index;
 wire [banks_no-1:0] in_busy , bank_out_valid ;
 wire [banks_no-1:0] pop , valid_out;
-request [banks_no-1:0] out_fifo_sch;
+opt_request [banks_no-1:0] out_fifo_sch;
 wire [banks_no-1:0] [read_entries_log-1:0] idx_out;
 
 
@@ -53,8 +55,10 @@ generate
         modified_fifo m (.clk(clk),.rst_n(rst_n),.request_i(request_out),.index_i(out_index),
         .valid_i(bank_out_valid[g]),.grant_o(in_busy[g]),.request_o( out_fifo_sch[g]),.index_o(idx_out[g]),
         .valid_o(valid_out[g]), .grant_i(pop[g]));    
-        BankScheduler #(.REQ_SIZE(REQ_SIZE),.TYPE_POS(`TYPE_POS),.ROW_BITS(`ROW_BITS),.ROW_POS(`ROW_POS),.BURST_POS(`BURST_POS),.BURST_BITS(`BURST_BITS),.VALID_POS(`VALID_POS),.ADDR_BITS(`ADDR_BITS)) BS
-                ( .clk(clk),.rst_n(rst_n),.grant_i(grant_i[g]),.in({out_fifo_sch[g],idx_out[g],valid_out[g]}),.pop(pop[g]),.out(out[g]) );
+        
+        BankScheduler #(.REQ_SIZE(REQ_SIZE),.TYPE_POS(`TYPE_POS),.ROW_BITS(`ROW_BITS),.ROW_POS(`ROW_POS),.BURST_POS(`BURST_POS),
+        	.BURST_BITS(`BURST_BITS),.VALID_POS(`VALID_POS),.ADDR_BITS(`ADDR_BITS)) 
+        BS      ( .clk(clk),.rst_n(rst_n),.grant_i(grant_i[g]),.in({out_fifo_sch[g],idx_out[g],valid_out[g]}),.pop(pop[g]),.out(out[g]) );
     end   
 endgenerate
 
