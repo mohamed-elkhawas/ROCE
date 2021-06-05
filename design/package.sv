@@ -30,6 +30,17 @@ package types_def;
 	address_type address ;
   } request ;
 
+  typedef struct packed {
+	logic [9:0] column ;
+	logic [15:0] row ;
+	} opt_address_type;
+
+  typedef struct packed {
+	r_type req_type ;
+	logic [data_width -1:0] data ;
+	opt_address_type address ;
+  } opt_request ;
+
 
   typedef enum logic [2:0] {activate , read_cmd , write_cmd  ,  precharge , none} command ;
   
