@@ -12,8 +12,6 @@ module txn_controller import types_def::*;
 	input request in_request, // from rnic
 	output logic out_busy, // to rnic
 
-	output logic  valid_out, // to over flow stopper
-
 	output opt_request out_req,// to bank
 	output logic [read_entries_log -1:0] out_index,// to the bank
 
