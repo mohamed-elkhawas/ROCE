@@ -43,6 +43,7 @@ initial begin
 	in_busy =0 ;
 	request_done_valid = 0;
 	index =0;
+	grant_i =0;
 
 	for (int i = 0; i < 64; i++) begin
 		////////////////////////////// single read
