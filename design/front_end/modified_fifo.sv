@@ -1,20 +1,18 @@
 module modified_fifo import types_def::*;
 #(
-   parameter                       DATA_WIDTH = 32,
-   parameter                       entries_no = 8,
+   parameter                       entries_no = 12,
    parameter                       data_entries_no = 4
-
 )
 (
    input  logic                                    clk,
    input  logic                                    rst_n,
    //PUSH SIDE
-   input  request 								   request_i,
+   input  opt_request 								             request_i,
    input  logic [read_entries_log -1:0]            index_i,
    input  logic                                    valid_i,
    output logic                                    grant_o,
    //POP SIDE
-   output request 			  	                   request_o,
+   output opt_request 			  	                   request_o,
    output logic [read_entries_log -1:0]            index_o,
    output logic                                    valid_o,
    input  logic                                    grant_i
@@ -23,7 +21,7 @@ module modified_fifo import types_def::*;
 
   typedef struct packed {
 	r_type req_type ;
-	address_type address ;
+	opt_address_type address ;
 	logic [read_entries_log -1:0]   index;
   } comm ;
 
@@ -340,11 +338,15 @@ module modified_fifo import types_def::*;
            		end
            	end
 		end
-    end   	
+    end
+
+   	
 
    assign request_o.address = FIFO_REGISTERS[Pop_Pointer_CS].address;
    assign index_o = FIFO_REGISTERS[Pop_Pointer_CS].index;
    assign request_o.req_type = FIFO_REGISTERS[Pop_Pointer_CS].req_type;
    assign request_o.data = data_FIFO_REGISTERS[data_Pop_Pointer_CS];
+
+ 
 
 endmodule
