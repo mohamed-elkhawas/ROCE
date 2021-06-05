@@ -12,10 +12,10 @@ module txn_controller import types_def::*;
 	input request in_request, // from rnic
 	output logic out_busy, // to rnic
 
-	output logic  valid_out, // to global array and over flow stopper
+	output logic  valid_out, // to over flow stopper
 
-	output request out_req,// to global array
-	output logic [read_entries_log -1:0] out_index,// to global array and to the bank {index , type ,row}
+	output opt_request out_req,// to bank
+	output logic [read_entries_log -1:0] out_index,// to the bank
 
 	input [15:0] in_busy, // from bank
 	output logic  [15:0] bank_out_valid, // to bank 
