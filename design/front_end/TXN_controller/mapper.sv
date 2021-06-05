@@ -11,10 +11,10 @@ module mapper import types_def::*;
 
 	input stop_reading, // from over flow stopper
 	input stop_writing, // from over flow stopper
-	output logic  valid_out_o, // to global array and over flow stopper
+	output logic  valid_out_o, // to over flow stopper
 	
-	output request out_req_o,// to global array
-	output logic [read_entries_log -1:0] out_index_o,// to global array and to the bank {index , type ,row}
+	output opt_request out_req_o,// to bank
+	output logic [read_entries_log -1:0] out_index_o,// to the bank 
 
 
 	input [15:0] in_busy, // from bank
@@ -46,7 +46,7 @@ typedef struct packed {
 
 waiting_request waiting_req;
 
-address_type output_adress;
+address_type output_address;
 
 logic read_counter_up , write_counter_up ,update_waiting_req ,save_waiting_req;
 
@@ -55,7 +55,7 @@ logic save_waiting_req_reg, update_waiting_req_reg;
 task save_the_waiting_req ();	
 	waiting_req.valid <= 1;
 	waiting_req.req_type <= in_request.req_type;
-	waiting_req.address <=  output_adress  ;
+	waiting_req.address <=  output_address  ;
 	waiting_req.data <= in_request.data  ;
 	bank_out_valid <= 0;			
 endtask
@@ -99,17 +99,17 @@ end
 
 /////////////////////////////////// scheme applier \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-// output_adress =  { bank_group , bank , row , column }
+// output_address =  { bank_group , bank , row , column }
 //						2			2		16		10
 
 // scheme   row   	bank 	column  bank_group	column	////////// 	the mapping scheme
 // bits_no.	 16		 2			6		2			4
 
 always_comb begin
-	output_adress.bank_group = in_request.address [5:4]	 ^ in_request.address[29 - t+3 :29 - t+2 ];
-	output_adress.bank 		 = in_request.address [13:12] ^ in_request.address[29 - t+1 :29 - t ]	; 
-	output_adress.row 		 = in_request.address [29:14];
-	output_adress.column 	 = { in_request.address [11:6] , in_request.address [3:0] };
+	output_address.bank_group = in_request.address [5:4]	 ^ in_request.address[29 - t+3 :29 - t+2 ];
+	output_address.bank 		 = in_request.address [13:12] ^ in_request.address[29 - t+1 :29 - t ]	; 
+	output_address.row 		 = in_request.address [29:14];
+	output_address.column 	 = { in_request.address [11:6] , in_request.address [3:0] };
 end
 
 /////////////////////////////////// scheme applier \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -155,15 +155,18 @@ always_comb begin
 		
 		read_state : begin
 
-			if ( stop_reading == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
+			if ( stop_reading == 0  &&  in_busy [{ output_address.bank_group , output_address.bank}] == 0 ) begin
 			
 				valid_out = 1;
-				out_req.address = output_adress;
+				
+				out_req.address.column = output_address.column;
+				out_req.address.row = output_address.row;
+
 				out_req.req_type = read;
 				out_index = read_counter;
 
 				
-				bank_out_valid[{ output_adress.bank_group , output_adress.bank}]=1;
+				bank_out_valid[{ output_address.bank_group , output_address.bank}]=1;
 
 				read_counter_up =1;
 			end
@@ -176,15 +179,18 @@ always_comb begin
 		
 		write_state : begin
 
-			if ( stop_writing == 0  &&  in_busy [{ output_adress.bank_group , output_adress.bank}] == 0 ) begin
+			if ( stop_writing == 0  &&  in_busy [{ output_address.bank_group , output_address.bank}] == 0 ) begin
 
 				valid_out = 1;
-				out_req.address = output_adress;
+
+				out_req.address.column = output_address.column;
+				out_req.address.row = output_address.row;
+
 				out_req.req_type = write;
 				out_req.data = in_request.data;
 				out_index = write_counter;
 
-				bank_out_valid[{ output_adress.bank_group , output_adress.bank}]=1;
+				bank_out_valid[{ output_address.bank_group , output_address.bank}]=1;
 
 				write_counter_up = 1;
 			end
@@ -204,7 +210,10 @@ always_comb begin
 				if ( stop_reading == 0  &&  in_busy [{ waiting_req.address.bank_group , waiting_req.address.bank}] == 0 ) begin
 					
 					valid_out = 1;
-					out_req.address = waiting_req.address;
+
+					out_req.address.column = waiting_req.address.column;
+					out_req.address.row = waiting_req.address.row;
+
 					out_req.req_type = read;
 					out_index =read_counter;				
 					bank_out_valid[{waiting_req.address.bank_group , waiting_req.address.bank}]=1;
@@ -222,7 +231,10 @@ always_comb begin
 				if ( stop_writing == 0  &&  in_busy [{ waiting_req.address.bank_group , waiting_req.address.bank}] == 0) begin
 
 					valid_out = 1;
-					out_req.address = waiting_req.address;
+					
+					out_req.address.column = waiting_req.address.column;
+					out_req.address.row = waiting_req.address.row;
+					
 					out_req.req_type = write;
 					out_req.data = in_request.data;
 					out_index = write_counter;
