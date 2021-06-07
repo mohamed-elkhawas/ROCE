@@ -108,25 +108,25 @@ function [$clog2(ALL_ARR)-1:0]  get_index;
     input [ALL_ARR-1:0] in ;
     input request_type ;
     get_index = (request_type == `READ)?
-                    one_hot_to_index( { 3'b000, in[ARR_NUM_RD-1:0]}):
-                    one_hot_to_index( { in[ALL_ARR-1:ARR_NUM_RD] , 4'b0000});
+                    hot2idx( { 3'b000, in[ARR_NUM_RD-1:0]}):
+                    hot2idx( { in[ALL_ARR-1:ARR_NUM_RD] , 4'b0000});
 endfunction
 
 
 // It returns index of first one bit with one hot style.
 // we use casex to call function for non-hot encoded input.
 
-function [$clog2(ALL_ARR)-1:0]  one_hot_to_index;
+function [$clog2(ALL_ARR)-1:0]  hot2idx;
     input [ALL_ARR-1:0] in ;
     casex (in)
-            7'bxxxxxx1 : one_hot_to_index = 0 ;
-            7'bxxxxx10 : one_hot_to_index = 1 ;
-            7'bxxxx100 : one_hot_to_index = 2 ;
-            7'bxxx1000 : one_hot_to_index = 3 ;
-            7'bxx10000 : one_hot_to_index = 4 ;
-            7'bx100000 : one_hot_to_index = 5 ;
-            7'b1000000 : one_hot_to_index = 6 ;            
-            default    : one_hot_to_index = 0 ;
+            7'bxxxxxx1 : hot2idx = 0 ;
+            7'bxxxxx10 : hot2idx = 1 ;
+            7'bxxxx100 : hot2idx = 2 ;
+            7'bxxx1000 : hot2idx = 3 ;
+            7'bxx10000 : hot2idx = 4 ;
+            7'bx100000 : hot2idx = 5 ;
+            7'b1000000 : hot2idx = 6 ;            
+            default    : hot2idx = 0 ;
     endcase
 endfunction 
 /*************************************************************************************************************/
@@ -187,7 +187,7 @@ always @ (posedge clk) begin //update burst address register
     if(!rst_n || !rst_burst)  
         burst_addr <= 0; 
     else
-        burst_addr <= { 1'b1 , array_out[BURST_POS + one_hot_to_index(rd_en)*(REQ_SIZE-1)   +: BURST_BITS]};
+        burst_addr <= { 1'b1 , array_out[BURST_POS + hot2idx(rd_en)*(REQ_SIZE-1)   +: BURST_BITS]};
 end
 
 
@@ -196,7 +196,7 @@ always @ (posedge clk) begin //update output
     if(!rst_n ) 
         data_out <= 0; 
     else if( rd_en !=0) //a new request will be drained from scheduler
-        data_out <= array_out[one_hot_to_index(rd_en)*(REQ_SIZE) +: REQ_SIZE ];
+        data_out <= array_out[hot2idx(rd_en)*(REQ_SIZE) +: REQ_SIZE ];
 end
 
 
@@ -264,7 +264,6 @@ always @(*)begin
             else if (grant_i ==1'b1)begin
                 if ( hwm==1'b1 ||( lwm && &empty_rd==1'b1) )   // get first unempty array, no hits required
                     rd_en[get_index(~empty,`WRITE)]=1'b1;
-                    //rd_en = {  rd_en[ARR_NUM_WR-1:0] , {ARR_NUM_RD{1'b0}}   };
                 else if( &empty_rd == 1'b0 ) // get first unempty array, no hits required
                     rd_en[get_index(~empty,`READ)]=1'b1;
             end    
@@ -291,7 +290,6 @@ always @(*)begin
                     rst_burst=0;
                 end
             end 
-            //rd_en = {  rd_en[ARR_NUM_WR-1:0] , {ARR_NUM_RD{1'b0}}   };
         end 
     endcase
     
