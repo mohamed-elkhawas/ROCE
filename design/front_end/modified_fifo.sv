@@ -39,20 +39,18 @@ module modified_fifo import types_def::*;
 
    logic [ADDR_DEPTH-1:0]          Pop_Pointer_CS,  Pop_Pointer_NS;
    logic [ADDR_DEPTH-1:0]          Push_Pointer_CS, Push_Pointer_NS;
-   comm          		   		   FIFO_REGISTERS [entries_no-1:0];
+   comm  FIFO_REGISTERS [entries_no-1:0];
 
-   integer                         i;
-
-   logic [DATA_ADDR_DEPTH-1:0]          data_Pop_Pointer_CS,  data_Pop_Pointer_NS; //////// to be edited
-   logic [DATA_ADDR_DEPTH-1:0]          data_Push_Pointer_CS, data_Push_Pointer_NS; //////// to be edited
-   logic [data_width-1:0]		   data_FIFO_REGISTERS [data_entries_no-1:0]; //////// to be edited
+   logic [DATA_ADDR_DEPTH-1:0]          data_Pop_Pointer_CS,  data_Pop_Pointer_NS; 
+   logic [DATA_ADDR_DEPTH-1:0]          data_Push_Pointer_CS, data_Push_Pointer_NS; 
+   logic [data_width-1:0]		   DATA_FIFO_REGISTERS [data_entries_no-1:0];
 
 
    assign clk_gated = clk;
 
 
    // UPDATE THE STATE
-   always_ff @(posedge clk, negedge rst_n)
+   always_ff @(posedge clk)
    begin
        if(rst_n == 1'b0)
        begin
@@ -321,23 +319,23 @@ module modified_fifo import types_def::*;
 
     always_ff @(posedge clk_gated) begin
     	if(rst_n == 1'b0) begin
-   			for (i=0; i< entries_no; i++) begin
+   			for (int i=0; i< entries_no; i++) begin
        			FIFO_REGISTERS[i] <= 0;
     		end
-    		for (i=0; i< data_entries_no; i++) begin
-       			data_FIFO_REGISTERS[i] <= 0;
+    		for (int i=0; i< data_entries_no; i++) begin
+       			DATA_FIFO_REGISTERS[i] <= 0;
     		end
     	end
-   	    else begin
-       		if((grant_o == 1'b1) && (valid_i == 1'b1)) begin
-           		FIFO_REGISTERS[Push_Pointer_CS].address <= request_i.address;
-           		FIFO_REGISTERS[Push_Pointer_CS].index <= index_i;
-           		FIFO_REGISTERS[Push_Pointer_CS].req_type <= request_i.req_type;
-           		if (request_i.req_type == write) begin
-           			data_FIFO_REGISTERS[data_Push_Pointer_CS] <= request_i.data;
-           		end
-           	end
-		end
+ 	    else begin
+     		if((grant_o == 1'b1) && (valid_i == 1'b1)) begin
+       		FIFO_REGISTERS[Push_Pointer_CS].address <= request_i.address;
+       		FIFO_REGISTERS[Push_Pointer_CS].index <= index_i;
+       		FIFO_REGISTERS[Push_Pointer_CS].req_type <= request_i.req_type;
+       		if (request_i.req_type == write) begin
+       			DATA_FIFO_REGISTERS[data_Push_Pointer_CS] <= request_i.data;
+       		end
+        end
+	    end
     end
 
    	
@@ -345,7 +343,7 @@ module modified_fifo import types_def::*;
    assign request_o.address = FIFO_REGISTERS[Pop_Pointer_CS].address;
    assign index_o = FIFO_REGISTERS[Pop_Pointer_CS].index;
    assign request_o.req_type = FIFO_REGISTERS[Pop_Pointer_CS].req_type;
-   assign request_o.data = data_FIFO_REGISTERS[data_Pop_Pointer_CS];
+   assign request_o.data = DATA_FIFO_REGISTERS[data_Pop_Pointer_CS];
 
  
 
