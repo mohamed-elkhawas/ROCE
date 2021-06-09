@@ -276,7 +276,7 @@ end
 always_ff @(posedge clk ) begin 
 	out_busy_o <= out_busy;
 	valid_out_o <= valid_out;
-	out_req_o <= out_req;
+	{out_req_o.req_type ,out_req_o.data ,out_req_o.address.row ,out_req_o.address.column} <= {out_req.req_type ,out_req.data,out_req.address.row ,out_req.address.column};
 	out_index_o <= out_index;
 	bank_out_valid_o <= bank_out_valid;
 	
