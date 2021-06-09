@@ -31,8 +31,8 @@ package types_def;
   } request ;
 
   typedef struct packed {
-	logic [9:0] column ;
 	logic [15:0] row ;
+	logic [9:0] column ;
 	} opt_address_type;
 
   typedef struct packed {
