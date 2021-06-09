@@ -8,9 +8,9 @@ burst_states_type [no_of_bursts:0] in_burst_state;
 r_type [no_of_bursts:0] in_burst_type;
 address_type [no_of_bursts:0] in_burst_address;
 
-command [no_of_bursts:0] burst_start_next_cmd;
+command burst_start_next_cmd;
 
-timing_controller t (clk,rst_n,in_burst_state,in_burst_type,in_burst_address,burst_start_next_cmd);
+timing_controller t (clk,rst_n,in_burst_state,in_burst_type,in_burst_address,burst_start_next_cmd,cmd_i);
 
 
 // Clock generator
