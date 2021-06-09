@@ -10,10 +10,9 @@ module timing_controller import types_def::*;
 	input r_type [no_of_bursts-1:0] in_burst_type,
 	input address_type [no_of_bursts-1:0] in_burst_address, /// I need the row , bank and bank_group bits
 
-	output command [no_of_bursts-1:0] burst_cmd_o	// start cmd 
+	output command burst_cmd_o,	// start cmd 
+	output logic [$clog2(no_of_bursts)-1:0] cmd_index_o
 	);
-
-command [no_of_bursts-1:0] burst_cmd, burst_cmd_temp;
 
 //////////////////////////////// timing params \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 localparam  
@@ -50,12 +49,12 @@ localparam
 
 // b for bank , bg for bank group
 
+command [no_of_bursts-1:0]  burst_cmd_temp;
+command burst_cmd;
+logic [$clog2(no_of_bursts)-1:0] cmd_index;
+
 logic [banks_no-1:0] [row_addres_len-1:0] b_active_row ; 
 logic [banks_no-1:0] b_active_row_valid ;
-
-command global_last_cmd;
-logic [1:0] out_cmd_i; 
-
 
 logic [banks_no-1:0] [$clog2(act_to_act_same_bank)-1:0] b_counter_act ;
 logic [banks_no-1:0] [$clog2(rd_to_data)-1:0] b_counter_rd ;
@@ -90,14 +89,14 @@ always_ff @(posedge clk) begin
 
 		for (int i = 0; i < banks_no; i++) begin
 
-			if (i == burst_bank_id[out_cmd_i]) begin // this bank who is sending cmd
+			if (i == burst_bank_id[cmd_index] && burst_cmd != none ) begin // this bank who is sending cmd
 				
-				start_index <= out_cmd_i +1;
+				start_index <= cmd_index +1;
 
-				if (global_last_cmd == activate ) begin
+				if (burst_cmd == activate ) begin
 					b_counter_act[i] <=0;
 
-					b_active_row[i] <= in_burst_address[out_cmd_i].row;
+					b_active_row[i] <= in_burst_address[cmd_index].row;
 					b_active_row_valid[i] <= 1;	
 				end
 				else begin
@@ -106,7 +105,7 @@ always_ff @(posedge clk) begin
 					end
 				end
 				
-				if (global_last_cmd == read_cmd) begin
+				if (burst_cmd == read_cmd) begin
 					b_counter_rd[i] <=0;
 				end
 				else begin
@@ -115,7 +114,7 @@ always_ff @(posedge clk) begin
 					end
 				end
 
-				if (global_last_cmd == write_cmd) begin
+				if (burst_cmd == write_cmd) begin
 					b_counter_wr[i] <=0;
 				end
 				else begin
@@ -124,7 +123,7 @@ always_ff @(posedge clk) begin
 					end
 				end
 
-				if (global_last_cmd == precharge) begin
+				if (burst_cmd == precharge) begin
 					b_counter_pre[i] <=0;
 
 					b_active_row_valid[i] <= 0;  
@@ -156,7 +155,7 @@ always_ff @(posedge clk) begin
 
 		for (int i = 0; i < bank_group_no; i++) begin
 
-			if (global_last_cmd == activate &&  i == in_burst_address[out_cmd_i].bank_group ) begin
+			if (burst_cmd == activate &&  i == in_burst_address[cmd_index].bank_group ) begin
 				bg_counter_act[i] <= 0;
 			end
 			else begin
@@ -166,7 +165,7 @@ always_ff @(posedge clk) begin
 			end
 		end
 
-		if (global_last_cmd == read_cmd) begin
+		if (burst_cmd == read_cmd) begin
 			global_counter_rd <= 0;
 		end
 		else begin
@@ -174,7 +173,7 @@ always_ff @(posedge clk) begin
 				global_counter_rd <= global_counter_rd +1 ;
 			end
 		end
-		if (global_last_cmd == write_cmd) begin
+		if (burst_cmd == write_cmd) begin
 			global_counter_wr <= 0;
 		end
 		else begin
@@ -298,15 +297,14 @@ always_comb begin // continue round roubin
 
 	for (int i = 0; i < no_of_bursts; i++) begin
 		if (round_roubin_out[i]) begin
-			burst_cmd[i] = burst_cmd_temp[i];
-			global_last_cmd = burst_cmd_temp[i];
-			out_cmd_i = i;
+			burst_cmd = burst_cmd_temp[i];
+			cmd_index = i;
 		end
-		else burst_cmd[i] = none;
 	end
 
 	if (round_roubin_out == 0) begin
-		global_last_cmd = none;
+		burst_cmd = none;
+		cmd_index = 0;
 	end
 
 end
@@ -317,12 +315,12 @@ always_ff @(posedge clk) begin
 	
 	if(rst_n) begin
 		burst_cmd_o <= burst_cmd;
+		cmd_index_o <= cmd_index;
 	end 
 	
 	else begin
-		for (int i = 0; i < no_of_bursts; i++) begin
-			burst_cmd_o[i] <= none;
-		end
+		burst_cmd_o = none;
+		cmd_index_o = 0;
 	end
 
 end
