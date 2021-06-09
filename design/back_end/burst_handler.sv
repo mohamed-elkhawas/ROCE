@@ -1,4 +1,4 @@
-module memory_s_best_friend import types_def::*;
+module burst_handler import types_def::*;
 
 	#( parameter no_of_bursts  = 4 )
 
@@ -11,7 +11,8 @@ module memory_s_best_friend import types_def::*;
 	output r_type [no_of_bursts:0] out_burst_type,
 	output logic [address_width-1:4] [no_of_bursts:0] out_burst_address,
 
-	input command [no_of_bursts-1:0] in_burst_cmd,
+	input command in_burst_cmd,
+	input [$clog2(no_of_bursts)-1:0] in_cmd_index,
 	
 	/////////////////////////////////////////////////////////////// banks arbiter
 	//output logic start_new_burst,
@@ -312,22 +313,21 @@ endtask
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
-/*
+
 // to make the memory interface command start at posedge 
 
 logic clk_n;
 
 always_ff @( clk ) begin
-clk_n <= clk;
+clk_n <= ~clk;
 end
-*/
+/////////////////////////////////////
 
-
-always_ff @( clk ) begin ///////////////// memory interface 
+always_ff @( clk_n ) begin ///////////////// memory interface 
 
 	if(rst_n) begin
 		
-		if (in_burst_cmd[0] == in_burst_cmd[1] && in_burst_cmd[2] == in_burst_cmd[3]) begin // all cmds are none
+		if (in_burst_cmd == none) begin // all cmds are none
 			
 			if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
 				
@@ -354,17 +354,13 @@ always_ff @( clk ) begin ///////////////// memory interface
 		end
 		else begin
 			
-			if (clk) begin // if (clk_n) begin // to make the memory interface command start at posedge 
+			if (clk_n) begin // if (clk_n) begin // to make the memory interface command start at posedge 
 
 				burst_data_counter <= 0;
 				data_wait_counter <= 0;
 
-				for (int i = 0; i < no_of_bursts; i++) begin
-					if (in_burst_cmd[i] != none) begin
-						cmd_burst_id <= i;
-						cmd_to_send <= in_burst_cmd[i];
-					end
-				end
+				cmd_burst_id <= in_cmd_index;
+				cmd_to_send <= in_burst_cmd;
 
 				case (cmd_to_send)
 					activate:ddr5_activate_p1(cmd_burst_id);
