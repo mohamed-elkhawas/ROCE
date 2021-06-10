@@ -1,7 +1,7 @@
 module txn_controller_tb  import types_def::*; ();
 
 request in_request;
-logic [0:15] in_busy;
+logic [0:15] grant_o;
 
 logic in_valid ;
 logic clk,rst,wd,rd;
@@ -11,7 +11,7 @@ logic request_done_valid;
 logic  [ 31 : 0 ] in_data;
 logic  [ 5 : 0 ] index;
 
-txn_controller t (clk,rst,in_valid,in_request,out_busy,valid_out,out_req,out_index,in_busy,bank_out_valid,
+txn_controller t (clk,rst,in_valid,in_request,out_busy,out_req,out_index,grant_o,bank_out_valid,
 
 	request_done_valid,the_type,in_data,index,wd,rd,data);
 
@@ -25,13 +25,13 @@ always  begin
 initial begin 
 
 	rst = 0;
-	# 10 rst = 1;
-	#11
-
-	@(posedge clk)
-	in_busy =0 ;
+	in_valid =0;
+	grant_o =16'hffff ;
 	request_done_valid = 0;
 	index =0;
+
+	# 10 rst = 1;
+	#11	
 
 	for (int i = 0; i < 64; i++) begin
 		////////////////////////////// single read
