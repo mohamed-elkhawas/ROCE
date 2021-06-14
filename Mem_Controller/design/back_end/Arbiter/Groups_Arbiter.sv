@@ -1,20 +1,19 @@
-module Arbiter
-#(parameter REQ_SIZE = 32 , parameter NUM_OF_BURSTS = 1)
+module Groups_Arbiter
 (   
-    input  clk, rst_n, ReqA, ReqB, ReqC, ReqD, //En_TimeOutTime,
-    //input  [REQ_SIZE-1:0] DataBus_A, DataBus_B, DatBus_C, DatBus_D
-    //output [REQ_SIZE-1:0] DataBus_out ,
-    output reg Drain_A, Drain_B, Drain_C, Drain_D //TimeStart;  
+    input  clk, rst_n,
+    input  ReqA, ReqB, ReqC, ReqD, //request from bank groups to enable each bank group fsm
+    input  AckA, AckB, AckC, AckD, // acknoledge from each bank group fsm after Starting a burst from scheduler is finished
+    output reg Start_A, Start_B, Start_C, Start_D 
 );
 
-reg [NUM_OF_BURSTS-1:0] TimeOutClockPeriods;
+/*reg [NUM_OF_BURSTS-1:0] TimeOutClockPeriods;
 reg RunTimer, TimesUp;
 reg [$clog2(TIME_OUT_PERIOD)-1:0] Count;
 
 
 always @(posedge clk) begin //TIMEOUT_COUNT1
     if (!rst_n )
-        TimeOutClockPeriods = NUM_OF_BURSTS ; //maximum number of bursts to drain from each group bank
+        TimeOutClockPeriods = NUM_OF_BURSTS ; //maximum number of bursts to Start from each group bank
     //else if (En_TimeOutTime == 1'b1)
        // TimeOutClockPeriods <= DataWriteBus_ProcA;
 end
@@ -32,61 +31,60 @@ always @(*)begin //TIMEOUT_COUNT2
         TimesUp = 1;
     else
         TimesUp = 0;
-end
+end*/
 
 
 /************************************************FSM signals*****************************************************/
-// groups arbiter (Master FSM)
+localparam [2:0] 
+    IDLE    = 3'b000,
+    GROUP_A = 3'b001,
+    GROUP_B = 3'b010,
+    GROUP_C = 3'b011,
+    GROUP_D = 3'b100;
+
+reg [2:0] CS, NS ;
+/*****************************************************************************************************************/
+
+
+/*// Bank group A states
 localparam [2:0] 
     MASTER_IDLE = 3'b000,
-    START_A     = 3'b001,
-    START_B     = 3'b010,
-    START_C     = 3'b011,
-    START_D     = 3'b100;
-
-reg [1:0] MASTER_CS, MASTER_NS ;
-
-
-
-// Bank group A states
-localparam [2:0] 
-    MASTER_IDLE = 3'b000,
-    START_A     = 3'b001,
-    START_B     = 3'b010,
-    START_C     = 3'b011,
-    START_D     = 3'b100;
-
-reg [1:0] MASTER_CS, MASTER_NS ;
-
-// Bank group A states
-localparam [2:0] 
-    MASTER_IDLE = 3'b000,
-    START_A     = 3'b001,
-    START_B     = 3'b010,
-    START_C     = 3'b011,
-    START_D     = 3'b100;
+    GROUP_A     = 3'b001,
+    GROUP_B     = 3'b010,
+    GROUP_C     = 3'b011,
+    GROUP_D     = 3'b100;
 
 reg [1:0] MASTER_CS, MASTER_NS ;
 
 // Bank group A states
 localparam [2:0] 
     MASTER_IDLE = 3'b000,
-    START_A     = 3'b001,
-    START_B     = 3'b010,
-    START_C     = 3'b011,
-    START_D     = 3'b100;
+    GROUP_A     = 3'b001,
+    GROUP_B     = 3'b010,
+    GROUP_C     = 3'b011,
+    GROUP_D     = 3'b100;
 
 reg [1:0] MASTER_CS, MASTER_NS ;
 
 // Bank group A states
 localparam [2:0] 
     MASTER_IDLE = 3'b000,
-    START_A     = 3'b001,
-    START_B     = 3'b010,
-    START_C     = 3'b011,
-    START_D     = 3'b100;
+    GROUP_A     = 3'b001,
+    GROUP_B     = 3'b010,
+    GROUP_C     = 3'b011,
+    GROUP_D     = 3'b100;
 
 reg [1:0] MASTER_CS, MASTER_NS ;
+
+// Bank group A states
+localparam [2:0] 
+    MASTER_IDLE = 3'b000,
+    GROUP_A     = 3'b001,
+    GROUP_B     = 3'b010,
+    GROUP_C     = 3'b011,
+    GROUP_D     = 3'b100;
+
+reg [1:0] MASTER_CS, MASTER_NS ;*/
 
 /*****************************************************************************************************************/
 
@@ -103,102 +101,98 @@ end
 
 // Compute Next State and mealy outputs
 always @ (*)begin
-    Drain_A = 0 ;
-    Drain_B = 0 ;
-    Drain_C = 0 ;
-    Drain_D = 0 ;
-    //TimeStart = 0;
-    RunTimer  = 0;
-
+    Start_A = 0 ;
+    Start_B = 0 ;
+    Start_C = 0 ;
+    Start_D = 0 ;
+    NS = CS ;
     case (CS)
         IDLE: begin
             if (ReqA == 1'b1)begin
-                Drain_A = 1;
-                NS=GRANT_A;
+                Start_A = 1'b1;
+                NS=GROUP_A;
             end
             else if (ReqB == 1'b1)begin
-                Drain_B = 1;
-                NS=GRANT_B;
+                Start_B = 1'b1;
+                NS=GROUP_B;
             end
             else if (ReqC == 1'b1)begin
-                Drain_C = 1;
-                NS=GRANT_C;
+                Start_C = 1'b1;
+                NS=GROUP_C;
             end
             else if (ReqD == 1'b1)begin
-                Drain_D = 1;
-                NS=GRANT_D;
+                Start_D = 1'b1;
+                NS=GROUP_D;
             end
         end
-        GRANT_A: begin
-            if (ReqA == 1'b1 && TimesUp == 0 )begin
-                RunTimer = 1'b1;
-                Drain_A = 1;
-                NS=GRANT_A;
+        GROUP_A: begin
+            if (ReqA == 1'b1 &&  AckA == 1'b0 )begin
+                Start_A = 1'b1;
+                NS=GROUP_A;
             end 
             else begin
                 if (ReqB == 1'b1)
-                    NS=GRANT_B;
+                    NS=GROUP_B;
                 else if (ReqC == 1'b1)
-                    NS=GRANT_C;
+                    NS=GROUP_C;
                 else if (ReqD == 1'b1)
-                    NS=GRANT_D;
+                    NS=GROUP_D;
                 else 
                     NS=IDLE;
             end
         end
-        GRANT_B: begin
-            if (ReqB == 1'b1 && TimesUp == 0 )begin
-                RunTimer = 1'b1;
-                Drain_B = 1;
-                NS=GRANT_B;
+        GROUP_B: begin
+            if (ReqB == 1'b1 && AckB == 1'b0 )begin
+                Start_B = 1'b1;
+                NS=GROUP_B;
             end
             else begin
                 if (ReqC == 1'b1)
-                    NS=GRANT_C;
+                    NS=GROUP_C;
                 else if (ReqD == 1'b1)
-                    NS=GRANT_D;
+                    NS=GROUP_D;
                 else if (ReqA == 1'b1)
-                    NS=GRANT_A;
+                    NS=GROUP_A;
                 else 
                     NS=IDLE;
             end
         end
-        GRANT_C: begin
-            if (ReqC == 1'b1 && TimesUp == 0 )begin
-                RunTimer = 1'b1;
-                Drain_C = 1;
-                NS=GRANT_C;
+        GROUP_C: begin
+            if (ReqC == 1'b1 && AckC == 1'b0 )begin
+                Start_C = 1'b1;
+                NS=GROUP_C;
             end 
             else begin
                 if (ReqD == 1'b1)
-                    NS=GRANT_D;
+                    NS=GROUP_D;
                 else if (ReqA == 1'b1)
-                    NS=GRANT_A;
+                    NS=GROUP_A;
                 else if (ReqB == 1'b1)
-                    NS=GRANT_B;
+                    NS=GROUP_B;
                 else 
                     NS=IDLE;
             end
         end
-        GRANT_D: begin
-            if (ReqD == 1'b1 && TimesUp == 0 )begin
-                RunTimer = 1'b1;
-                Drain_D = 1;
-                NS=GRANT_D;
+        GROUP_D: begin
+            if (ReqD == 1'b1 && AckD == 1'b0 )begin
+                Start_D = 1'b1;
+                NS=GROUP_D;
             end 
             else begin
                 if (ReqA == 1'b1)
-                    NS=GRANT_B;
+                    NS=GROUP_B;
                 else if (ReqB == 1'b1)
-                    NS=GRANT_C;
+                    NS=GROUP_C;
                 else if (ReqC == 1'b1)
-                    NS=GRANT_D;
+                    NS=GROUP_D;
                 else 
                     NS=IDLE;
             end
         end
     endcase
 end
+
+
 
 endmodule
 
@@ -214,10 +208,10 @@ begin
 
 Enc
 case (NextState)
-GRANT_A: begin EnAl = 1;EnA2 = 0; end
+GROUP_A: begin EnAl = 1;EnA2 = 0; end
 
 Gront_B: begin EnB1 = 1; €nB2
-GRANT_C: begin EnC] = 1:EnC2 = 0; end
+GROUP_C: begin EnC] = 1:EnC2 = 0; end
 default:
 begin
 EnAl
