@@ -1,0 +1,7 @@
+PWD /home/memad/Desktop/multimedia/document/Multimedia-Project-Document/chapters
+INPUT /etc/texmf/web2c/texmf.cnf
+INPUT /usr/share/texmf/web2c/texmf.cnf
+INPUT /usr/share/texlive/texmf-dist/web2c/texmf.cnf
+INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
+INPUT /home/memad/Desktop/multimedia/document/Multimedia-Project-Document/chapters/ch3.tex
+OUTPUT /home/memad/Desktop/multimedia/document/Multimedia-Project-Document/chapters/ch3.log
