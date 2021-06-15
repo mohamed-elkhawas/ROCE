@@ -211,9 +211,11 @@ module modified_fifo import types_def::*;
                   	data_Pop_Pointer_NS  = data_Pop_Pointer_CS;
                   end
 
-                  if (( data_Push_Pointer_CS == data_Pop_Pointer_CS - 1) || ( (data_Push_Pointer_CS == data_entries_no-1) && (data_Pop_Pointer_CS == 0) )) begin
-                  	NS = FULL;
-                  end
+                  if (  FIFO_REGISTERS[Pop_Pointer_CS].req_type == read ) begin
+			if (( data_Push_Pointer_CS == data_Pop_Pointer_CS - 1) || ( (data_Push_Pointer_CS == data_entries_no-1) && (data_Pop_Pointer_CS == 0) )) begin
+				NS = FULL;
+		  	end
+		  end
 
           end
 
