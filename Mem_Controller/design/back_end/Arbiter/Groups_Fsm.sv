@@ -210,7 +210,6 @@ always @ (*)begin
     endcase
 end
 
-assign en =
 
 endmodule
 
