@@ -1,8 +1,8 @@
 module Groups_Fsm
 (   
     input  clk, rst_n,
-    input  Req , //request from bank groups to enable each bank group fsm
-    input  Done, // acknoledge from each bank group fsm after Starting a burst from scheduler is finished
+    input  [3:0] Req , //request from bank groups to enable each bank group fsm
+    input  [3:0] Done, // acknoledge from each bank group fsm after Starting a burst from scheduler is finished
     output reg Start_A, Start_B, Start_C, Start_D,
     output reg [1:0] sel
 );
@@ -44,7 +44,7 @@ end*/
 
 
 always @(*) begin
-    casex {Start_A,Start_B,Start_C,Start_D}
+    casex ({Start_A,Start_B,Start_C,Start_D})
         4'b0001 : sel = 2'd0 ; 
         4'b0010 : sel = 2'd1 ;
         4'b0100 : sel = 2'd2 ;

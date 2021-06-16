@@ -3,7 +3,7 @@ module Bank_Group_Fsm
     input  clk, rst_n, start ,
     input  [3:0] Bank_Req,
     input  [3:0] Valid   ,
-    output [3:0] Ack     , 
+    output reg Ack_A, Ack_B, Ack_C, Ack_D, 
     output reg [1:0] sel , //bank index to drain from 
     output reg  en , done,
     output Req
@@ -12,20 +12,17 @@ module Bank_Group_Fsm
 
 wire ReqD, ReqC, ReqB, ReqA ;
 wire valid_D, valid_C, valid_B, valid_A ;
-wire Ack_D, Ack_C, Ack_B, Ack_A;
 
 
 assign { ReqD, ReqC, ReqB, ReqA } = Bank_Req;
 assign { valid_D, valid_C, valid_B, valid_A } = Valid;
-assign { Ack_D, Ack_C, Ack_B, Ack_A } = Ack;
 
 
 
-wor Req ;
 
 
 always @(*) begin
-    casex {Ack_A,Ack_B,Ack_C,Ack_D}
+    casex ({Ack_A,Ack_B,Ack_C,Ack_D})
         4'b0001 : sel = 2'd0 ; 
         4'b0010 : sel = 2'd1 ;
         4'b0100 : sel = 2'd2 ;
@@ -71,14 +68,14 @@ end
 
 // Compute Next State and mealy outputs
 always @ (*)begin
-    en      = 1'b0  ;
-    idx     = 2'dx  ; 
+    en    = 1'b0  ;
+    sel   = 2'dx  ; 
     Ack_A = 1'b0  ;
     Ack_B = 1'b0  ;
     Ack_C = 1'b0  ;
     Ack_D = 1'b0  ;
-    done    = 1'b1  ;
-    NS      = CS    ;
+    done  = 1'b1  ;
+    NS    = CS    ;
     //Timeen = 0;
     //RunTimer  = 0;
     
@@ -87,34 +84,34 @@ always @ (*)begin
             IDLE: begin
                 if (ReqA == 1'b1)begin
                     en      = 1'b1    ;
-                    idx     = 2'd0    ;
-                    Ack_A = 1'b1    ;
+                    sel     = 2'd0    ;
+                    Ack_A   = 1'b1    ;
                     NS      = BANK_A  ;
                 end
                 else if (ReqB == 1'b1)begin
                     en      = 1'b1    ;
-                    idx     = 2'd1    ;
-                    Ack_B = 1'b1    ;
+                    sel     = 2'd1    ;
+                    Ack_B   = 1'b1    ;
                     NS      = BANK_B ;
                 end
                 else if (ReqC == 1'b1)begin
                     en      = 1'b1    ;
-                    idx     = 2'd2    ;
-                    Ack_C = 1'b1    ;
+                    sel     = 2'd2    ;
+                    Ack_C   = 1'b1    ;
                     NS      = BANK_C  ;
                 end
                 else if (ReqD == 1'b1)begin
                     en      = 1'b1    ;
-                    idx     = 2'd3    ;
-                    Ack_D = 1'b1    ;
+                    sel     = 2'd3    ;
+                    Ack_D   = 1'b1    ;
                     NS      = BANK_D  ;
                 end
             end
             BANK_A: begin
                 if (ReqA == 1'b1 &&  valid_A == 1'b1 )begin
                     en       = 1'b1   ;
-                    idx      = 2'b0   ;
-                    Ack_A  = 1'b0   ;
+                    sel      = 2'b0   ;
+                    Ack_A    = 1'b0   ;
                     done     = 1'b0   ;
                     NS       = BANK_A ;
                 end 
@@ -140,8 +137,8 @@ always @ (*)begin
             BANK_B: begin
                 if (ReqB == 1'b1 && valid_B == 1'b1 )begin
                     en       = 1'b1   ;
-                    idx      = 2'b0   ;
-                    Ack_B  = 1'b0   ;
+                    sel      = 2'b0   ;
+                    Ack_B    = 1'b0   ;
                     done     = 1'b0   ;
                     NS       = BANK_B ;
                 end
@@ -167,8 +164,8 @@ always @ (*)begin
             BANK_C: begin
                 if (ReqC == 1'b1 && valid_C == 1'b1 )begin
                     en       = 1'b1   ;
-                    idx      = 2'b0   ;
-                    Ack_C  = 1'b0   ;
+                    sel      = 2'b0   ;
+                    Ack_C    = 1'b0   ;
                     done     = 1'b0   ;
                     NS       = BANK_C ;
                 end 
@@ -194,8 +191,8 @@ always @ (*)begin
             BANK_D: begin
                 if (ReqD == 1'b1 && valid_D == 1'b1 )begin
                     en       = 1'b1   ;
-                    idx      = 2'b0   ;
-                    Ack_D  = 1'b0   ;
+                    sel      = 2'b0   ;
+                    Ack_D    = 1'b0   ;
                     done     = 1'b0   ;
                     NS       = BANK_D ;
                 end 
@@ -225,7 +222,7 @@ always @ (*)begin
 end
 
 
-assign Req = {ReqA, ReqB, ReqC, ReqD};
+assign Req = |{ReqA, ReqB, ReqC, ReqD};
 
 
 endmodule
