@@ -18,7 +18,7 @@ wire [3:0] req  ;
 wire [7:0] bank_sel  ;
 wire [3:0] start_signals ;
 
-assign start_signals = {Start_A, Start_B, Start_C, Start_D};
+assign start_signals = { Start_D, Start_C, Start_B,Start_A};
 
 Groups_Fsm Bank_Groups(.clk(clk), .rst_n(rst_n), .Req(req), .Done(done), .Start_A(Start_A),
                        .Start_B(Start_B), .Start_C(Start_C), .Start_D(Start_D),.sel(group_sel) );

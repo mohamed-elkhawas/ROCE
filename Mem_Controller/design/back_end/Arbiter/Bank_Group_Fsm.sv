@@ -74,7 +74,7 @@ always @ (*)begin
     Ack_B = 1'b0  ;
     Ack_C = 1'b0  ;
     Ack_D = 1'b0  ;
-    done  = 1'b1  ;
+    done  = 1'b0  ;
     NS    = CS    ;
     //Timeen = 0;
     //RunTimer  = 0;

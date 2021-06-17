@@ -1,21 +1,27 @@
 `define REQ_SIZE 32
 
-module Arbiter_tb();
+module Bank_Group_Fsm_tb();
 
 /***inputs***/
 reg clk;
 reg rst_n;
-reg [15:0] valid , req;
-reg [15:0] [`REQ_SIZE-1 : 0 ] data_in ; 
+reg [3:0] valid , req;
+reg [15:0] [`REQ_SIZE-1 : 0 ] Data_in ; 
+reg  start ;
 
 
 /***outputs***/
-wire [`REQ_SIZE-1:0] data_out ;
-wire [15:0] ack;
+wire [`REQ_SIZE-1:0] Data_out ;
+wire [3:0] ack;
 wire wr_en ; 
+wire  done ;
+wire Req;
+
+/*inner signals**/
+wire [7:0] bank_sel;
 
 always #5 clk = ~clk;
-reg [15:0][`REQ_SIZE-1 : 0 ] banks[0:15] ;
+reg [3:0][`REQ_SIZE-1 : 0 ] banks[0:3] ;
 integer bank , index  ,temp;
 initial begin   
     /****************************************************************************************
@@ -36,10 +42,14 @@ end*/
     //$display(banks);
     clk=0;
     rst_n = 0;
+    start = 0 ;
+    req=4'b0000;
+    valid=4'b0000;
     #6
+    start=1;
     rst_n = 1;
-    req=16'h0000;
-    valid=16'h0000;
+    req=4'b1111;
+    valid=4'b0000;
     
         
         
@@ -72,17 +82,23 @@ end*/
     in={8'hdf,8'd6,`WRITE,7'd0};*/
 
 end
-always @(ack) begin
+/*always @(ack) begin
     for (bank = 0 ; bank<16 ; bank=bank+1) begin
         if(ack[bank]==1'b1)begin
             #20
             valid[bank] = 0 ;
         end
     end
-end
-Arbiter #(.REQ_SIZE(`REQ_SIZE)) arbiter
-(.clk(clk),.rst_n(rst_n), .Req(req) ,.Valid(valid), .Data_in(data_in) , .Data_out(data_out) , .Ack(ack));
+end*/
 
+
+
+Bank_Group_Fsm Bank( .clk(clk), .rst_n(rst_n), .start(start) , .Bank_Req(req) ,.Valid(valid) , .Ack_A(ack[0]), .Ack_B(ack[1]) , .Ack_C(ack[2]),
+                .Ack_D(ack[3]) ,.sel(bank_sel[1:0]) , .en(wr_en)  , .done(done) , .Req(Req) );
+   
+
+Data_Path #(.REQ_SIZE(`REQ_SIZE)) D_path
+( .Data(Data_in), .bank_sel(bank_sel), .group_sel(2'd0), .out(Data_out));
 
 
 endmodule
