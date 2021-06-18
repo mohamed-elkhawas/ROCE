@@ -22,7 +22,7 @@ wire [7:0] bank_sel;
 
 always #5 clk = ~clk;
 reg [3:0][`REQ_SIZE-1 : 0 ] banks[0:3] ;
-integer bank , index  ,temp;
+integer bank , index  ,temp , counter;
 initial begin   
     /****************************************************************************************
         -scenario #1.
@@ -40,19 +40,28 @@ initial begin
 end*/
     //$readmemb("requests.txt",banks);
     //$display(banks);
+    Data_in=32'h00000000;
     clk=0;
     rst_n = 0;
     start = 0 ;
     req=4'b0000;
     valid=4'b0000;
     #6
-    start=1;
     rst_n = 1;
     req=4'b1111;
     valid=4'b0000;
+    #20
+    valid=4'b1111;
+    #10
+    valid=4'b1110;
+    #20
+    start=1'b0;
+    #20
+    start=1'b1;
+    req=4'b1010;
+    #30
+    valid=4'b0000;
     
-        
-        
         //banks[bank][index]; 
   //if (!$feof(data_file)) begin
     //use captured_data as you would any other wire or reg value;
@@ -91,6 +100,12 @@ end
     end
 end*/
 
+always @(posedge clk +6) begin
+    //Data_in=32'hffeeddcc;
+    Data_in = Data_in+1;
+end
+    
+
 
 
 Bank_Group_Fsm Bank( .clk(clk), .rst_n(rst_n), .start(start) , .Bank_Req(req) ,.Valid(valid) , .Ack_A(ack[0]), .Ack_B(ack[1]) , .Ack_C(ack[2]),
@@ -98,7 +113,7 @@ Bank_Group_Fsm Bank( .clk(clk), .rst_n(rst_n), .start(start) , .Bank_Req(req) ,.
    
 
 Data_Path #(.REQ_SIZE(`REQ_SIZE)) D_path
-( .Data(Data_in), .bank_sel(bank_sel), .group_sel(2'd0), .out(Data_out));
+( .Data(Data_in), .bank_sel({6'b0000,bank_sel[1:0]}), .group_sel(2'd0), .out(Data_out));
 
 
 endmodule

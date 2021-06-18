@@ -21,7 +21,7 @@ assign { valid_D, valid_C, valid_B, valid_A } = Valid;
 
 
 
-always @(*) begin
+/*always @(*) begin
     casex ({Ack_A,Ack_B,Ack_C,Ack_D})
         4'b0001 : sel = 2'd0 ; 
         4'b0010 : sel = 2'd1 ;
@@ -29,7 +29,7 @@ always @(*) begin
         4'b1000 : sel = 2'd3 ;
         default : sel = 2'dx ;  
     endcase
-end
+end*/
 
 
 localparam [2:0]
