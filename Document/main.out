@@ -1,8 +1,15 @@
 \BOOKMARK [1][-]{section.0.1}{Purpose of the controller}{}% 1
 \BOOKMARK [1][-]{section.0.2}{Features}{}% 2
-\BOOKMARK [0][-]{chapter.1}{Block Diagram}{}% 3
-\BOOKMARK [1][-]{section.1.1}{An overview of the basic structure}{chapter.1}% 4
-\BOOKMARK [0][-]{chapter.2}{Architecture}{}% 5
-\BOOKMARK [1][-]{section.2.1}{Address Mapper}{chapter.2}% 6
-\BOOKMARK [1][-]{section.2.2}{Refresh Management}{chapter.2}% 7
-\BOOKMARK [0][-]{chapter*.4}{References}{}% 8
+\BOOKMARK [1][-]{section.0.3}{The DDR5 technology}{}% 3
+\BOOKMARK [0][-]{chapter.1}{Block Diagram}{}% 4
+\BOOKMARK [1][-]{section.1.1}{An overview of the basic structure}{chapter.1}% 5
+\BOOKMARK [0][-]{chapter.2}{Architecture}{}% 6
+\BOOKMARK [1][-]{section.2.1}{Address Mapper}{chapter.2}% 7
+\BOOKMARK [1][-]{section.2.2}{The memory controller structure:}{chapter.2}% 8
+\BOOKMARK [2][-]{subsection.2.2.1}{Mapper block:}{section.2.2}% 9
+\BOOKMARK [2][-]{subsection.2.2.2}{Returner block:}{section.2.2}% 10
+\BOOKMARK [2][-]{subsection.2.2.3}{Over flow stopper block: }{section.2.2}% 11
+\BOOKMARK [2][-]{subsection.2.2.4}{Request saver block:}{section.2.2}% 12
+\BOOKMARK [2][-]{subsection.2.2.5}{Modified FIFO block:}{section.2.2}% 13
+\BOOKMARK [1][-]{section.2.3}{Refresh Management}{chapter.2}% 14
+\BOOKMARK [0][-]{chapter*.4}{References}{}% 15

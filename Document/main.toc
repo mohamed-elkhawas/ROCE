@@ -1,8 +1,15 @@
 \contentsline {section}{\numberline {0.1}Purpose of the controller}{4}{section.0.1}%
 \contentsline {section}{\numberline {0.2}Features}{4}{section.0.2}%
-\contentsline {chapter}{\numberline {1}Block Diagram}{5}{chapter.1}%
-\contentsline {section}{\numberline {1.1}An overview of the basic structure}{5}{section.1.1}%
-\contentsline {chapter}{\numberline {2}Architecture}{6}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Address Mapper}{6}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Refresh Management}{6}{section.2.2}%
-\contentsline {chapters}{References}{7}{chapter*.4}%
+\contentsline {section}{\numberline {0.3}The DDR5 technology}{5}{section.0.3}%
+\contentsline {chapter}{\numberline {1}Block Diagram}{6}{chapter.1}%
+\contentsline {section}{\numberline {1.1}An overview of the basic structure}{6}{section.1.1}%
+\contentsline {chapter}{\numberline {2}Architecture}{7}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Address Mapper}{7}{section.2.1}%
+\contentsline {section}{\numberline {2.2}The memory controller structure:}{7}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Mapper block:}{7}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Returner block:}{7}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Over flow stopper block: }{7}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Request saver block:}{8}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Modified FIFO block:}{8}{subsection.2.2.5}%
+\contentsline {section}{\numberline {2.3}Refresh Management}{8}{section.2.3}%
+\contentsline {chapters}{References}{9}{chapter*.4}%
