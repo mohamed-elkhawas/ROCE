@@ -1,0 +1,89 @@
+\chapter{Architecture}
+
+
+\section{Address Mapper}
+\hspace{10mm}A Input:  the full req.\\ dfdf
+
+%\begin{figure}[ht]
+ %   \centering
+  %  \includegraphics[width=0.7\textwidth]{Images/Buck Converter Circuit.png}
+   % \caption{Buck Converter}
+    %\label{fig1}
+%\end{figure}
+
+%\hspace{10mm}For mathematical expressions of Inductance and Capacitance refer eq. \ref{eq1} and eq. \ref{eq2}
+
+
+desicion:
+The main diff is that thread fair algo has higher priority to read requests while RLDP always 
+focus on row hits,thus, it has too much transitions between reads and writes, so it leaves out 
+the read queue and stall the system 
+
+
+1- The algo continues to write always if there is a row hit
+2- if there is a row hit, then we switch to read queue.
+3- Its the problem that we leave read queue if there is a row hit on write queue, so we
+decided to insert a new condition to delay this switching in future cycles and priotirzes the read queue higher than write drain.
+
+
+we can switch to thread-fair algo later. we can jsut edit our flowchart in the lower branches 
+and turn it into thread-fair!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Refresh Management}
+\hspace{10mm}A Buck converter takes the voltage from a DC source and converts the voltage of supply into lower DC voltage level. Some devices need a certain amount of voltage to run the device. Too much of power can destroy the device or less power may not be able to run the device.This output voltage is achieved by chopping the input voltage with a series of connected switches that apply pulses to an averaging inductor and capacitor circuit.
+
+%\begin{figure}[ht]
+ %   \centering
+  %  \includegraphics[width=0.7\textwidth]{Images/Buck Converter Circuit.png}
+   % \caption{Buck Converter}
+    %\label{fig1}
+%\end{figure}
+
+%\hspace{10mm}For mathematical expressions of Inductance and Capacitance refer eq. \ref{eq1} and eq. \ref{eq2}

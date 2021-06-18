@@ -1,6 +1,6 @@
-# content based video / image retrival
+# RDMA Over Converged Ethernet
 
-This is a simple content based video / image retrival one technique for each. 
+
 
 ## Features
 

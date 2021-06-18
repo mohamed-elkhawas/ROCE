@@ -1,36 +1,8 @@
-\contentsline {chapter}{\numberline {1}Introduction}{5}{chapter.1}%
-\contentsline {chapter}{\numberline {2}Project Description}{6}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Detailed project description}{6}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}Image:}{6}{subsection.2.1.1}%
-\contentsline {subsubsection}{Histogram:}{6}{section*.4}%
-\contentsline {subsubsection}{Color Layout:}{6}{section*.5}%
-\contentsline {subsubsection}{Mean Color:}{6}{section*.6}%
-\contentsline {subsection}{\numberline {2.1.2}Video: }{6}{subsection.2.1.2}%
-\contentsline {subsubsection}{Histogram:}{6}{section*.7}%
-\contentsline {section}{\numberline {2.2}Beneficiaries of the project}{6}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Detailed analysis}{6}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Techniques description}{6}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Images techniques}{6}{subsection.2.4.1}%
-\contentsline {subsubsection}{Mean color}{6}{section*.8}%
-\contentsline {subsubsection}{Histogram}{6}{section*.9}%
-\contentsline {subsubsection}{Color Layout}{7}{section*.10}%
-\contentsline {subsection}{\numberline {2.4.2}Videos techniques}{7}{subsection.2.4.2}%
-\contentsline {subsubsection}{Feature extraction technique}{7}{section*.11}%
-\contentsline {subsubsection}{Distance calculation}{7}{section*.12}%
-\contentsline {chapter}{\numberline {3}Project planning}{8}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Task breakdown structure}{8}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Time plan and Gant chart}{8}{section.3.2}%
-\contentsline {chapter}{\numberline {4}System Design And Architecture}{9}{chapter.4}%
-\contentsline {section}{\numberline {4.1}System architecture}{9}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Multimedia database design}{9}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}The purpose of our data base}{9}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Required information}{9}{subsection.4.2.2}%
-\contentsline {subsection}{\numberline {4.2.3}Database Schema}{9}{subsection.4.2.3}%
-\contentsline {subsection}{\numberline {4.2.4}Primary keys and foriegn keys}{9}{subsection.4.2.4}%
-\contentsline {section}{\numberline {4.3}System design}{9}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Testing scenarios and results}{9}{section.4.4}%
-\contentsline {chapter}{\numberline {5}End User Guide}{10}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Steps To use the project}{10}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Features}{10}{section.5.2}%
-\contentsline {chapter}{\numberline {6}Conclusion}{11}{chapter.6}%
-\contentsline {chapter}{\numberline {7}References}{12}{chapter.7}%
+\contentsline {section}{\numberline {0.1}Purpose of the controller}{4}{section.0.1}%
+\contentsline {section}{\numberline {0.2}Features}{4}{section.0.2}%
+\contentsline {chapter}{\numberline {1}Block Diagram}{5}{chapter.1}%
+\contentsline {section}{\numberline {1.1}An overview of the basic structure}{5}{section.1.1}%
+\contentsline {chapter}{\numberline {2}Architecture}{6}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Address Mapper}{6}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Refresh Management}{6}{section.2.2}%
+\contentsline {chapters}{References}{7}{chapter*.4}%

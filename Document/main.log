@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.6.10)  14 JUN 2021 18:50
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.6.10)  18 JUN 2021 03:11
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -270,7 +270,7 @@ Package: multirow 2019/05/31 v2.5 Span multiple rows of a table
 \bigstrutjot=\dimen149
 )
 \c@defn=\count283
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.aux (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/base.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch1.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch2.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch3.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch4.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch5.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch6.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch7.aux))
+ (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.aux (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/base.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/Introduction.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/BlockDiagram.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/Architecture.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 62.
@@ -329,7 +329,7 @@ LaTeX Info: Redefining \nameref on input line 62.
 \openout2 = `base.aux'.
 
  (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/base.tex
-<Images/ASU.png, id=112, 1003.5894pt x 1003.5894pt>
+<Images/ASU.png, id=36, 1003.5894pt x 1003.5894pt>
 File: Images/ASU.png Graphic file (type png)
 <use Images/ASU.png>
 Package pdftex.def Info: Images/ASU.png  used on input line 5.
@@ -339,113 +339,81 @@ Package pdftex.def Info: Images/ASU.png  used on input line 5.
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} </media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/Images/ASU.png>] (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.toc
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 3.
+(Font)              <7> on input line 1.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 3.
- [1
-
-
-])
+(Font)              <5> on input line 1.
+)
 \tf@toc=\write4
 \openout4 = `main.toc'.
 
- [2] (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.lof)
+ [1
+
+
+] (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.lof)
 \tf@lof=\write5
 \openout5 = `main.lof'.
 
- [3
+ [2
 
 ] (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.lot)
 \tf@lot=\write6
 \openout6 = `main.lot'.
 
- [4
+ [3
 
 ]
-\openout2 = `chapters/ch1.aux'.
+\openout2 = `./chapters/Introduction.aux'.
 
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch1.tex
+ (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/Introduction.tex) [4
+
+]
+\openout2 = `./chapters/BlockDiagram.aux'.
+
+ (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/BlockDiagram.tex
 Chapter 1.
 ) [5
 
 
-]
-\openout2 = `chapters/ch2.aux'.
 
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch2.tex
+]
+\openout2 = `./chapters/Architecture.aux'.
+
+ (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/Architecture.tex
 Chapter 2.
 ) [6
 
 
 
-] [7]
-\openout2 = `chapters/ch3.aux'.
+] (./chapters/References.tex)
 
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch3.tex
-Chapter 3.
-) [8
+Package hyperref Warning: bookmark level for unknown chapters defaults to 0.
 
-
-
-]
-\openout2 = `chapters/ch4.aux'.
-
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch4.tex
-Chapter 4.
-) [9
-
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 80.
+[7
 
 
 ]
-\openout2 = `chapters/ch5.aux'.
-
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch5.tex
-Chapter 5.
-) [10
-
-
-
-]
-\openout2 = `chapters/ch6.aux'.
-
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch6.tex
-Chapter 6.
-) [11
-
-
-
-]
-\openout2 = `chapters/ch7.aux'.
-
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch7.tex
-Chapter 7.
-) [12
-
-
-
-]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 79.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 79.
- (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.aux (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/base.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch1.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch2.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch3.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch4.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch5.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch6.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/chapters/ch7.aux))
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 79.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 79.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 80.
+ (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.aux (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/base.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/Introduction.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/BlockDiagram.aux) (/media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/./chapters/Architecture.aux))
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 80.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 80.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: B71CEA048BAF6EC5DC51ADDB76D78AED;1751.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 79.
+(rerunfilecheck)             Checksum: 3F7D39729DF3DEFCC08A626E6580D2BC;452.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 80.
  ) 
 Here is how much of TeX's memory you used:
- 7536 strings out of 481239
- 121882 string characters out of 5920377
- 481742 words of memory out of 5000000
- 22537 multiletter control sequences out of 15000+600000
+ 7450 strings out of 481239
+ 119561 string characters out of 5920377
+ 475118 words of memory out of 5000000
+ 22507 multiletter control sequences out of 15000+600000
  541987 words of font info for 37 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 35i,5n,45p,307b,363s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texmf/fonts/type1/public/cm-super/sfbx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1728.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx2074.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx2488.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsl1000.pfb>
-Output written on /media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.pdf (13 pages, 347938 bytes).
+ 35i,5n,45p,555b,317s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1728.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx2074.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx2488.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsl1000.pfb>
+Output written on /media/unico/WIN_DATA/4TH_CSE_ASU-2021/GP/project/ROCE/Document/main.pdf (8 pages, 349039 bytes).
 PDF statistics:
- 268 PDF objects out of 1000 (max. 8388607)
- 239 compressed objects within 3 object streams
- 53 named destinations out of 1000 (max. 500000)
- 222 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 145 PDF objects out of 1000 (max. 8388607)
+ 120 compressed objects within 2 object streams
+ 22 named destinations out of 1000 (max. 500000)
+ 70 words of extra memory for PDF output out of 10000 (max. 10000000)
 
