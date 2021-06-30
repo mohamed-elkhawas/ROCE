@@ -47,6 +47,6 @@ over_flow_stopper the_over_flow_stopper (.clk(clk),.rst_n(rst_n),.mapper_valid(v
 request_saver the_request_saver (.clk(clk),.rst_n(rst_n),.request_i(out_req),.valid_i(bank_out_valid),.index_i(out_index),.grant_o2(grant_o2),.grant_o(fifo_grant_o),.request_i2(out_req2),.valid_i2(bank_out_valid2),.index_i2(out_index2));
 
 
-assign out_busy2 = ( (~grant_o2) || (!fifo_grant_o) || out_busy || stop_reading || stop_writing ) ;
+assign out_busy2 = ( (!fifo_grant_o) || out_busy || stop_reading || stop_writing ) ;
 
 endmodule
