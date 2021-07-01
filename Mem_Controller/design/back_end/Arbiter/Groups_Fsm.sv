@@ -44,7 +44,7 @@ end*/
 
 
 always @(*) begin
-    casex ({Start_A,Start_B,Start_C,Start_D})
+    casex ({Start_D,Start_C,Start_B,Start_A})
         4'b0001 : sel = 2'd0 ; 
         4'b0010 : sel = 2'd1 ;
         4'b0100 : sel = 2'd2 ;
@@ -127,25 +127,26 @@ always @ (*)begin
     case (CS)
         IDLE: begin
             if (ReqA == 1'b1)begin
-                Start_A = 1'b1;
+                //Start_A = 1'b1;
                 NS=GROUP_A;
             end
             else if (ReqB == 1'b1)begin
-                Start_B = 1'b1;
+                //Start_B = 1'b1;
                 NS=GROUP_B;
             end
             else if (ReqC == 1'b1)begin
-                Start_C = 1'b1;
+                //Start_C = 1'b1;
                 NS=GROUP_C;
             end
             else if (ReqD == 1'b1)begin
-                Start_D = 1'b1;
+                //Start_D = 1'b1;
                 NS=GROUP_D;
             end
         end
         GROUP_A: begin
+            Start_A = 1'b1;
             if (ReqA == 1'b1 &&  Done_A == 1'b0 )begin
-                Start_A = 1'b1;
+               // Start_A = 1'b1;
                 NS=GROUP_A;
             end 
             else begin
@@ -160,8 +161,9 @@ always @ (*)begin
             end
         end
         GROUP_B: begin
+            Start_B = 1'b1;
             if (ReqB == 1'b1 && Done_B == 1'b0 )begin
-                Start_B = 1'b1;
+                //Start_B = 1'b1;
                 NS=GROUP_B;
             end
             else begin
@@ -176,8 +178,9 @@ always @ (*)begin
             end
         end
         GROUP_C: begin
+            Start_C = 1'b1;
             if (ReqC == 1'b1 && Done_C == 1'b0 )begin
-                Start_C = 1'b1;
+                //Start_C = 1'b1;
                 NS=GROUP_C;
             end 
             else begin
@@ -192,8 +195,9 @@ always @ (*)begin
             end
         end
         GROUP_D: begin
+            Start_D = 1'b1;
             if (ReqD == 1'b1 && Done_D == 1'b0 )begin
-                Start_D = 1'b1;
+                //Start_D = 1'b1;
                 NS=GROUP_D;
             end 
             else begin

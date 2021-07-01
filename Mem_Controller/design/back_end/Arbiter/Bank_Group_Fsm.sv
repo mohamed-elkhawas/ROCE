@@ -110,8 +110,8 @@ always @ (*)begin
             BANK_A: begin
                 if (ReqA == 1'b1 &&  valid_A == 1'b1 )begin
                     en       = 1'b1   ;
-                    sel      = 2'b0   ;
-                    Ack_A    = 1'b0   ;
+                    sel      = 2'd0   ;
+                    Ack_A    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_A ;
                 end 
@@ -137,8 +137,8 @@ always @ (*)begin
             BANK_B: begin
                 if (ReqB == 1'b1 && valid_B == 1'b1 )begin
                     en       = 1'b1   ;
-                    sel      = 2'b0   ;
-                    Ack_B    = 1'b0   ;
+                    sel      = 2'd1   ;
+                    Ack_B    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_B ;
                 end
@@ -164,8 +164,8 @@ always @ (*)begin
             BANK_C: begin
                 if (ReqC == 1'b1 && valid_C == 1'b1 )begin
                     en       = 1'b1   ;
-                    sel      = 2'b0   ;
-                    Ack_C    = 1'b0   ;
+                    sel      = 2'd2   ;
+                    Ack_C    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_C ;
                 end 
@@ -191,8 +191,8 @@ always @ (*)begin
             BANK_D: begin
                 if (ReqD == 1'b1 && valid_D == 1'b1 )begin
                     en       = 1'b1   ;
-                    sel      = 2'b0   ;
-                    Ack_D    = 1'b0   ;
+                    sel      = 2'd3   ;
+                    Ack_D    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_D ;
                 end 

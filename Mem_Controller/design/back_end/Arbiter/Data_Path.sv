@@ -7,20 +7,20 @@ module Data_Path
     output reg [REQ_SIZE-1 :0 ] out 
 );
 
-wire D_A3, D_A2, D_A1, D_A0;
-wire D_B3, D_B2, D_B1, D_B0;
-wire D_C3, D_C2, D_C1, D_C0;
-wire D_D3, D_D2, D_D1, D_D0;
+wire [REQ_SIZE-1 :0 ] D_A3, D_A2, D_A1, D_A0;
+wire [REQ_SIZE-1 :0 ] D_B3, D_B2, D_B1, D_B0;
+wire [REQ_SIZE-1 :0 ] D_C3, D_C2, D_C1, D_C0;
+wire [REQ_SIZE-1 :0 ] D_D3, D_D2, D_D1, D_D0;
 
 
-wire sel_D, sel_C, sel_B, sel_A ;
+wire [1:0] sel_D, sel_C, sel_B, sel_A ;
 wire [REQ_SIZE-1 :0 ] dont_care ; 
 
 
-assign {D_A3, D_A2, D_A1, D_A0} = Data[(0*REQ_SIZE) +: REQ_SIZE];
-assign {D_B3, D_B2, D_B1, D_B0} = Data[(1*REQ_SIZE) +: REQ_SIZE];
-assign {D_C3, D_C2, D_C1, D_C0} = Data[(2*REQ_SIZE) +: REQ_SIZE];
-assign {D_D3, D_D2, D_D1, D_D0} = Data[(3*REQ_SIZE) +: REQ_SIZE];
+assign {D_A3, D_A2, D_A1, D_A0} = Data[(0*REQ_SIZE) +: 4*REQ_SIZE];
+assign {D_B3, D_B2, D_B1, D_B0} = Data[(4*REQ_SIZE) +: 4*REQ_SIZE];
+assign {D_C3, D_C2, D_C1, D_C0} = Data[(8*REQ_SIZE) +: 4*REQ_SIZE];
+assign {D_D3, D_D2, D_D1, D_D0} = Data[(12*REQ_SIZE) +: 4*REQ_SIZE];
 assign dont_Care = {REQ_SIZE{1'bx}};
 
 assign {sel_D, sel_C, sel_B, sel_A} = bank_sel;

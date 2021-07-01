@@ -6,6 +6,7 @@ module Arbiter
     input  [15:0] Valid, //valid bits
     input  [(16 * REQ_SIZE) -1 :0] Data_in ,
     output [REQ_SIZE-1 : 0]  Data_out,
+    output wr_en , 
     output [15:0] Ack 
 );
 
@@ -19,7 +20,7 @@ wire [7:0] bank_sel  ;
 wire [3:0] start_signals ;
 
 assign start_signals = { Start_D, Start_C, Start_B,Start_A};
-
+assign wr_en = |en ; 
 Groups_Fsm Bank_Groups(.clk(clk), .rst_n(rst_n), .Req(req), .Done(done), .Start_A(Start_A),
                        .Start_B(Start_B), .Start_C(Start_C), .Start_D(Start_D),.sel(group_sel) );
 
