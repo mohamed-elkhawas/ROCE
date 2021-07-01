@@ -12,7 +12,7 @@ package types_def;
 		bank_group_no = 4,
 		row_addres_len =16,
 
-		t = 5 ;		///////////////  add the right  permutation_param_t number here
+		t = 10 ;
 
   typedef enum logic {read , write} r_type;
 
