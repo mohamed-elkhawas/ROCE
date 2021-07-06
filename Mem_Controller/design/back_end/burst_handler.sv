@@ -230,8 +230,8 @@ always_ff @(  posedge clk ) begin
 					burst[out_burst].mask[first_one_id] <= 0;
 
 				end
-				
-				else returner_valid <= 0;
+
+				else returner_valid <= 0; 
 			end
 			
 			else begin // finished returning
@@ -316,16 +316,16 @@ endtask
 
 
 
-// to make the memory interface command start at posedge 
+// // to make the memory interface command start at posedge 
 
-logic clk_n;
+// logic clk_n;
 
-always_ff @( clk ) begin
-clk_n <= ~clk;
-end
-/////////////////////////////////////
+// always_ff @( clk ) begin
+// clk_n <= ~clk;
+// end
+// /////////////////////////////////////
 
-always_ff @( clk_n ) begin ///////////////// memory interface 
+always_ff @( clk ) begin ///////////////// memory interface 
 
 	if(rst_n) begin
 		
@@ -334,12 +334,17 @@ always_ff @( clk_n ) begin ///////////////// memory interface
 			if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
 				
 				if (data_wait_counter != rd_to_data ) begin
-					data_wait_counter <= burst_data_counter +1;
+					data_wait_counter <= data_wait_counter +1;
 				end
 
 			end
 			
+			
 			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd) begin
+				
+				if (data_wait_counter == rd_to_data) begin
+					burst[cmd_burst_id].state <= returning_data;
+				end
 
 				ddr5_read_data(cmd_burst_id,burst_data_counter);
 				burst_data_counter <= burst_data_counter +1;				
@@ -347,6 +352,10 @@ always_ff @( clk_n ) begin ///////////////// memory interface
 			end
 
 			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd) begin
+
+				if (data_wait_counter == wr_to_data) begin
+					burst[cmd_burst_id].state <= returning_data;
+				end
 
 				ddr5_write_data(cmd_burst_id,burst_data_counter);
 				burst_data_counter <= burst_data_counter +1;				
@@ -356,7 +365,7 @@ always_ff @( clk_n ) begin ///////////////// memory interface
 		end
 		else begin
 			
-			if (clk_n) begin // if (clk_n) begin // to make the memory interface command start at posedge 
+			if (clk) begin // if (clk_n) begin // to make the memory interface command start at posedge 
 
 				burst_data_counter <= 0;
 				data_wait_counter <= 0;
