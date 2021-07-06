@@ -218,7 +218,7 @@ always_comb begin
 		
 		for (int i = 0; i < no_of_bursts; i++) begin 
 				
-			if (in_burst_state[i] == started_filling || in_burst_state[i] == full || in_burst_state[i] == almost_done) begin //  there is requests to be sent
+			if (in_burst_state[i] != empty && in_burst_state[i] != returning_data) begin //  there is requests to be sent
 
 				if ( b_active_row_valid[burst_bank_id[i]] == 1 ) begin // there is active row
 		
