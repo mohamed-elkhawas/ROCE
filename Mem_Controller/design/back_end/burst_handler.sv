@@ -47,9 +47,9 @@ typedef struct packed {
 	r_type the_type;
 	burst_states_type state;
 	logic [address_width-1:4] address ;
-	logic [burst_lentgh:0][read_entries_log -1:0] index ;
-	logic [burst_lentgh:0][data_width -1:0] data ;
-	logic [burst_lentgh:0] mask;
+	logic [burst_lentgh=1:0][read_entries_log -1:0] index ;
+	logic [burst_lentgh=1:0][data_width -1:0] data ;
+	logic [burst_lentgh=1:0] mask;
 
 	} burst_storage;
 
@@ -61,9 +61,9 @@ logic [$clog2(no_of_bursts) -1:0] in_burst , older_in_burst , out_burst;
 
 logic new_burst_flag , return_req;
 
-logic [$clog2(burst_lentgh) -1:0] burst_data_counter;
+logic [$clog2(no_of_bursts) -1:0][$clog2(burst_lentgh) -1:0] burst_data_counter;
 
-logic [burst_lentgh:0] first_one_in_mask;
+logic [burst_lentgh=1:0] first_one_in_mask;
 
 logic [$clog2(burst_lentgh)-1:0] first_one_id;
 
@@ -216,7 +216,7 @@ always_ff @(  posedge clk ) begin
 
 			if (first_one_in_mask != 0) begin // didn't finish returning
 
-				if (burst_data_counter >= first_one_id) begin // recieved req data or sent the write 
+				if (burst_data_counter[out_burst] >= first_one_id) begin // recieved req data or sent the write 
 					
 					returner_valid <= 1;
 					returner_type <= burst[out_burst].the_type;
@@ -340,8 +340,8 @@ always_ff @( clk ) begin ///////////////// memory interface
 					burst[cmd_burst_id].state <= returning_data;
 				end
 
-				ddr5_read_data(cmd_burst_id,burst_data_counter);
-				burst_data_counter <= burst_data_counter +1;				
+				ddr5_read_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
+				burst_data_counte[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
 			
 			end
 
@@ -351,8 +351,8 @@ always_ff @( clk ) begin ///////////////// memory interface
 					burst[cmd_burst_id].state <= returning_data;
 				end
 
-				ddr5_write_data(cmd_burst_id,burst_data_counter);
-				burst_data_counter <= burst_data_counter +1;				
+				ddr5_write_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
+				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
 			
 			end
 
@@ -361,7 +361,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 			
 			if (clk) begin // if (clk_n) begin // to make the memory interface command start at posedge 
 
-				burst_data_counter <= 0;
+				burst_data_counter[cmd_burst_id] <= 0;
 				data_wait_counter <= 0;
 
 				cmd_burst_id <= in_cmd_index;
