@@ -15,7 +15,6 @@ module burst_handler import types_def::*;
 	input [$clog2(no_of_bursts)-1:0] in_cmd_index,
 	
 	/////////////////////////////////////////////////////////////// banks arbiter
-	//output logic start_new_burst,
 	output logic [$clog2(no_of_bursts) :0]  empty_bursts_counter,
 
 	input arbiter_valid,
@@ -123,9 +122,6 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 			if (new_burst_flag) begin
 
 				if ( !(return_req && first_one_in_mask == 0) ) begin // if we did not free one burst
-					//if (empty_bursts_counter == 1) begin
-					//	start_new_burst <= 0;
-					//end
 					empty_bursts_counter <= empty_bursts_counter -1;
 				end
 				
@@ -167,7 +163,6 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 
 	end
 	else begin // reset
-		//start_new_burst <= 1;
 		empty_bursts_counter <= 4;
 		for (int i = 0; i < no_of_bursts; i++) begin
 			burst[i].state <= empty;
@@ -241,7 +236,6 @@ always_ff @(  posedge clk ) begin
 				burst[out_burst].state <= empty;
 				if (!new_burst_flag) begin
 					empty_bursts_counter <= empty_bursts_counter +1;
-					//start_new_burst <= 1;
 				end
 
 			end
