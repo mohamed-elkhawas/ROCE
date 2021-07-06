@@ -230,6 +230,8 @@ always_ff @(  posedge clk ) begin
 					burst[out_burst].mask[first_one_id] <= 0;
 
 				end
+				
+				else returner_valid <= 0;
 			end
 			
 			else begin // finished returning
