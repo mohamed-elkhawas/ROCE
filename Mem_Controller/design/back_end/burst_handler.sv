@@ -47,9 +47,9 @@ typedef struct packed {
 	r_type the_type;
 	burst_states_type state;
 	logic [address_width-1:4] address ;
-	logic [burst_lentgh=1:0][read_entries_log -1:0] index ;
-	logic [burst_lentgh=1:0][data_width -1:0] data ;
-	logic [burst_lentgh=1:0] mask;
+	logic [burst_lentgh-1:0][read_entries_log -1:0] index ;
+	logic [burst_lentgh-1:0][data_width -1:0] data ;
+	logic [burst_lentgh-1:0] mask;
 
 	} burst_storage;
 
@@ -63,7 +63,7 @@ logic new_burst_flag , return_req;
 
 logic [$clog2(no_of_bursts) -1:0][$clog2(burst_lentgh) -1:0] burst_data_counter;
 
-logic [burst_lentgh=1:0] first_one_in_mask;
+logic [burst_lentgh-1:0] first_one_in_mask;
 
 logic [$clog2(burst_lentgh)-1:0] first_one_id;
 
@@ -341,7 +341,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 				end
 
 				ddr5_read_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
-				burst_data_counte[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
+				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
 			
 			end
 
