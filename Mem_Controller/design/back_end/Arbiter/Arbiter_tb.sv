@@ -1,44 +1,41 @@
 `define REQ_SIZE 16
-`define CLK_PERIOD 10
+`define CLK_PERIOD 5
 
 module Arbiter_tb();
 
 /***inputs***/
 reg clk;
 reg rst_n;
-reg [15:0] valid , req;
+reg [15:0] valid /*, req*/;
 reg [15:0] [`REQ_SIZE-1 : 0 ] data_in ; 
 
 
 /***outputs***/
 wire [`REQ_SIZE-1:0] data_out ;
-wire [15:0] ack;
+//wire [15:0] ack;
+wire [15:0] ready;
 wire wr_en ; 
 
-always #5 clk = ~clk;
 reg [15:0] [3:0]counter ;
-integer index,j,i ;
+integer index,i,j ;
 
 task set_counters ;
 input [31:0] num;
-for(i = 0 ;i<num ; i=i+1)begin
-    counter[i] = ($urandom%4) +1 ;
+integer i_;
+for(i_ = 0 ;i_<num ; i_=i_+1)begin
+    counter[i_] = ($urandom%5)  ;
 end
 endtask
 
-
 task update_valid;
-input [15:0] index ;
-if(ack[index] == 1) begin
-    valid[index] = (counter[index] ==0)? 0: valid[index];  // valid = zero in case of empty burst
-    counter[index] = counter[index] -1;
-end 
+integer ii ;
+for(ii = 0 ;ii<16 ; ii=ii+1) begin
+    valid[ii] = (counter[ii] !=0)? 1'b1: 1'b0; // there is a burst, then set valid = 1      
+end
 endtask
 
-
-
 task update_single_bank_data;
-input reg[32:0] index;
+input [32:0] index;
 data_in[index] = $urandom ; 
 endtask
 
@@ -51,73 +48,53 @@ for(k = 0 ;k<16 ; k=k+1) //get random data
 endtask
 
 
+always #`CLK_PERIOD clk = ~clk;
 initial begin   
     clk=0;
     rst_n = 0;
-    req=16'h0000;
-    valid=16'hFFFF;
+    //req=16'h0000;
+    valid=16'h0000;
     #6
     rst_n = 1; 
-    req = $urandom%(2^16) +1;
-    update_all_data();     
-    fork  //use fork for  parallel operations
-        
-        /*forever begin //updating external signal 
-            wait (done == 1'b1);
-            $display("Hi iam done =1 ");
-            @ (posedge clk);
-            $display("Hi positive edge clock ");
-            #3 start= 0; //wait 3 units as start signal is updated from moore master fsm
-            #(($urandom%3 +1 )*`CLK_PERIOD) // wait (1 to 3) clocks to respond
-            start = 1'b1 ;
-        end*/
-
-        /*forever begin // update input data and valid bits         
-            @ (negedge clk);
-            for(i = 0 ;i<16 ; i=i+1)begin
-                #(($urandom%3 +1 )*`CLK_PERIOD)
-                update_valid(i); //reset valid = zero in case of full burst is transmitted
-            end
-        end*/
-
+    update_all_data(); // insert new data input
+    fork  //use fork for  parallel operations        
         forever begin
-            @(|ack == 1'b1); //only update the input data when there is an ack signal
-            @ (negedge clk);
-            for(j = 0 ;j<16 ; j=j+1) begin
-                if(ack[j] ==1'b1) begin
-                    update_valid(j); 
-                    update_single_bank_data(j);
+            wait(ready != 0); // update valid bit for corresponding ready signals
+            @(posedge clk) ; //we must update it at the next positive edge, as its mealy machine so we wait till the edge that new current state is updated
+            for(i = 0 ;i<16 ; i=i+1) begin
+                if(ready[i] ==1'b1) begin
+                    counter[i] = counter[i]-1;
+                    #3 // wait as this valid is updated from mealy machine 
+                    update_valid(); 
                 end
             end
+            
         end
 
-         forever begin    // reset counters after all bursts are empty     
+        forever begin
+            wait (ready != 0 );
+            @(posedge clk) ;
+            //wait(ready != 0); // update data output for banks with ready signals
+            for(j = 0 ;j<16 ; j=j+1) begin
+                if(ready[j] ==1'b1) 
+                    update_single_bank_data(j);
+            end
+            
+        end
+
+        forever begin    // reset counters after all bursts are empty     
             @ (negedge clk);
             if (valid == 16'd0) begin
                 set_counters(16); // insert new bursts lengths
-                update_all_data(); // insert new data input
+                update_valid();
             end
                 
         end
     join     
-/*for (bank = 0 ; bank<16 ; bank=bank+1) begin
-    for (index = 0 ; index<16 ; index=index+1) begin
-        temp = $fscanf(requests.txt, "%d\n");
-        
-        //banks[bank][index]; 
-  //if (!$feof(data_file)) begin
-    //use captured_data as you would any other wire or reg value;
-  end
-end*/
-    //$readmemb("requests.txt",banks);
-    //$display(banks);
-        //banks[bank][index]; 
-  //if (!$feof(data_file)) begin
-    //use captured_data as you would any other wire or reg value;
 end
 
 Arbiter #(.REQ_SIZE(`REQ_SIZE)) arbiter
-(.clk(clk),.rst_n(rst_n), .Req(req) ,.Valid(valid), .Data_in(data_in) , .Data_out(data_out) , .wr_en(wr_en),.Ack(ack));
+(.clk(clk),.rst_n(rst_n), .Valid(valid), .Data_in(data_in) , .Data_out(data_out) , .wr_en(wr_en),.Ready(ready));
 
 
 

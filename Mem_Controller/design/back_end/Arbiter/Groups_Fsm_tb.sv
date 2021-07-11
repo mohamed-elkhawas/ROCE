@@ -53,10 +53,6 @@ for(i = 0 ;i<4 ; i=i+1) begin
 end
 endtask
 
-
-
-
-
 always #5 clk = ~clk;
 initial begin   
     clk=0;
@@ -67,8 +63,8 @@ initial begin
     #6
     rst_n = 1 ;
     forever begin
-        if(counter == 2'd0 )begin //all requests have benn served, so start new req value
-            req = $urandom%4 ; // update request state for bank groups
+        if(counter == 2'd0 )begin //all requests have been served, so start new req value
+            req = $urandom_range(1,15) ; // update request state for bank groups
             set_counter();  
         end
        
@@ -76,26 +72,6 @@ initial begin
         if(start_signals != 4'b0000 )
             update_done();           
     end
-    
-
-    $display("Hi iam #6");
-    /*fork  //use fork for  parallel operations
-        
-        forever begin //random combinations of bank groups requests
-            @(negedge clk);
-            if( counter == 4'd3 )   
-                req = $urandom%4 ; // update request state for bank groups
-        end
-
-        forever begin         
-            @ (negedge clk);
-            #(($urandom%3 +1 )*`CLK_PERIOD) // wait (1 to 3) clocks to respond
-            
-            counter = counter+1 ; //after getting value 3, then we turns around all bank groups request, so update value of req
-            $display("Hi iam counter+1");
-        end
-
-    join*/
 end
 
 Groups_Fsm Bank_Groups(.clk(clk), .rst_n(rst_n), .Req(req), .Done(done), .Start_A(Start_A),

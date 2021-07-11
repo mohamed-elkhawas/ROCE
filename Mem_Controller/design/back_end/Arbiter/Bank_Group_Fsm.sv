@@ -1,35 +1,21 @@
 module Bank_Group_Fsm
 (   
     input  clk, rst_n, start ,
-    input  [3:0] Bank_Req,
+    //input  [3:0] Bank_Req,
     input  [3:0] Valid   ,
-    output reg Ack_A, Ack_B, Ack_C, Ack_D, 
+    output reg Ready_A, Ready_B, Ready_C, Ready_D, 
     output reg [1:0] sel , //bank index to drain from 
     output reg  en , done,
     output Req
 );
 
 
-wire ReqD, ReqC, ReqB, ReqA ;
+//wire  ReqD, ReqC, ReqB, ReqA ;
+//assign { ReqD, ReqC, ReqB, ReqA } = Bank_Req;
+
+
 wire valid_D, valid_C, valid_B, valid_A ;
-
-
-assign { ReqD, ReqC, ReqB, ReqA } = Bank_Req;
 assign { valid_D, valid_C, valid_B, valid_A } = Valid;
-
-
-
-
-
-/*always @(*) begin
-    casex ({Ack_A,Ack_B,Ack_C,Ack_D})
-        4'b0001 : sel = 2'd0 ; 
-        4'b0010 : sel = 2'd1 ;
-        4'b0100 : sel = 2'd2 ;
-        4'b1000 : sel = 2'd3 ;
-        default : sel = 2'dx ;  
-    endcase
-end*/
 
 
 localparam [2:0]
@@ -70,10 +56,10 @@ end
 always @ (*)begin
     en    = 1'b0  ;
     sel   = 2'dx  ; 
-    Ack_A = 1'b0  ;
-    Ack_B = 1'b0  ;
-    Ack_C = 1'b0  ;
-    Ack_D = 1'b0  ;
+    Ready_A = 1'b0  ;
+    Ready_B = 1'b0  ;
+    Ready_C = 1'b0  ;
+    Ready_D = 1'b0  ;
     done  = 1'b0  ;
     NS    = CS    ;
     //Timeen = 0;
@@ -82,49 +68,50 @@ always @ (*)begin
     if(start == 1'b1)begin // continue the fsm
         case (CS)
             IDLE: begin
-                if (ReqA == 1'b1)begin
+                if (valid_A == 1'b1)begin
                     en      = 1'b1    ;
                     sel     = 2'd0    ;
-                    Ack_A   = 1'b1    ;
+                    Ready_A   = 1'b1    ;
                     NS      = BANK_A  ;
                 end
-                else if (ReqB == 1'b1)begin
+                else if (valid_B == 1'b1)begin
                     en      = 1'b1    ;
                     sel     = 2'd1    ;
-                    Ack_B   = 1'b1    ;
+                    Ready_B   = 1'b1    ;
                     NS      = BANK_B ;
                 end
-                else if (ReqC == 1'b1)begin
+                else if (valid_C == 1'b1)begin
                     en      = 1'b1    ;
                     sel     = 2'd2    ;
-                    Ack_C   = 1'b1    ;
+                    Ready_C   = 1'b1    ;
                     NS      = BANK_C  ;
                 end
-                else if (ReqD == 1'b1)begin
+                else if (valid_D == 1'b1)begin
                     en      = 1'b1    ;
                     sel     = 2'd3    ;
-                    Ack_D   = 1'b1    ;
+                    Ready_D   = 1'b1    ;
                     NS      = BANK_D  ;
                 end
             end
             BANK_A: begin
-                if (ReqA == 1'b1 &&  valid_A == 1'b1 )begin
+                //if (valid_A == 1'b1 &&  valid_A == 1'b1 )begin
+                if (valid_A == 1'b1 )begin
                     en       = 1'b1   ;
                     sel      = 2'd0   ;
-                    Ack_A    = 1'b1   ;
+                    Ready_A    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_A ;
                 end 
                 else begin
-                    if (ReqB == 1'b1) begin
+                    if (valid_B == 1'b1) begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_B ;
                     end
-                    else if (ReqC == 1'b1)begin
+                    else if (valid_C == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_C ;
                     end
-                    else if (ReqD == 1'b1)begin
+                    else if (valid_D == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_D ;
                     end
@@ -135,23 +122,24 @@ always @ (*)begin
                 end
             end
             BANK_B: begin
-                if (ReqB == 1'b1 && valid_B == 1'b1 )begin
+                //if (valid_B == 1'b1 && valid_B == 1'b1 )begin
+                if (valid_B == 1'b1 )begin
                     en       = 1'b1   ;
                     sel      = 2'd1   ;
-                    Ack_B    = 1'b1   ;
+                    Ready_B    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_B ;
                 end
                 else begin
-                    if (ReqC == 1'b1)begin
+                    if (valid_C == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_C ;
                     end
-                    else if (ReqD == 1'b1)begin
+                    else if (valid_D == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_D ;
                     end
-                    else if (ReqA == 1'b1)begin
+                    else if (valid_A == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_A ;
                     end
@@ -162,23 +150,24 @@ always @ (*)begin
                 end
             end
             BANK_C: begin
-                if (ReqC == 1'b1 && valid_C == 1'b1 )begin
+                //if (valid_C == 1'b1 && valid_C == 1'b1 )begin
+                if (valid_C == 1'b1 )begin
                     en       = 1'b1   ;
                     sel      = 2'd2   ;
-                    Ack_C    = 1'b1   ;
+                    Ready_C    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_C ;
                 end 
                 else begin
-                    if (ReqD == 1'b1)begin
+                    if (valid_D == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_D ;
                     end
-                    else if (ReqA == 1'b1)begin
+                    else if (valid_A == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_A ;
                     end
-                    else if (ReqB == 1'b1)begin
+                    else if (valid_B == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_B ;
                     end
@@ -189,23 +178,24 @@ always @ (*)begin
                 end
             end
             BANK_D: begin
-                if (ReqD == 1'b1 && valid_D == 1'b1 )begin
+                //if (valid_D == 1'b1 && valid_D == 1'b1 )begin
+                if (valid_D == 1'b1 )begin
                     en       = 1'b1   ;
                     sel      = 2'd3   ;
-                    Ack_D    = 1'b1   ;
+                    Ready_D    = 1'b1   ;
                     done     = 1'b0   ;
                     NS       = BANK_D ;
                 end 
                 else begin
-                    if (ReqA == 1'b1)begin
+                    if (valid_A == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_A ;
                     end
-                    else if (ReqB == 1'b1)begin
+                    else if (valid_B == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_B ;
                     end
-                    else if (ReqC == 1'b1)begin
+                    else if (valid_C == 1'b1)begin
                         done = 1'b1  ; // burst is finished
                         NS   = BANK_C ;
                     end
@@ -222,7 +212,7 @@ always @ (*)begin
 end
 
 
-assign Req = |{ReqA, ReqB, ReqC, ReqD};
+assign Req = |{valid_A, valid_B, valid_C, valid_D};
 
 
 endmodule

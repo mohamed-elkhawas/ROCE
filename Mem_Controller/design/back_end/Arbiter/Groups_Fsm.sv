@@ -62,50 +62,6 @@ localparam [2:0]
 
 reg [2:0] CS, NS ;
 /*****************************************************************************************************************/
-
-
-/*// Bank group A states
-localparam [2:0] 
-    MASTER_IDLE = 3'b000,
-    GROUP_A     = 3'b001,
-    GROUP_B     = 3'b010,
-    GROUP_C     = 3'b011,
-    GROUP_D     = 3'b100;
-
-reg [1:0] MASTER_CS, MASTER_NS ;
-
-// Bank group A states
-localparam [2:0] 
-    MASTER_IDLE = 3'b000,
-    GROUP_A     = 3'b001,
-    GROUP_B     = 3'b010,
-    GROUP_C     = 3'b011,
-    GROUP_D     = 3'b100;
-
-reg [1:0] MASTER_CS, MASTER_NS ;
-
-// Bank group A states
-localparam [2:0] 
-    MASTER_IDLE = 3'b000,
-    GROUP_A     = 3'b001,
-    GROUP_B     = 3'b010,
-    GROUP_C     = 3'b011,
-    GROUP_D     = 3'b100;
-
-reg [1:0] MASTER_CS, MASTER_NS ;
-
-// Bank group A states
-localparam [2:0] 
-    MASTER_IDLE = 3'b000,
-    GROUP_A     = 3'b001,
-    GROUP_B     = 3'b010,
-    GROUP_C     = 3'b011,
-    GROUP_D     = 3'b100;
-
-reg [1:0] MASTER_CS, MASTER_NS ;*/
-
-/*****************************************************************************************************************/
-
  
 //update fsm
 always @ (posedge clk)begin
@@ -216,54 +172,3 @@ end
 
 
 endmodule
-
-/*always @(posedge Reset or posedge Clock)
-begin: 
-if (Reset)
-begin
-EnA
-
-0; EnA2
-
-begin
-
-Enc
-case (NextState)
-GROUP_A: begin EnAl = 1;EnA2 = 0; end
-
-Gront_B: begin EnB1 = 1; €nB2
-GROUP_C: begin EnC] = 1:EnC2 = 0; end
-default:
-begin
-EnAl
-   
-endcase
-end
-end*/
-
-
-/*
-
-assign AddBus_RAM = EnAl ? AddBus_ProcA : 12’;
-assign AddBus_RAM = EnBl ? AddBus_ProcB : 12'b Z;
-assign AddBus_RAM = EnCl ? AddBus_ProcC : 12'bZ;
-
-
-assign DataWriteBus_RAM = EnA2 ? DataWriteBus ProcA,
-rez:
-‘assign DataWriteBus_RAM = EnB2 ? DataWriteBus_Proc8
-:ebZ:
-‘assign DataWriteBus_RAM = EnC2 ? DataWriteBus_ProcC
-rebZ;
-
-assign R_Wb_RAM = EnA2? R_Wb_ProcA : I'bZ;
-assign R_Wb_RAM = EnB2 ?R_Wb Proc : I'bZ:
-assign R_Wb_RAM = EnC2 ? R_Wb_ProcC : 1'b Z;*/
-
-
-
-
-
-
-
-
