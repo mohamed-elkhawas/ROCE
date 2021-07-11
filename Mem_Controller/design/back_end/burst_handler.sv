@@ -15,7 +15,6 @@ module burst_handler import types_def::*;
 	input [$clog2(no_of_bursts)-1:0] in_cmd_index,
 	
 	/////////////////////////////////////////////////////////////// banks arbiter
-	//output logic start_new_burst,
 	output logic [$clog2(no_of_bursts) :0]  empty_bursts_counter,
 
 	input arbiter_valid,
@@ -48,9 +47,9 @@ typedef struct packed {
 	r_type the_type;
 	burst_states_type state;
 	logic [address_width-1:4] address ;
-	logic [burst_lentgh:0][read_entries_log -1:0] index ;
-	logic [burst_lentgh:0][data_width -1:0] data ;
-	logic [burst_lentgh:0] mask;
+	logic [burst_lentgh=1:0][read_entries_log -1:0] index ;
+	logic [burst_lentgh=1:0][data_width -1:0] data ;
+	logic [burst_lentgh=1:0] mask;
 
 	} burst_storage;
 
@@ -62,9 +61,9 @@ logic [$clog2(no_of_bursts) -1:0] in_burst , older_in_burst , out_burst;
 
 logic new_burst_flag , return_req;
 
-logic [$clog2(burst_lentgh) -1:0] burst_data_counter;
+logic [$clog2(no_of_bursts) -1:0][$clog2(burst_lentgh) -1:0] burst_data_counter;
 
-logic [burst_lentgh:0] first_one_in_mask;
+logic [burst_lentgh=1:0] first_one_in_mask;
 
 logic [$clog2(burst_lentgh)-1:0] first_one_id;
 
@@ -123,9 +122,6 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 			if (new_burst_flag) begin
 
 				if ( !(return_req && first_one_in_mask == 0) ) begin // if we did not free one burst
-					//if (empty_bursts_counter == 1) begin
-					//	start_new_burst <= 0;
-					//end
 					empty_bursts_counter <= empty_bursts_counter -1;
 				end
 				
@@ -167,7 +163,6 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 
 	end
 	else begin // reset
-		//start_new_burst <= 1;
 		empty_bursts_counter <= 4;
 		for (int i = 0; i < no_of_bursts; i++) begin
 			burst[i].state <= empty;
@@ -221,7 +216,7 @@ always_ff @(  posedge clk ) begin
 
 			if (first_one_in_mask != 0) begin // didn't finish returning
 
-				if (burst_data_counter >= first_one_id) begin // recieved req data or sent the write 
+				if (burst_data_counter[out_burst] >= first_one_id) begin // recieved req data or sent the write 
 					
 					returner_valid <= 1;
 					returner_type <= burst[out_burst].the_type;
@@ -230,6 +225,8 @@ always_ff @(  posedge clk ) begin
 					burst[out_burst].mask[first_one_id] <= 0;
 
 				end
+
+				else returner_valid <= 0; 
 			end
 			
 			else begin // finished returning
@@ -239,7 +236,6 @@ always_ff @(  posedge clk ) begin
 				burst[out_burst].state <= empty;
 				if (!new_burst_flag) begin
 					empty_bursts_counter <= empty_bursts_counter +1;
-					//start_new_burst <= 1;
 				end
 
 			end
@@ -314,16 +310,16 @@ endtask
 
 
 
-// to make the memory interface command start at posedge 
+// // to make the memory interface command start at posedge 
 
-logic clk_n;
+// logic clk_n;
 
-always_ff @( clk ) begin
-clk_n <= ~clk;
-end
-/////////////////////////////////////
+// always_ff @( clk ) begin
+// clk_n <= ~clk;
+// end
+// /////////////////////////////////////
 
-always_ff @( clk_n ) begin ///////////////// memory interface 
+always_ff @( clk ) begin ///////////////// memory interface 
 
 	if(rst_n) begin
 		
@@ -332,31 +328,40 @@ always_ff @( clk_n ) begin ///////////////// memory interface
 			if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
 				
 				if (data_wait_counter != rd_to_data ) begin
-					data_wait_counter <= burst_data_counter +1;
+					data_wait_counter <= data_wait_counter +1;
 				end
 
 			end
 			
+			
 			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd) begin
+				
+				if (data_wait_counter == rd_to_data) begin
+					burst[cmd_burst_id].state <= returning_data;
+				end
 
-				ddr5_read_data(cmd_burst_id,burst_data_counter);
-				burst_data_counter <= burst_data_counter +1;				
+				ddr5_read_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
+				burst_data_counte[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
 			
 			end
 
 			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd) begin
 
-				ddr5_write_data(cmd_burst_id,burst_data_counter);
-				burst_data_counter <= burst_data_counter +1;				
+				if (data_wait_counter == wr_to_data) begin
+					burst[cmd_burst_id].state <= returning_data;
+				end
+
+				ddr5_write_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
+				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
 			
 			end
 
 		end
 		else begin
 			
-			if (clk_n) begin // if (clk_n) begin // to make the memory interface command start at posedge 
+			if (clk) begin // if (clk_n) begin // to make the memory interface command start at posedge 
 
-				burst_data_counter <= 0;
+				burst_data_counter[cmd_burst_id] <= 0;
 				data_wait_counter <= 0;
 
 				cmd_burst_id <= in_cmd_index;
