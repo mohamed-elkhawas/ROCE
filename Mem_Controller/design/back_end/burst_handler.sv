@@ -46,11 +46,19 @@ parameter wr_to_data =8, // on clk not posedge clk
 		  rd_to_data =11,
 		  burst_lenth = 16;
 
+typedef struct packed {
+	logic [1:0] bank_group ;
+	logic [1:0] bank ;
+	logic [15:0] row ;
+	logic [9-4:0] column ;	
 
+} burst_address_type;
+	
+	
 typedef struct packed {
 	r_type the_type;
 	burst_states_type state;
-	logic [address_width-1:4] address ;
+	logic burst_address_type address ;
 	logic [burst_lentgh-1:0][read_entries_log -1:0] index ;
 	logic [burst_lentgh-1:0][data_width -1:0] data ;
 	logic [burst_lentgh-1:0] mask;
