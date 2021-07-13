@@ -1,193 +1,115 @@
 `define READ  1'b1
 `define WRITE 1'b0
-//selector definintions
-`define ADDR_BITS       8 
-`define ADDR_FIRST_POS  8 
-`define BUFFER_SIZE     4
-`define NUM_OF_BUFFERS  4
+
+//request definintions
+`define CID_POS         0
+`define CA_POS          4
+`define RA_POS          14
+`define BA_POS          30
+`define BD_POS          32
+`define DATA_POS        33
+`define TYPE_POS        49
+`define INDEX_POS       50
+
+`define CID_BITS        4
+`define CA_BITS         10
+`define RA_BITS         16
+`define BA_BITS         2
+`define BD_BITS         2
+`define DATA_BITS       16
+`define TYPE_BITS       1
 `define INDEX_BITS      7
-`define REQUEST_SIZE    `ADDR_BITS+`INDEX_BITS+1 // address  + bits of index + one bit for request type(least significant bit)
+`define REQ_SIZE        `CID_BITS+`CA_BITS+`RA_BITS+`BA_BITS+`BD_BITS+` DATA_BITS+`TYPE_BITS+`INDEX_BITS  
 
-//fifo definitions
-`define BUF_SIZE `BUFFER_SIZE
-`define BUF_WIDTH `REQUEST_SIZE-1 // remove request type bit
+//read requests definitions
+`define RA_POS_READ     0
+`define INDEX_POS_READ  16
+`define REQ_SIZE_READ  `RA_BITS+`INDEX_BITS
+
+//write requests definitions
+`define RA_POS_WRITE    0
+`define DATA_POS_WRITE  16
+`define INDEX_POS_WRITE 32
+`define REQ_SIZE_WRITE  `REQ_SIZE_READ+`DATA_BITS
+
+//selector+FIFO definitions
+`define ARR_SIZE_RD     4 
+`define ARR_SIZE_WR     2
+`define ARR_NUM_WR      3
+`define ARR_NUM_RD      4
+`define NUM_OF_BUFFERS  `ARR_NUM_WR+`ARR_NUM_RD
 
 
-module tb();
 
-reg  Clock;
-reg  reset;
-reg  [`REQUEST_SIZE-1:0]   in;
+module Selector_tb();
 
-wire  [`NUM_OF_BUFFERS-1:0] [$clog2(`BUFFER_SIZE):0] free_entries   ;
-wire  [`NUM_OF_BUFFERS-1:0] full;
-wire  [`NUM_OF_BUFFERS-1:0] empty;
-wire  [`NUM_OF_BUFFERS-1:0] write_enable;
-reg   [`NUM_OF_BUFFERS-1:0] read_enable;
-wire  [`REQUEST_SIZE-1:1]   out; //output data from selector
-wire  [`NUM_OF_BUFFERS-1:0] [`REQUEST_SIZE-1:1]   fifo_out ; //output data from selector
-  
-always #5 Clock = ~Clock;
+//inputs
+reg  clk;
+reg  rst_n;
+reg  [`REQ_SIZE-1:0] in;
+reg  valid ;
+reg  [`NUM_OF_BUFFERS-1:0] pop;
 
+//intermediate signals
+wire  [`NUM_OF_BUFFERS-1:0] grant_o , mid, valid_o ;
+wire  [(( `NUM_OF_BUFFERS) * (`RA_BITS)) -1 :0] last_addr; 
+
+//output signals
+wire [`NUM_OF_BUFFERS-1:0] push;
+wire [((`ARR_NUM_RD) * (`REQ_SIZE_READ))-1:0] data_out_read;
+wire [((`ARR_NUM_WR) * (`REQ_SIZE_WRITE))-1:0] data_out_write;
+always #5 clk = ~clk;
+
+integer i ,f;
 initial begin
-    /****************************************************************************************
-        -scenario #1.
-        -four read requests with same address (all have row hits).
-        -expected output:
-            all requests are pushed to first fifo.
-    ****************************************************************************************
-    Clock=0;
-    reset = 0;
+    //$monitor("%d , %d ,%d ,%d ,%d ,%d",`REQ_SIZE_READ,(`NUM_OF_BUFFERS)*(`REQ_SIZE_READ),`NUM_OF_BUFFERS,`REQ_SIZE_READ,
+    //`ARR_NUM_RD,`ARR_NUM_WR);
+    //f=$fopen("output.txt","w");
+    clk=0;
+    rst_n = 0;
     #6
-    reset=1;
-    read_enable=0;
-    #10
-    in={8'hff,7'd2,`READ}; //new input READ request with index 2 and address oxff
-    #10
-    in={8'hff,7'd3,`READ}; //new input READ request with index 3 and address oxff 
-    #10
-    in={8'hff,7'd4,`READ}; //new input READ request with index 4 and address oxff
-    #10
-    in={8'hff,7'd5,`READ}; //new input READ request with index 5 and address oxff*/
-
-    /****************************************************************************************
-        -scenario #2.
-        -five read requests with same address (all have row hits).
-        -expected output:
-            first four requests are pushed to first fifo.
-            the last request is pushed to the next empty fifo.
-    ****************************************************************************************
-    Clock=0;
-    reset = 0;
-    #6
-    reset=1;
-    read_enable=0;
-    #10
-    in={8'hff,7'd2,`READ}; //new input READ request with index 2 and address oxff
-    #10
-    in={8'hff,7'd3,`READ}; //new input READ request with index 3 and address oxff 
-    #10
-    in={8'hff,7'd4,`READ}; //new input READ request with index 4 and address oxff
-    #10
-    in={8'hff,7'd5,`READ}; //new input READ request with index 5 and address oxff
-    #10
-    in={8'hff,7'd6,`READ}; //new input READ request with index 6 and address oxff*/
-
-
-
-    /****************************************************************************************
-        -scenario #3.
-        -five read requests with all different addresses.
-        -expected output:
-            each request is pushed in order to all buffers, then it round over all again.
-            ex: if there are 4 fifos, then 1 request to each buffer and the five one is pued to first fifo.
-    ****************************************************************************************
-
-    Clock=0;
-    reset = 0;
-    #6
-    reset=1;
-    read_enable=0;
-    #10
-    in={8'hff,7'd2,`READ}; //new input READ request with index 2 and address oxff
-    #10
-    in={8'hef,7'd3,`READ}; //new input READ request with index 3 and address oxef 
-    #10
-    in={8'hdf,7'd4,`READ}; //new input READ request with index 4 and address oxdf
-    #10
-    in={8'hcf,7'd5,`READ}; //new input READ request with index 5 and address oxcf
-    #10
-    in={8'hbf,7'd6,`READ}; //new input READ request with index 6 and address oxhf*/
-
-
-    /****************************************************************************************
-        -scenario #4.
-        -six READ requests with addresses as following:
-             1-> A address.
-             2-> B address.
-             3-> B address.
-             4-> A address.
-             5-> A address.
-             6-> C address.
-        -expected output:
-            A addresses must be pushed into first fifo.
-            B addressses must be pushed into second fifo.
-            C address will be pushed into next fifo with most empty entries.
-              ---> the third and fourth fifos are empty, so it will pushed into the third one.
-    ****************************************************************************************
-
-    Clock=0;
-    reset = 0;
-    #6
-    reset=1;
-    read_enable=0;
-    #10
-    in={8'hff,7'd2,`READ}; //new input READ request with index 2 and address oxff
-    #10
-    in={8'hef,7'd3,`READ}; //new input READ request with index 3 and address oxef 
-    #10
-    in={8'hef,7'd4,`READ}; //new input READ request with index 4 and address oxef
-    #10
-    in={8'hff,7'd5,`READ}; //new input READ request with index 5 and address oxff
-    #10
-    in={8'hff,7'd6,`READ}; //new input READ request with index 6 and address oxff
-    #10
-    in={8'haf,7'd7,`READ}; //new input READ request with index 7 and address oxaf*/
-
-
-    /****************************************************************************************
-        -scenario #5.
-        -six requests with addresses as following:
-             1-> A address - read.
-             2-> B address - read.
-             3-> B address - write.
-             4-> A address - read.
-             5-> A address - write.
-             6-> C address - write.
-        -expected output:
-            read with A into first fifo.
-            read with B into second fifo.
-            write with B will not be processed.
-            read with A into first fifo.
-            write with A will not be processed.
-            write with C will not be processed.
-    ****************************************************************************************/
-
-    Clock=0;
-    reset = 0;
-    #6
-    reset=1;
-    read_enable=0;
-    #10
-    in={8'hff,7'd2,`READ}; //new input read request with index 2 and address oxff
-    #10
-    in={8'hef,7'd3,`READ}; //new input READ request with index 3 and address oxef 
-    #10
-    in={8'hef,7'd4,`WRITE}; //new input write request with index 4 and address oxef
-    #10
-    in={8'hff,7'd5,`READ}; //new input READ request with index 5 and address oxff
-    #10
-    in={8'hff,7'd6,`WRITE}; //new input write request with index 6 and address oxff
-    #10
-    in={8'haf,7'd7,`WRITE}; //new input write request with index 7 and address oxaf
-
-
+    rst_n=1;
+    pop = 7'd0;
+    valid = 1'b1 ;
+    fork  //use fork for  parallel operations
+        repeat(200) begin //insert new input data
+            @ (posedge clk);
+            in={$urandom(),$urandom()};
+            // now write the stored requests in fifo to compare with results
+           //$fwrite(f,"%h\n",5);
+            if(valid == 1'b1 && in[`TYPE_POS] == (`READ))
+                $monitor("%h\n",{in[`INDEX_POS+:`INDEX_BITS],in[`RA_POS +:`RA_BITS]});
+            if(valid == 1'b1 && in[`TYPE_POS] == (`WRITE))
+                $monitor("%h\n",{in[`INDEX_POS_WRITE+:`INDEX_BITS],in[`DATA_POS+:`DATA_BITS],in[`RA_POS+:`RA_BITS]});
+        end
+        /*repeat(200) begin //update valid signal before the next positive edge as valid is a mealy ouput from sender
+            @ (negedge clk);
+            valid = $urandom%2;
+        end*/
+    join
+    //$fclose(f);
 end
 
 
-
-
-genvar i;
+genvar g;
 generate
-   for (i=0; i < `NUM_OF_BUFFERS; i=i+1) 
-   begin
-     fifo#(.BUF_SIZE(`BUFFER_SIZE),.BUF_WIDTH(`BUF_WIDTH))
-     ff( .clk(Clock), .rst(reset), .buf_in(out), .buf_out(fifo_out[i]),.wr_en(write_enable[i]),.rd_en(read_enable[i]),.buf_empty(empty[i]),.buf_full(full[i]), .fifo_counter(free_entries[i]) );
-
-   end
+    for (g=0; g < `ARR_NUM_RD; g=g+1)  begin
+       generic_fifo #(.DATA_WIDTH(`REQ_SIZE_READ), .DATA_DEPTH(`ARR_SIZE_RD), .RA_POS(`RA_POS_READ) , .RA_BITS(`RA_BITS)) rd_fifo
+        (.clk(clk),.rst_n(rst_n),.data_i({in[`INDEX_POS+:`INDEX_BITS],in[`RA_POS +:`RA_BITS]}),.valid_i(push[g]),.grant_o(grant_o[g]),
+        .last_addr(last_addr[g*`RA_BITS +: `RA_BITS]),.mid(mid[g]),.data_o(data_out_read[(g*(`REQ_SIZE_READ)) +: (`REQ_SIZE_READ)]),.valid_o(valid_o[g]),.grant_i(pop[g]));    
+    end
+    for (g= `ARR_NUM_RD; g < `NUM_OF_BUFFERS; g=g+1)  begin
+       generic_fifo #(.DATA_WIDTH(`REQ_SIZE_WRITE) ,.DATA_DEPTH(`ARR_SIZE_WR), .RA_POS(`RA_POS_WRITE) , .RA_BITS(`RA_BITS)) wr_fifo
+        (.clk(clk),.rst_n(rst_n),.data_i({in[`INDEX_POS_WRITE+:`INDEX_BITS],in[`DATA_POS+:`DATA_BITS],in[`RA_POS+:`RA_BITS]}),.valid_i(push[g]),.grant_o(grant_o[g]),
+        .last_addr(last_addr[g*`RA_BITS +: `RA_BITS]),.mid(mid[g]),.data_o(data_out_write[(g-(`ARR_NUM_RD))*(`REQ_SIZE_WRITE)+:(`REQ_SIZE_WRITE)]),.valid_o(valid_o[g]),.grant_i(pop[g]));
+    end      
 endgenerate
 
-selector#(.TYPE(`READ),.ADDR_BITS(`ADDR_BITS), .ADDR_FIRST_POS(`ADDR_FIRST_POS) ,.BUFFER_SIZE(`BUFFER_SIZE)  ,.NUM_OF_BUFFERS(`NUM_OF_BUFFERS), .REQUEST_SIZE(`REQUEST_SIZE) )
-read_selector(.reset(reset),.clk(Clock),.data_in(in) ,.free_size(free_entries),.wr_en(write_enable),.data_out(out));
+
+
+
+Selector #(.RA_BITS(`RA_BITS),.RA_POS(`RA_POS) , .READ(`READ), .WRITE (`WRITE), .ARR_NUM_WR(`ARR_NUM_WR), .ARR_NUM_RD(`ARR_NUM_RD)) selector
+(.clk(clk), .rst_n(rst_n), .valid(valid), .in_type(in[`TYPE_POS]),.empty(~valid_o) , .full(~grant_o), .mid(mid),
+ .last_addr(last_addr),.in_addr(in[`RA_POS +: `RA_BITS]), .push(push));
 
 endmodule

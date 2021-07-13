@@ -1,8 +1,8 @@
-`include "BS_Definitions.svh"
+/*`include "BS_Definitions.svh"
 
 module BankScheduler_tb();
 
-/***inputs***/
+/***inputs**
 reg clk;
 reg rst_n;
 reg grant_i;
@@ -10,7 +10,7 @@ reg [`REQUEST_SIZE-1:0] in;
 reg valid_i ; 
 
 
-/***outputs***/
+/***outputs**
 wire [`REQUEST_SIZE-1:0] out ;
 wire req;
 wire fifo_grant_to_mapper;
@@ -32,7 +32,7 @@ initial begin
         -scenario #1.
         -eight mixed type requests with different addresses .
         -input request format ---> (`VALID_BIT+`ADDR_BITS+`INDEX_BITS+`TYPE_BIT+`DATA_BITS )
-    ****************************************************************************************/   
+    **************************************************************************************** 
     
     clk=0;
     rst_n = 0;
@@ -62,7 +62,7 @@ initial begin
     /*#10
     in={8'hdf,8'd4,`WRITE,7'd0}; 
     #10
-    in={8'hdf,8'd6,`WRITE,7'd0};*/
+    in={8'hdf,8'd6,`WRITE,7'd0};
 
 end
 
@@ -74,4 +74,4 @@ BankScheduler #(.REQ_SIZE(`REQUEST_SIZE),.TYPE_POS(`TYPE_POS),.ROW_BITS(`ROW_BIT
 ( .clk(clk),.rst_n(rst_n),.grant_i(grant_i),.valid_i(valid_o),.data_in(data_out),.grant_o(grant_o),.data_out(out),.req(req) );
 
 
-endmodule
+endmodule*/
