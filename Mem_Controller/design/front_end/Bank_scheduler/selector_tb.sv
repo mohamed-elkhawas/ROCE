@@ -62,7 +62,7 @@ always #5 clk = ~clk;
 
 integer i ,f;
 initial begin
-    //$monitor("%d , %d ,%d ,%d ,%d ,%d",`REQ_SIZE_READ,(`NUM_OF_BUFFERS)*(`REQ_SIZE_READ),`NUM_OF_BUFFERS,`REQ_SIZE_READ,
+    $monitor("(`NUM_OF_BUFFERS)*(`REQ_SIZE_READ) = %d `NUM_OF_BUFFERS*`REQ_SIZE_READ = %d",(`NUM_OF_BUFFERS)*(`REQ_SIZE_READ),`NUM_OF_BUFFERS*`REQ_SIZE_READ);
     //`ARR_NUM_RD,`ARR_NUM_WR);
     //f=$fopen("output.txt","w");
     clk=0;
