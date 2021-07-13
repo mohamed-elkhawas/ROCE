@@ -133,7 +133,8 @@ always_ff @(posedge clk ) begin
 				else begin
 					read_done = 0;
 					data_out = 0;
-					read_return_array [index] = { 1 , data_in };
+					read_return_array [index][ data_width -1  : 0 ] = data_in;
+					read_return_array [index][ data_width] = 1'b1 ;
 				end					
 			end
 				
@@ -172,7 +173,8 @@ always_ff @(posedge clk ) begin
 			end
 			if (valid) begin
 				if (the_type == read) begin
-					read_return_array [index] = { 1 , data_in };
+					read_return_array [index][ data_width -1  : 0 ] = data_in;
+					read_return_array [index][ data_width] = 1'b1 ;
 				end	
 				else begin
 					write_return_array [index] = 1;

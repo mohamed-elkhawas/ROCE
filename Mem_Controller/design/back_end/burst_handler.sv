@@ -24,9 +24,13 @@ module burst_handler import types_def::*;
 	input r_type arbiter_type,
 	
 	/////////////////////////////////////////////////////////////// memory interface
-
-
-
+	output CS_n                ,// Chip Select -> active low
+	output [13:0] CA           ,// Command / Address Port   
+	output CAI                 ,// Command / Address inversion
+	output [2:0] DM_n          ,// Data Mask -> byte based 
+	inout [15:0] DQ           ,// Data Port  
+	inout [2:0] DQS_t , DQS_c ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
+ 	inout ALERT_n             , // CRC/Parity error flag
 
 	/////////////////////////////////////////////////////////////// returner interface
 	output logic returner_valid,
@@ -40,7 +44,7 @@ module burst_handler import types_def::*;
 
 parameter wr_to_data =8, // on clk not posedge clk
 		  rd_to_data =11,
-		  burst_lentgh = 16;
+		  burst_lenth = 16;
 
 
 typedef struct packed {
@@ -271,40 +275,61 @@ end
 //////////// important note: returning_data state will start on read after recieving data from the memory on write after writing the data
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+	output [13:0] CA           ,// Command / Address Port   
+	output CAI                 ,// Command / Address inversion
+	output [2:0] DM_n          ,// Data Mask -> byte based 
+	output [15:0] DQ           ,// Data Port  
+	output [2:0] DQS_t , DQS_c ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
+ 	output ALERT_n             , // CRC/Parity error flag
+
 task ddr5_activate_p1(cmd_burst_id);
-	
+	CS_n <= 1'b0 ; // Chip Select -> active low
+	CA <= {2'b00,burst[cmd_burst_id].address.row[3:0],burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
 endtask 
 task ddr5_read_p1(cmd_burst_id);
-	
+	CS_n <= 1'b0;
+	CA <= {5'b10111,burst[cmd_burst_id].burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	/*if (burst[cmd_burst_id].mask[counter]) begin
+   		burst[cmd_burst_id].data <= DQ   ;
+	end	*/
 endtask 
 task ddr5_write_p1(cmd_burst_id);
-	
+	CS_n <= 1'b0;
+	CA <= {5'b10110,burst[cmd_burst_id].burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	/*if (burst[cmd_burst_id].mask[counter]) begin
+		DQ <= burst[cmd_burst_id].data[counter];
+	end*/
 endtask 
 task ddr5_precharge_p1(cmd_burst_id);
-	
+	CS_n <= 1'b0;
+	CA <= {1'b1,5'b11011,CID3,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,1'bx};            
 endtask 
 
 task ddr5_activate_p2(cmd_burst_id);
-	
+	CS_n <= 1'b1 ; // Chip Select -> active low
+	CA <= {burst[cmd_burst_id].address.row[15:4],1'bx};
 endtask 
 task ddr5_read_p2(cmd_burst_id);
-	
+	CS_n <= 1'b1;
+	CA <= {1'bx,burst[cmd_burst_id].address.col[10:3],1'bx,1'b0,&burst[cmd_burst_id].mask,1'bx,1'b0};
 endtask 
 task ddr5_write_p2(cmd_burst_id);
-	
+	CS_n <= 1'b1;
+	CA <= {1'bx,burst[cmd_burst_id].address.col[10:3],1'bx,1'b0,2'bxx,1'b0};
 endtask 
 task ddr5_precharge_p2(cmd_burst_id);
-	
+	//no part2
 endtask 
 task ddr5_write_data(cmd_burst_id,counter);
+	if (burst[cmd_burst_id].mask[counter]) begin
+		DQ <= burst[cmd_burst_id].data[counter];
+	end
 	
 endtask 
 task ddr5_read_data(cmd_burst_id,counter);
-/*
 	if (burst[cmd_burst_id].mask[counter]) begin
-		burst[cmd_burst_id].data <= memory_data_bus;
-	end
-*/	
+   		burst[cmd_burst_id].data <= DQ   ;
+	end	
 endtask 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -324,7 +349,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 	if(rst_n) begin
 		
 		if (in_burst_cmd == none) begin // all cmds are none
-			
+		
 			if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
 				
 				if (data_wait_counter != rd_to_data ) begin
