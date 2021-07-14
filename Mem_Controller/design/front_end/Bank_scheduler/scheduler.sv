@@ -117,7 +117,7 @@ end
 // Compute Next State and outputs
 always @(*) begin
     NS = CS ;
-    //NB = {{BURST_BITS{1'b0} , 1'b0 } ;  
+    NB = {{BURST_BITS{1'b0}} ;  
     valid_o = 1'b0 ; 
     pop = {NUM_OF_BUFFERS{1'b0}};
     cnt_up_rd = 1'b0;
@@ -180,10 +180,10 @@ always @(*) begin
             end
         end
         READ_BURST : begin
-            if ( |hits_rd == 1'b1 ) begin // burst hit exists
+            if ( |hits[ARR_NUM_RD-1:0] == 1'b1 ) begin // burst hit exists
                 NS  = READ_BURST;
                 valid_o= 1'b1 ;
-                pop[get_index({{NUM_OF_BUFFERS-ARR_NUM_RD{1'b0}},hits_rd},READ)]=1'b1;
+                pop[get_index(hits,READ)]=1'b1;
             end
             else begin // burst hit does not exist 
                 NS = FINISH ;
@@ -191,10 +191,10 @@ always @(*) begin
             end                             
         end
         WRITE_BURST : begin
-            if ( |hits_wr == 1'b1 ) begin // burst hit exists
+            if ( |hits[NUM_OF_BUFFERS-1:ARR_NUM_RD] == 1'b1 ) begin // burst hit exists
                 NS  = WRITE_BURST;
                 valid_o= 1'b1 ;
-                pop[get_index({hits_wr,{NUM_OF_BUFFERS-ARR_NUM_WR{1'b0}}},WRITE)]=1'b1;
+                pop[get_index(hits,WRITE)]=1'b1;
             end
             else begin // burst hit does not exist 
                 NS = FINISH ;

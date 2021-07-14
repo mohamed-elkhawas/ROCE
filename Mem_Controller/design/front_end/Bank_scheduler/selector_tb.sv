@@ -6,7 +6,7 @@
 `define CA_POS          4
 `define RA_POS          14
 `define BA_POS          30
-`define BD_POS          32
+`define BG_POS          32
 `define DATA_POS        33
 `define TYPE_POS        49
 `define INDEX_POS       50
@@ -19,7 +19,7 @@
 `define DATA_BITS       16
 `define TYPE_BITS       1
 `define INDEX_BITS      7
-`define REQ_SIZE        `CID_BITS+`CA_BITS+`RA_BITS+`BA_BITS+`BD_BITS+` DATA_BITS+`TYPE_BITS+`INDEX_BITS  
+`define REQ_SIZE        `CID_BITS+`CA_BITS+`RA_BITS+`BA_BITS+`BG_BITS+` DATA_BITS+`TYPE_BITS+`INDEX_BITS  
 
 //read requests definitions
 `define RA_POS_READ     0

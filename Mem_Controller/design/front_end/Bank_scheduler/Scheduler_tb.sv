@@ -46,7 +46,11 @@ localparam BURST_BITS = RA_BITS+CA_BITS-4;
 //inputs
 reg  clk;
 reg  rst_n;
-
+//inputs to fifos before scheduler
+reg   [DATA_BITS-1  : 0 ] data_i ;
+reg   [INDEX_BITS-1 : 0 ] idx_i ;
+reg   [RA_BITS-1    : 0 ] row_i ;
+reg   [CA_BITS-1    : 0 ] col_i ;
 reg  valid ;
 
 //intermediate signals
@@ -57,7 +61,7 @@ wire [NUM_OF_BUFFERS-1:0] grant_o , mid, valid_o ;
 wire  [(( `NUM_OF_BUFFERS) * (`RA_BITS)) -1 :0] last_addr; 
 
 //output signals
-wire [`NUM_OF_BUFFERS-1:0] push;
+wire [NUM_OF_BUFFERS-1:0] valid_o; //valid signal from scheduler to arbiter
 wire [((`ARR_NUM_RD) * (`REQ_SIZE_READ))-1:0] data_out_read;
 wire [((`ARR_NUM_WR) * (`REQ_SIZE_WRITE))-1:0] data_out_write;
 always #5 clk = ~clk;
@@ -111,7 +115,7 @@ endgenerate
 
 Scheduler #(.READ(READ), .WRITE (WRITE), .ARR_NUM_RD(ARR_NUM_RD), .ARR_NUM_WR(ARR_NUM_WR), .REQ_SIZE_READ(REQ_SIZE_READ), .REQ_SIZE_WRITE(REQ_SIZE_WRITE), .BURST_BITS(BURST_BITS)) scheduler
 (
-   .clk(clk), .rst_n(rst_n), ready , mode, //mode-->read or write draining
+   .clk(clk), .rst_n(rst_n), .ready(ready) , .mode(mode), //mode-->read or write draining
    .in_rd(in_rd) ,// input read data 
    .in_wr(in_wr) ,// input write data
    .empty(~valid_o , 
