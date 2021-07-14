@@ -24,13 +24,13 @@ module burst_handler import types_def::*;
 	input r_type arbiter_type,
 	
 	/////////////////////////////////////////////////////////////// memory interface
-	output CS_n                ,// Chip Select -> active low
-	output [13:0] CA           ,// Command / Address Port   
-	output CAI                 ,// Command / Address inversion
-	output [2:0] DM_n          ,// Data Mask -> byte based 
-	inout [15:0] DQ           ,// Data Port  
-	inout [2:0] DQS_t , DQS_c ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
- 	inout ALERT_n             , // CRC/Parity error flag
+	output logic CS_n                ,// Chip Select -> active low
+	output logic [13:0] CA           ,// Command / Address Port   
+	output logic CAI                 ,// Command / Address inversion
+	output logic [2:0] DM_n          ,// Data Mask -> byte based 
+	inout logic [15:0] DQ           ,// Data Port  
+	inout logic [2:0] DQS_t , DQS_c ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
+ 	inout logic ALERT_n             , // CRC/Parity error flag
 
 	/////////////////////////////////////////////////////////////// returner interface
 	output logic returner_valid,
@@ -44,7 +44,7 @@ module burst_handler import types_def::*;
 
 parameter wr_to_data =8, // on clk not posedge clk
 		  rd_to_data =11,
-		  burst_lentgh = 16;
+		  burst_length = 16;
 
 typedef struct packed {
 	logic [1:0] bank_group ;
@@ -59,9 +59,9 @@ typedef struct packed {
 	r_type the_type;
 	burst_states_type state;
 	burst_address_type address ;
-	logic [burst_lentgh-1:0][read_entries_log -1:0] index ;
-	logic [burst_lentgh-1:0][data_width -1:0] data ;
-	logic [burst_lentgh-1:0] mask;
+	logic [burst_length-1:0][read_entries_log -1:0] index ;
+	logic [burst_length-1:0][data_width -1:0] data ;
+	logic [burst_length-1:0] mask;
 
 	} burst_storage;
 
@@ -75,7 +75,7 @@ logic new_burst_flag , return_req;
 
 logic [$clog2(no_of_bursts) -1:0][$clog2(burst_lentgh) -1:0] burst_data_counter;
 
-logic [burst_lentgh-1:0] first_one_in_mask;
+logic [burst_length-1:0] first_one_in_mask;
 
 logic [$clog2(burst_lentgh)-1:0] first_one_id;
 
@@ -212,7 +212,7 @@ always_comb begin
 
 	first_one_in_mask = ( ~burst[out_burst].mask +1'b1 ) & burst[out_burst].mask ;
 	
-	for (int i = 0; i < burst_lentgh; i++) begin
+	for (int i = 0; i < burst_length; i++) begin
 		if (first_one_in_mask[i]) begin
 			first_one_id = i;
 		end
@@ -284,44 +284,41 @@ end
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+// CID3 = 0
+
 task ddr5_activate_p1(cmd_burst_id);
 	CS_n <= 1'b0 ; // Chip Select -> active low
 	CA <= {2'b00,burst[cmd_burst_id].address.row[3:0],burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
 endtask 
 task ddr5_read_p1(cmd_burst_id);
 	CS_n <= 1'b0;
-	CA <= {5'b10111,burst[cmd_burst_id].burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
-	/*if (burst[cmd_burst_id].mask[counter]) begin
-   		burst[cmd_burst_id].data <= DQ   ;
-	end	*/
+	CA <= {5'b10111,burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
 endtask 
 task ddr5_write_p1(cmd_burst_id);
 	CS_n <= 1'b0;
-	CA <= {5'b10110,burst[cmd_burst_id].burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
-	/*if (burst[cmd_burst_id].mask[counter]) begin
-		DQ <= burst[cmd_burst_id].data[counter];
-	end*/
+	CA <= {5'b10110,burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
 endtask 
 task ddr5_precharge_p1(cmd_burst_id);
 	CS_n <= 1'b0;
-	CA <= {1'b1,5'b11011,CID3,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,1'bx};            
+	CA <= {1'b1,5'b11011,1'b0,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,1'b0};            
 endtask 
 
 task ddr5_activate_p2(cmd_burst_id);
 	CS_n <= 1'b1 ; // Chip Select -> active low
-	CA <= {burst[cmd_burst_id].address.row[15:4],1'bx};
+	CA <= {burst[cmd_burst_id].address.row[15:4],1'b0};
 endtask 
 task ddr5_read_p2(cmd_burst_id);
 	CS_n <= 1'b1;
-	CA <= {1'bx,burst[cmd_burst_id].address.col[10:3],1'bx,1'b0,&burst[cmd_burst_id].mask,1'bx,1'b0};
+	CA <= {1'b0,burst[cmd_burst_id].address.column,1'b0,1'b0,&burst[cmd_burst_id].mask,1'b0,1'b0};
 endtask 
 task ddr5_write_p2(cmd_burst_id);
 	CS_n <= 1'b1;
-	CA <= {1'bx,burst[cmd_burst_id].address.col[10:3],1'bx,1'b0,2'bxx,1'b0};
+	CA <= {1'b0,burst[cmd_burst_id].address.column,1'b0,1'b0,2'b00,1'b0};
 endtask 
 task ddr5_precharge_p2(cmd_burst_id);
 	//no part2
 endtask 
+
 task ddr5_write_data(cmd_burst_id,counter);
 	if (burst[cmd_burst_id].mask[counter]) begin
 		DQ <= burst[cmd_burst_id].data[counter];
@@ -333,18 +330,9 @@ task ddr5_read_data(cmd_burst_id,counter);
    		burst[cmd_burst_id].data <= DQ   ;
 	end	
 endtask 
+
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-
-
-// // to make the memory interface command start at posedge 
-
-// logic clk_n;
-
-// always_ff @( clk ) begin
-// clk_n <= ~clk;
-// end
-// /////////////////////////////////////
 
 always_ff @( clk ) begin ///////////////// memory interface 
 
@@ -425,3 +413,11 @@ end
 
 endmodule
 
+// // to make the memory interface command start at posedge 
+
+// logic clk_n;
+
+// always_ff @( clk ) begin
+// clk_n <= ~clk;
+// end
+// /////////////////////////////////////
