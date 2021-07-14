@@ -54,8 +54,8 @@ end
 
 // Compute Next State and mealy outputs
 always @ (*)begin
-    en    = 1'b0  ;
-    sel   = 2'dx  ; 
+    en      = 1'b0  ;
+    sel    = 2'd0  ;  //dont care
     Ready_A = 1'b0  ;
     Ready_B = 1'b0  ;
     Ready_C = 1'b0  ;

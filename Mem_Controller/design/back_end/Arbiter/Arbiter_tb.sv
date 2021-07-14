@@ -41,7 +41,7 @@ wire   [DATA_BITS-1  : 0 ] data_o ;
 wire   [INDEX_BITS-1 : 0 ] idx_o ;
 wire   [RA_BITS-1    : 0 ] row_o ;
 wire   [CA_BITS-1    : 0 ] col_o ;
-
+wire [1:0] ba_o , bg_o ; 
 
 
 

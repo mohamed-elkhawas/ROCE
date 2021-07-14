@@ -31,7 +31,7 @@ module txn_controller import types_def::*;
 	
 );
 
-request out_req;
+opt_request out_req;
 logic [ read_entries_log -1 : 0 ] out_index;
 logic  [15:0] bank_out_valid;
 

@@ -1,6 +1,6 @@
 
 module back_end import types_def::*;
-#(parameter no_of_bursts  = 4, INDEX_BITS = 7 , parameter RA_BITS = 16 , parameter CA_BITS = 10 , parameter DATA_BITS = 16)
+#(parameter no_of_bursts  = 4, parameter INDEX_BITS = 7 , parameter RA_BITS = 16 , parameter CA_BITS = 10 , parameter DATA_BITS = 16)
 (  //inputs
 	input clk,    
 	input rst_n,  
@@ -21,7 +21,7 @@ module back_end import types_def::*;
 );
 
 //velcoce request format
-localparam  CID_POS         =0,
+/*localparam  CID_POS         =0,
             CA_POS          =4,
             RA_POS          =14,
             BA_POS          =30,
@@ -40,7 +40,7 @@ localparam  CID_POS         =0,
             REQ_SIZE        =CA_BITS+RA_BITS+BA_BITS+BG_BITS+DATA_BITS+TYPE_BITS+INDEX_BITS ; // +CID_BITS -->removed as we deal with one chip 
 
 
-
+*/
 
 
     // intemediate signals between arbiter and burst handler
@@ -69,7 +69,7 @@ Arbiter #(.INDEX_BITS(INDEX_BITS), .RA_BITS(RA_BITS), .CA_BITS(CA_BITS), .DATA_B
 
 burst_handler #(.no_of_bursts (4))  the_handler  (.clk(clk),.rst_n(rst_n),.out_burst_state(burst_state),.out_burst_type(burst_type),
 	.out_burst_address(burst_address),.in_burst_cmd(burst_cmd_o),.in_cmd_index(cmd_index_o),.empty_bursts_counter(),.arbiter_valid(wr_en),.in_req_address({col_o,row_o}),
-	.arbiter_data(data_o),.arbiter_index(idx_o),.arbiter_type(data_out[TYPE_POS+:TYPE_BITS]),.returner_valid(returner_valid),.returner_type(returner_type),.returner_data(returner_data),.returner_index(returner_index));
+	.arbiter_data(data_o),.arbiter_index(idx_o),.arbiter_type(1'b1/*data_o[TYPE_POS+:TYPE_BITS]*/),.returner_valid(returner_valid),.returner_type(returner_type),.returner_data(returner_data),.returner_index(returner_index));
 
 timing_controller the_timing_controller (.clk(clk),.rst_n(rst_n),.in_burst_state(burst_state),.in_burst_type(burst_type),.in_burst_address(burst_address),.burst_start_next_cmd(burst_cmd_o),.cmd_i(cmd_index_o));
 
