@@ -44,7 +44,7 @@ module burst_handler import types_def::*;
 
 parameter wr_to_data =8, // on clk not posedge clk
 		  rd_to_data =11,
-		  burst_lenth = 16;
+		  burst_lentgh = 16;
 
 typedef struct packed {
 	logic [1:0] bank_group ;
@@ -58,7 +58,7 @@ typedef struct packed {
 typedef struct packed {
 	r_type the_type;
 	burst_states_type state;
-	logic burst_address_type address ;
+	burst_address_type address ;
 	logic [burst_lentgh-1:0][read_entries_log -1:0] index ;
 	logic [burst_lentgh-1:0][data_width -1:0] data ;
 	logic [burst_lentgh-1:0] mask;
@@ -283,12 +283,6 @@ end
 //////////// important note: returning_data state will start on read after recieving data from the memory on write after writing the data
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-	output [13:0] CA           ,// Command / Address Port   
-	output CAI                 ,// Command / Address inversion
-	output [2:0] DM_n          ,// Data Mask -> byte based 
-	output [15:0] DQ           ,// Data Port  
-	output [2:0] DQS_t , DQS_c ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
- 	output ALERT_n             , // CRC/Parity error flag
 
 task ddr5_activate_p1(cmd_burst_id);
 	CS_n <= 1'b0 ; // Chip Select -> active low
