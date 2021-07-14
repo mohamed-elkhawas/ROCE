@@ -1,6 +1,6 @@
 
 module back_end import types_def::*;
-#(parameter INDEX_BITS = 7 , parameter RA_BITS = 16 , parameter CA_BITS = 10 , parameter DATA_BITS = 16)
+#(parameter no_of_bursts  = 4, INDEX_BITS = 7 , parameter RA_BITS = 16 , parameter CA_BITS = 10 , parameter DATA_BITS = 16)
 (  //inputs
 	input clk,    
 	input rst_n,  
@@ -55,7 +55,7 @@ localparam  CID_POS         =0,
 	wire r_type [no_of_bursts-1:0] burst_type;
 	wire address_type [no_of_bursts-1:0] burst_address; /// I need the row , bank and bank_group bits
 
-	wire command burst_cmd_o	// start cmd 
+	wire command burst_cmd_o;	// start cmd 
 	wire [$clog2(no_of_bursts)-1:0] cmd_index_o;
     wire [$clog2(no_of_bursts) :0]  empty_bursts_counter;
 
@@ -67,11 +67,11 @@ Arbiter #(.INDEX_BITS(INDEX_BITS), .RA_BITS(RA_BITS), .CA_BITS(CA_BITS), .DATA_B
 
 
 
-burst_handler m (.clk(clk),.rst_n(rst_n),.out_burst_state(burst_state),.out_burst_type(burst_type),
-	.out_burst_address(burst_address),.in_burst_cmd(burst_cmd_o),.in_cmd_index(cmd_index_o),.start_new_burst,.arbiter_valid(wr_en),.in_req_address({col_o,row_o}),
-	.arbiter_data(data_o),.arbiter_index((idx_o),.arbiter_type((data_out[TYPE_POS+:TYPE_BITS])),.returner_valid(returner_valid),.returner_type(returner_type),.returner_data(returner_data),.returner_index(returner_index));//,test);
+burst_handler #(.no_of_bursts (4))  the_handler  (.clk(clk),.rst_n(rst_n),.out_burst_state(burst_state),.out_burst_type(burst_type),
+	.out_burst_address(burst_address),.in_burst_cmd(burst_cmd_o),.in_cmd_index(cmd_index_o),.empty_bursts_counter(),.arbiter_valid(wr_en),.in_req_address({col_o,row_o}),
+	.arbiter_data(data_o),.arbiter_index(idx_o),.arbiter_type(data_out[TYPE_POS+:TYPE_BITS]),.returner_valid(returner_valid),.returner_type(returner_type),.returner_data(returner_data),.returner_index(returner_index));
 
-timing_controller t (.clk(clk),.rst_n(rst_n),.in_burst_state(burst_state),.in_burst_type(burst_type),.in_burst_address(burst_address),.burst_start_next_cmd(burst_cmd_o),.cmd_i(cmd_index_o));
+timing_controller the_timing_controller (.clk(clk),.rst_n(rst_n),.in_burst_state(burst_state),.in_burst_type(burst_type),.in_burst_address(burst_address),.burst_start_next_cmd(burst_cmd_o),.cmd_i(cmd_index_o));
 
 
 endmodule
