@@ -57,7 +57,7 @@ task save_the_waiting_req ();
 	waiting_req.req_type <= in_request.req_type;
 	waiting_req.address <=  output_address  ;
 	waiting_req.data <= in_request.data  ;
-	bank_out_valid <= 0;			
+	//bank_out_valid <= 0;			
 endtask
 
 
@@ -149,11 +149,12 @@ always_comb begin
 	valid_out = 0;
 	out_busy = 0;
 	update_waiting_req= 0;
-	bank_out_valid =0;
+	
 
 	case (next_state)
 		
 		read_state : begin
+bank_out_valid =0;
 
 			if ( stop_reading == 0  &&  in_busy [{ output_address.bank_group , output_address.bank}] == 0 ) begin
 			
@@ -179,6 +180,7 @@ always_comb begin
 		
 		write_state : begin
 
+bank_out_valid =0;
 			if ( stop_writing == 0  &&  in_busy [{ output_address.bank_group , output_address.bank}] == 0 ) begin
 
 				valid_out = 1;
@@ -202,7 +204,7 @@ always_comb begin
 		end
 		
 		busy_state : begin
-			
+			bank_out_valid =0;
 			save_waiting_req = 1;
 
 			if (waiting_req.req_type == read) begin
@@ -251,11 +253,13 @@ always_comb begin
 		end
 		
 		idle : begin
+bank_out_valid =0;
 			out_req = 0;
 			out_index = 0;
 		end
 
 		reset_state : begin
+bank_out_valid =0;
 			update_waiting_req =0;
 			save_waiting_req = 0;			
 			out_req = 0;
@@ -263,6 +267,7 @@ always_comb begin
 		end
 
 		default : begin
+bank_out_valid =0;
 			update_waiting_req =0;
 			save_waiting_req = 0;					
 			out_req = 0;
