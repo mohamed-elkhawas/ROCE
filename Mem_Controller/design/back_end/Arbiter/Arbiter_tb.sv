@@ -1,23 +1,53 @@
-`define REQ_SIZE 16
-`define CLK_PERIOD 5
-
 module Arbiter_tb();
+
+//velcoce request format
+localparam  CID_POS         =0,
+            CA_POS          =4,
+            RA_POS          =14,
+            BA_POS          =30,
+            BG_POS          =32,
+            DATA_POS        =33,
+            TYPE_POS        =49,
+            INDEX_POS       =50,
+            CID_BITS        =4,
+            CA_BITS         =10,
+            RA_BITS         =16,
+            BA_BITS         =2,
+            BG_BITS         =2,
+            DATA_BITS       =16,
+            TYPE_BITS       =1,
+            INDEX_BITS      =7,
+            REQ_SIZE        =CA_BITS+RA_BITS+BA_BITS+BG_BITS+DATA_BITS+TYPE_BITS+INDEX_BITS ; // +CID_BITS -->removed as we deal with one chip 
 
 /***inputs***/
 reg clk;
 reg rst_n;
-reg [15:0] valid /*, req*/;
-reg [15:0] [`REQ_SIZE-1 : 0 ] data_in ; 
+reg [15:0] valid ;
+reg [15:0] [REQ_SIZE-1 : 0 ] data_in ; 
+
+
+//wires for slicing data_in
+reg  [15:0] [DATA_BITS-1  : 0 ] data_i ;
+reg  [15:0] [INDEX_BITS-1 : 0 ] idx_i ;
+reg  [15:0] [RA_BITS-1    : 0 ] row_i ;
+reg  [15:0] [CA_BITS-1    : 0 ] col_i ;
 
 
 /***outputs***/
-wire [`REQ_SIZE-1:0] data_out ;
-//wire [15:0] ack;
 wire [15:0] ready;
 wire wr_en ; 
 
+wire   [DATA_BITS-1  : 0 ] data_o ;
+wire   [INDEX_BITS-1 : 0 ] idx_o ;
+wire   [RA_BITS-1    : 0 ] row_o ;
+wire   [CA_BITS-1    : 0 ] col_o ;
+
+
+
+
+
 reg [15:0] [3:0]counter ;
-integer index,i,j ;
+integer index,i,j;
 
 task set_counters ;
 input [31:0] num;
@@ -36,7 +66,7 @@ endtask
 
 task update_single_bank_data;
 input [32:0] index;
-data_in[index] = $urandom ; 
+{data_i[index],idx_i[index],col_i[index],row_i[index]} = {$urandom,$urandom} ; 
 endtask
 
 
@@ -48,8 +78,8 @@ for(k = 0 ;k<16 ; k=k+1) //get random data
 endtask
 
 
-always #`CLK_PERIOD clk = ~clk;
-initial begin   
+always #5 clk = ~clk;
+initial begin 
     clk=0;
     rst_n = 0;
     //req=16'h0000;
@@ -93,9 +123,13 @@ initial begin
     join     
 end
 
-Arbiter #(.REQ_SIZE(`REQ_SIZE)) arbiter
-(.clk(clk),.rst_n(rst_n), .Valid(valid), .Data_in(data_in) , .Data_out(data_out) , .wr_en(wr_en),.Ready(ready));
+Arbiter #(.INDEX_BITS(INDEX_BITS), .RA_BITS(RA_BITS), .CA_BITS(CA_BITS), .DATA_BITS(DATA_BITS)) arbiter
+(.clk(clk),.rst_n(rst_n), .valid(valid), .data_i(data_i) ,.idx_i(idx_i) ,.row_i(row_i) ,
+    .col_i(col_i) ,  .data_o(data_o) ,.idx_o(idx_o)  ,.row_o(row_o)  , .col_o(col_o)  ,
+    .ba_o(ba_o) ,.bg_o(bg_o), .wr_en(wr_en),.Ready(ready));
 
+    
 
-
+    
+    
 endmodule

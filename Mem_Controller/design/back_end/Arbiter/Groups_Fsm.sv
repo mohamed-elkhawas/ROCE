@@ -49,7 +49,7 @@ always @(*) begin
         4'b0010 : sel = 2'd1 ;
         4'b0100 : sel = 2'd2 ;
         4'b1000 : sel = 2'd3 ;
-        default : sel = 2'dx ;  
+        default : sel = 2'd0 ; //dont care 
     endcase
 end
 /************************************************FSM signals*****************************************************/
