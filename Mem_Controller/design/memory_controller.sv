@@ -7,8 +7,8 @@ module memory_controller import types_def::*; (
  	/////////////////// 	input		 \\\\\\\\\\\\\\\\\\\\\\\\
 	input in_valid, 	
 	input logic in_request_type ,
-    	input logic [data_width-1:0] in_request_data ,
-    	input logic [address_width-1:0] in_request_address , 
+    input logic [data_width-1:0] in_request_data ,
+    input logic [address_width-1:0] in_request_address , 
 	output logic out_busy, 
 
 	///////////////////// 	output	 \\\\\\\\\\\\\\\\\\\\\\\\\
@@ -46,10 +46,12 @@ logic [ read_entries_log -1 : 0 ] index;
 
 // .* connect every connection with it's name
 
-front_end #( REQ_SIZE ) the_front_end (.*); 
+front_end #( .REQ_SIZE(REQ_SIZE) ) the_front_end (.*); 
 
-back_end the_back_end(
+back_end #(.no_of_bursts(4),.INDEX_BITS(7) ,.RA_BITS(16) ,.CA_BITS(10) ,.DATA_BITS(16))
 
+	the_back_end(
+	// your connections
 	.CS_n,.CA,.CAI,.DM_n,.DQ,.DQS_t,.DQS_c,.ALERT_n // memory ports
 	);
 
