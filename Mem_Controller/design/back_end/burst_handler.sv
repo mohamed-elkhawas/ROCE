@@ -15,7 +15,7 @@ module burst_handler import types_def::*;
 	input [$clog2(no_of_bursts)-1:0] in_cmd_index,
 	
 	/////////////////////////////////////////////////////////////// banks arbiter
-	output logic [$clog2(no_of_bursts) :0]  empty_bursts_counter,
+	output logic start_new_burst,
 
 	input arbiter_valid,
 	input address_type in_req_address,
@@ -24,23 +24,32 @@ module burst_handler import types_def::*;
 	input r_type arbiter_type,
 	
 	/////////////////////////////////////////////////////////////// memory interface
-	output logic  CS_n         ,// Chip Select -> active low
-	output logic  [13:0] CA    ,// Command / Address Port   
-	output logic  CAI          ,// Command / Address inversion
-	output logic  [2:0] DM_n   ,// Data Mask -> byte based 
-	inout  logic  [15:0] DQ    ,// Data Port  
-	inout  logic  [2:0] DQS_t  ,  // Data Strobes (diff pair) // ~Data Strobes (diff pair)
- 	inout  logic  [2:0] DQS_c  ,
-	inout  logic  ALERT_n      , // CRC/Parity error flag
+	output logic CS_n                ,// Chip Select -> active low
+	output logic [13:0] CA           ,// Command / Address Port   
+	output logic CAI                 ,// Command / Address inversion
+	output logic [2:0] DM_n          ,// Data Mask -> byte based 
+	inout [data_width-1:0] DQ  ,// Data Port  
+	inout logic [2:0] DQS_t , DQS_c  ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
+ 	inout logic ALERT_n              , // CRC/Parity error flag
 
 	/////////////////////////////////////////////////////////////// returner interface
 	output logic returner_valid,
 	output r_type returner_type,
 	output logic [data_width-1:0] returner_data,
 	output logic [read_entries_log -1:0] returner_index
-	//input test
 
 	);
+
+/// inout ports \\\
+
+logic [data_width-1:0] DQ_logic;
+logic [2:0] DQS_t_logic , DQS_c_logic  ;
+logic ALERT_n_logic;
+
+assign DQ = DQ_logic;
+assign DQS_t = DQS_t_logic;
+assign DQS_c = DQS_c_logic;
+assign ALERT_n = ALERT_n_logic;
 
 
 parameter wr_to_data =8, // on clk not posedge clk
@@ -86,6 +95,8 @@ logic [$clog2(no_of_bursts) -1:0] cmd_burst_id;
 
 command cmd_to_send;
 
+logic [$clog2(no_of_bursts) :0]  empty_bursts_counter;
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // there are 3 main blocks with 1 storage element shared between them													//
 // input requests from arbiter to storage and to timing cont. 	// turn timing cmds  to memory // return reqto returner //
@@ -93,6 +104,27 @@ command cmd_to_send;
 
 
 // updating burst_storage  //dealing with arbiter // outputs burst states, address and type
+
+
+always_ff @(posedge clk) begin 
+	
+	if (empty_bursts_counter > 1) begin
+		start_new_burst <= 1;
+	end
+	
+	else begin		
+		if (empty_bursts_counter == 1) begin
+			
+			if (start_new_burst == 1) begin
+				start_new_burst <= 0;
+			end
+			
+			else start_new_burst <= 1;
+		end
+		
+		else start_new_burst <= 0;
+	end
+end
 
 
 always_comb begin // calculate which burst and new_burst_flag
@@ -261,7 +293,7 @@ always_ff @(  posedge clk ) begin
 end
 
 /*
-// testing returning data
+// testing returning data to returner
 always_ff @(posedge clk ) begin
 	if (test) begin
 		for (int i = 0; i < no_of_bursts; i++) begin
@@ -322,7 +354,7 @@ endtask
 
 task ddr5_write_data(cmd_burst_id,counter);
 	if (burst[cmd_burst_id].mask[counter]) begin
-		DQ <= burst[cmd_burst_id].data[counter];
+		DQ_logic <= burst[cmd_burst_id].data[counter];
 	end
 	
 endtask 
@@ -350,7 +382,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 			end
 			
 			
-			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd) begin
+			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd && burst_data_counter[cmd_burst_id] < burst_length) begin
 				
 				if (data_wait_counter == rd_to_data) begin
 					burst[cmd_burst_id].state <= returning_data;
@@ -361,7 +393,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 			
 			end
 
-			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd) begin
+			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd && burst_data_counter[cmd_burst_id] < burst_length ) begin
 
 				if (data_wait_counter == wr_to_data) begin
 					burst[cmd_burst_id].state <= returning_data;
@@ -392,7 +424,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 			end
 
 			else begin
-				data_wait_counter <= 1;
+				data_wait_counter <= 0;
 				case (cmd_to_send)
 					activate:ddr5_activate_p2(cmd_burst_id);
 					read_cmd:ddr5_read_p2(cmd_burst_id);
@@ -413,12 +445,3 @@ end
 
 
 endmodule
-
-// // to make the memory interface command start at posedge 
-
-// logic clk_n;
-
-// always_ff @( clk ) begin
-// clk_n <= ~clk;
-// end
-// /////////////////////////////////////
