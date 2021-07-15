@@ -9,23 +9,23 @@ logic [data_width-1:0] in_request_data , data_out;
 logic [address_width-1:0] in_request_address;
 
 
-//////////////// signals between memory  and controller \\\\\\\\\\\
-// logic CS_n;                
-// logic [13:0] CA;              
-// logic CAI;          
-// logic [2:0] DM_n;          
-// logic [15:0] DQ;          
-// logic [2:0] DQS_t , DQS_c ;
-// logic ALERT_n;
+////////////// signals between memory  and controller \\\\\\\\\\\
+logic CS_n;                
+logic [13:0] CA;              
+logic CAI;          
+logic [2:0] DM_n;          
+logic [data_width-1:0] DQ;          
+logic [2:0] DQS_t , DQS_c ;
+logic ALERT_n;
 
-//////////////// signals to the memory \\\\\\\\\\\
+////////////// signals to the memory \\\\\\\\\\\
 
-// assign RST_N = rst_n;
-// assign CK_t = clk;
-// assign CK_c = ~clk; // or 0 not sure
+assign RST_N = rst_n;
+assign CK_t = clk;
+assign CK_c = ~clk; // or 0 not sure
 
-// memory_controller the_memory_controller (.*);
-// veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(16)) the_memory (.*);
+memory_controller the_memory_controller (.*);
+veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
 
 // Clock generator
