@@ -1,6 +1,6 @@
 module the_optimum_tb ;
 
-logic clk , rst_n;
+logic clk , rst_n ,RST_N ,CK_t , CK_c;
 
 localparam data_width = 16, address_width = 30;
 
@@ -9,7 +9,23 @@ logic [data_width-1:0] in_request_data , data_out;
 logic [address_width-1:0] in_request_address;
 
 
-// memory_controller the_memory_controller (.clk,.rst_n,.in_valid,.in_request_type,.in_request_data,.in_request_address,.out_busy,.write_done,.read_done,.data_out);
+//////////////// signals between memory  and controller \\\\\\\\\\\
+// logic CS_n;                
+// logic [13:0] CA;              
+// logic CAI;          
+// logic [2:0] DM_n;          
+// logic [15:0] DQ;          
+// logic [2:0] DQS_t , DQS_c ;
+// logic ALERT_n;
+
+//////////////// signals to the memory \\\\\\\\\\\
+
+// assign RST_N = rst_n;
+// assign CK_t = clk;
+// assign CK_c = ~clk; // or 0 not sure
+
+// memory_controller the_memory_controller (.*);
+// veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(16)) the_memory (.*);
 
 
 // Clock generator
@@ -22,7 +38,7 @@ logic done_entering_flag = 0;
 logic [10:0] realy_done_this_time = 0;
 
 logic [30:0] op_no =0;
-logic op_type = 1;
+logic op_type = 1; // write
 logic [address_width-1:0] the_right_data = 0;
 
 initial begin
@@ -39,6 +55,8 @@ initial begin
 	#100
 
 	for (int i = 0; i < 100000; i++) begin
+		@(posedge clk)
+		
 		if (done_entering_flag == 0) begin
 			if (!out_busy) begin
 
