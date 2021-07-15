@@ -2,7 +2,7 @@ package types_def;
 
 	parameter
 
-		data_width  = 32, 	
+		data_width  = 16, 	
 		address_width = 30,
 		read_entries  = 64,
 		read_entries_log = 6,
