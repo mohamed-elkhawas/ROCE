@@ -16,10 +16,10 @@ logic out_busy , in_valid, in_request_type ,write_done, read_done;
 logic [data_width-1:0] in_request_data , data_out;
 logic [address_width-1:0] in_request_address;
 
+ 
+// memory_controller the_memory_controller (.*);
 
-// memory_controller the_memory_controller (.clk,.rst_n,.in_valid,.in_request_type,.in_request_data,.in_request_address,.out_busy,.write_done,.read_done,.data_out);
-
-
+// 
 
 // Clock generator
   always begin
