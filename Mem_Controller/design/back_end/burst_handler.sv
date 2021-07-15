@@ -29,8 +29,8 @@ module burst_handler import types_def::*;
 	output logic CAI                 ,// Command / Address inversion
 	output logic [2:0] DM_n          ,// Data Mask -> byte based 
 	inout [data_width-1:0] DQ  ,// Data Port  
-	inout logic [2:0] DQS_t , DQS_c  ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
- 	inout logic ALERT_n              , // CRC/Parity error flag
+	inout [2:0] DQS_t , DQS_c  ,// Data Strobes (diff pair) // ~Data Strobes (diff pair)
+ 	inout ALERT_n              , // CRC/Parity error flag
 
 	/////////////////////////////////////////////////////////////// returner interface
 	output logic returner_valid,
