@@ -317,36 +317,45 @@ end
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-// CID3 = 0
+
+localparam BL_bar = 0,	AP_bar = 1;
+
 
 task ddr5_activate_p1(cmd_burst_id);
 	CS_n <= 1'b0 ; // Chip Select -> active low
-	CA <= {2'b00,burst[cmd_burst_id].address.row[3:0],burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	//CA <= {2'b00,burst[cmd_burst_id].address.row[3:0],burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.row[3:0],2'b00};
 endtask 
 task ddr5_read_p1(cmd_burst_id);
 	CS_n <= 1'b0;
-	CA <= {5'b10111,burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	//CA <= {5'b10111,BL_bar,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,BL_bar,5'b11101};
 endtask 
 task ddr5_write_p1(cmd_burst_id);
 	CS_n <= 1'b0;
-	CA <= {5'b10110,burst_length,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	//CA <= {5'b10110,BL_bar,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,3'b000};
+	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,BL_bar,5'b01101};
 endtask 
 task ddr5_precharge_p1(cmd_burst_id);
 	CS_n <= 1'b0;
-	CA <= {1'b1,5'b11011,1'b0,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,1'b0};            
+	//CA <= {1'b1,5'b11011,1'b0,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.bank_group,1'b0};
+	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,6'b011011};
 endtask 
 
 task ddr5_activate_p2(cmd_burst_id);
 	CS_n <= 1'b1 ; // Chip Select -> active low
-	CA <= {burst[cmd_burst_id].address.row[15:4],1'b0};
+	//CA <= {burst[cmd_burst_id].address.row[15:4],1'b0};
+	CA <= {1'b0,burst[cmd_burst_id].address.row[15:4]};
 endtask 
 task ddr5_read_p2(cmd_burst_id);
 	CS_n <= 1'b1;
-	CA <= {1'b0,burst[cmd_burst_id].address.column,1'b0,1'b0,&burst[cmd_burst_id].mask,1'b0,1'b0};
+	//CA <= {1'b0,burst[cmd_burst_id].address.column,1'b0,1'b0,&burst[cmd_burst_id].mask,1'b0,1'b0};
+	CA <= {3'b000,AP_bar,1'b0,burst[cmd_burst_id].address.column,1'b0,1'b1};
 endtask 
 task ddr5_write_p2(cmd_burst_id);
 	CS_n <= 1'b1;
-	CA <= {1'b0,burst[cmd_burst_id].address.column,1'b0,1'b0,2'b00,1'b0};
+	//CA <= {1'b0,burst[cmd_burst_id].address.column,1'b0,1'b0,2'b00,1'b0};
+	CA <= {2'b00,&burst[cmd_burst_id].mask,AP_bar,1'b0,burst[cmd_burst_id].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
 endtask 
 task ddr5_precharge_p2(cmd_burst_id);
 	//no part2
@@ -356,12 +365,16 @@ task ddr5_write_data(cmd_burst_id,counter);
 	if (burst[cmd_burst_id].mask[counter]) begin
 		DQ_logic <= burst[cmd_burst_id].data[counter];
 	end
+	DQS_t_logic <= clk;
+	DQS_c_logic <= ~clk;
 	
 endtask 
 task ddr5_read_data(cmd_burst_id,counter);
 	if (burst[cmd_burst_id].mask[counter]) begin
    		burst[cmd_burst_id].data <= DQ   ;
 	end	
+	DQS_t_logic <= clk;
+	DQS_c_logic <= ~clk;
 endtask 
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
