@@ -1,4 +1,4 @@
-module Write_Counter
+module cntr_bs_sch_rc
 #(parameter ARR_NUM_WR , parameter ARR_SIZE_WR , parameter READ = 1'b1 , parameter WRITE = 1'b0 )
 (
    input   clk , rst_n , in_type , out_type , grant_o, //grant_o =1 in case of successful reading the input to scheduler

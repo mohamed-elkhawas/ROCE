@@ -239,7 +239,7 @@ module generic_fifo
                 mid = (Pop_Pointer_CS - Push_Pointer_CS) >=  DATA_DEPTH/2;
       end
 
-      FULL:
+      FULL: 
           mid = 1'b1;
       default :
           mid = 1'b1;
