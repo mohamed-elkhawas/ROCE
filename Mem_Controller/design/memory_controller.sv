@@ -23,9 +23,9 @@ module memory_controller import types_def::*; (
 	output logic [13:0] CA           ,// Command / Address Port   
 	output logic CAI                 ,// Command / Address inversion
 	output logic [2:0] DM_n          ,// Data Mask -> byte based 
-	inout logic [15:0] DQ           , // Data Port  
-	inout logic [2:0] DQS_t , DQS_c , // Data Strobes (diff pair) // ~Data Strobes (diff pair)
- 	inout logic ALERT_n               // CRC/Parity error flag
+	inout [15:0] DQ           , // Data Port  
+	inout [2:0] DQS_t , DQS_c , // Data Strobes (diff pair) // ~Data Strobes (diff pair)
+ 	inout ALERT_n               // CRC/Parity error flag
 	
 );
 
@@ -46,7 +46,7 @@ logic [ read_entries_log -1 : 0 ] index;
 
 // .* connect every connection with it's name
 
-front_end the_front_end (.*); 
+front_end #( .REQ_SIZE(REQ_SIZE) ) the_front_end (.*); 
 
 back_end the_back_end(.*);
 
