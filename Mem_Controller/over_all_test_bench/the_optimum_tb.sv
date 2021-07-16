@@ -1,5 +1,7 @@
 module the_optimum_tb ;
 
+// pragma attribute txn_controller_tb partition_module_xrt
+
 logic clk , rst_n ,RST_N ,CK_t , CK_c;
 
 localparam data_width = 16, address_width = 30;
@@ -28,12 +30,23 @@ memory_controller the_memory_controller (.*);
 veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
 
-// Clock generator
-  always begin
-    #1 clk = 1;
-    #1 clk = 0;
-  end
+// tbx clkgen inactive_negedge
+initial  begin
+    clk = 0;
+    #1;
+    forever 
+    #1 clk = ~clk;
+end
 
+XlResetGenerator #(10) resetGenerator ( clk, rst);
+
+task delay(cycle);
+	repeat (cycle) begin
+		@(posedge clk);
+	end
+endtask 
+
+	
 logic done_entering_flag = 0;
 logic [10:0] realy_done_this_time = 0;
 
@@ -41,18 +54,13 @@ logic [30:0] op_no =0;
 logic op_type = 1; // write
 logic [address_width-1:0] the_right_data = 0;
 
+	
 initial begin
 
-	rst_n = 0;
+	
 	in_valid = 0;
 
-	#10
-
-	@(posedge clk)
-	
-	rst_n = 1;
-	
-	#100
+	delay(100);
 
 	for (int i = 0; i < 100000; i++) begin
 		@(posedge clk)
