@@ -318,7 +318,7 @@ end
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
-localparam BL_bar = 0,	AP_bar = 1;
+localparam BL_bar = 1,	AP_bar = 1; //BL ->1 length =16
 
 
 task ddr5_activate_p1(cmd_burst_id);
