@@ -1,4 +1,4 @@
-module cntr_bs_sch_tb();
+/*module cntr_bs_sch_tb();
 
 localparam READ  = 1'b1,
            WRITE = 1'b0;
@@ -62,7 +62,8 @@ wire [(BURST*RD_FIFO_NUM) -1  : 0] rd_i ;           //input burst addresses from
 wire [(BURST*WR_FIFO_NUM) -1  : 0] wr_i ;           //input burst addresses from write fifos
 wire [FIFO_NUM            -1  : 0] valid_fifo_sch;  //valid output signals from fifos to scheduler
 wire [FIFO_NUM            -1  : 0] grant_sch_fifo;  //pop siganls from scheduler to fifos
-wire  grant_o , mid,  ;
+wire [FIFO_NUM            -1 :  0] grant_o ;
+wire [FIFO_NUM            -1 :  0] mid  ;
 
 //output signals
 wire                   valid_sch_arbiter ;
@@ -72,7 +73,7 @@ always #5 clk = ~clk;
 
 integer i ,f;
 initial begin
-    $monitor("(`FIFO_NUM)*(`REQ_SIZE_READ) = %d `FIFO_NUM*`REQ_SIZE_READ = %d",(`FIFO_NUM)*(`REQ_SIZE_READ),`FIFO_NUM*`REQ_SIZE_READ);
+    //$monitor("(`FIFO_NUM)*(`REQ_SIZE_READ) = %d `FIFO_NUM*`REQ_SIZE_READ = %d",(FIFO_NUM)*(REQ_SIZE_READ),`FIFO_NUM*`REQ_SIZE_READ);
     //`ARR_NUM_RD,`ARR_NUM_WR);
     //f=$fopen("output.txt","w");
     /*clk=0;
@@ -97,7 +98,7 @@ initial begin
             valid = $urandom%2;
         end
     join
-    //$fclose(f);*/
+    //$fclose(f);
 end
 
 
@@ -151,8 +152,8 @@ cntr_bs_sch #(.READ(READ), .WRITE (WRITE), .RD_FIFO_NUM(RD_FIFO_NUM), .WR_FIFO_N
 );
 
 
-Selector #(.RA_BITS(RA_BITS),.RA_POS(`RA_POS) , .READ(READ), .WRITE (WRITE), .ARR_NUM_WR(WR_FIFO_NUM), .ARR_NUM_RD(RD_FIFO_NUM) selector
+Selector #(.RA_BITS(RA_BITS),.RA_POS(RA_POS) , .READ(READ), .WRITE (WRITE), .ARR_NUM_WR(WR_FIFO_NUM), .ARR_NUM_RD(RD_FIFO_NUM) selector
 (.clk(clk), .rst_n(rst_n), .valid(valid), .in_type(in[TYPE_POS]),.empty(~valid_o) , .full(~grant_o), .mid(mid),
  .last_addr(last_addr),.in_addr(in[RA_POS +: RA]), .push(push));
 
-endmodule
+endmodule*/

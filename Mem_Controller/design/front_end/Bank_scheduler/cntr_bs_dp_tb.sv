@@ -23,26 +23,26 @@ localparam  CID_POS  = 0,
             REQ_SIZE = CID + CA + RA + BA + BG + DQ + TYPE + IDX ; 
 
 //scheduler stored read requests format
-localparam  RD_RA_POS  = 0,
-            RD_IDX_POS = 16,
-            RD_SIZE    = RA + IDX;
+parameter  RD_RA_POS  = 0;
+parameter  RD_IDX_POS = 16;
+parameter  RD_SIZE    = RA + IDX + CA + TYPE;
 
 //scheduler stored write requests format
-localparam  WR_RA_POS  = 0,
-            WR_DQ_POS  = 16,
-            WR_IDX_POS = 32,
-            WR_SIZE    = RD_SIZE + DQ;
+parameter  WR_RA_POS  = 0;
+parameter  WR_DQ_POS  = 16;
+parameter  WR_IDX_POS = 32;
+parameter  WR_SIZE    = RD_SIZE + DQ ;
 
 //fifos parameters
 parameter  RD_FIFO_SIZE = 4;
 parameter  WR_FIFO_SIZE = 2;
 parameter  RD_FIFO_NUM  = 4;
 parameter  WR_FIFO_NUM  = 3;
-parameter  FIFO_NUM     = RD_FIFO_NUM + WR_FIFO_NUM;
 
 
-localparam BURST = RA+CA-4;
-localparam RA_ALL   = RA * FIFO_NUM    ;
+localparam FIFO_NUM     = RD_FIFO_NUM + WR_FIFO_NUM;
+localparam BURST        = RA+CA-4;
+localparam RA_ALL       = RA * FIFO_NUM    ;
 //*****************************************************************************
 // Inputs                                                    
 //*****************************************************************************  
@@ -52,13 +52,12 @@ reg valid;
 reg [FIFO_NUM -1 : 0] pop;
 reg [FIFO_NUM -1 : 0] push;
 
-reg [WR_SIZE  -1 : 0] in;
-// new input wires
-wire [DQ  -1 :0] dq_i;
-wire [IDX -1 :0] idx_i;
-wire [RA  -1 :0] ra_i;
-wire [CA  -1 :0] ca_i;
-assign {idx_i,dq_i,ra_i,ca_i} = in ;
+reg [DQ  -1 :0] dq_i;
+reg [IDX -1 :0] idx_i;
+reg [RA  -1 :0] ra_i;
+reg [CA  -1 :0] ca_i;
+reg             type_i;
+
 
 //*****************************************************************************
 // outputs                                                    
@@ -73,14 +72,15 @@ wire [DQ  -1 :0] dq_o;
 wire [IDX -1 :0] idx_o;
 wire [RA  -1 :0] ra_o;
 wire [CA  -1 :0] ca_o;
-assign out = {idx_o,dq_o,ra_o,ca_o};
+wire             type_o;
+assign out = {idx_o,dq_o,ra_o,ca_o,type_o};
 
 wire grant ;
 wire [RA_ALL -1 : 0] last_ra;
 
 
-byte rd_arr[4] = {8'd1, 8'd2, 8'd4, 8'd8};
-byte wr_arr[3] = {8'd16, 8'd32, 8'd64};
+byte rd_arr[4] = {8'd0, 8'd1, 8'd2, 8'd3};
+byte wr_arr[3] = {8'd4, 8'd5, 8'd6};
 always #5 clk = ~clk;
 
 initial begin
@@ -92,12 +92,12 @@ initial begin
     pop = 7'd0;
     push = 7'd0;
     valid = 1'b1 ;
-    in = {$urandom(),$urandom()};
+    {idx_i,dq_i,ra_i,ca_i,type_i}  = {$urandom(),$urandom()};
     repeat(10) begin //insert new input data
         @ (posedge clk);
-        in = {$urandom(),$urandom()};
-        if(in[TYPE_POS] == READ )  begin push = rd_arr[$urandom%4];  end
-        if(in[TYPE_POS] == WRITE ) begin push = wr_arr[$urandom%3];  end
+        {idx_i,dq_i,ra_i,ca_i,type_i}  = {$urandom(),$urandom()};
+        if(type_i == READ )  begin push = 7'b1<<rd_arr[0];  end
+        if(type_i == WRITE ) begin push = 7'b1<<wr_arr[2];  end
     end
     repeat(5) begin //drain new data
         @ (posedge clk);
@@ -111,7 +111,7 @@ end
 
 
 
-cntr_bs_dp #(.RD_FIFO_NUM(RD_FIFO_NUM), .WR_FIFO_NUM(WR_FIFO_NUM), .RD_FIFO_SIZE(RD_FIFO_SIZE), .WR_FIFO_SIZE(WR_FIFO_SIZE), .DQ(DQ), .IDX(IDX), .RA(RA), .CA(CA),.RA_POS_READ(RD_RA_POS), .RA_POS_WRITE(WR_RA_POS) ) bs_dp
+cntr_bs_dp #(.RD_FIFO_NUM(RD_FIFO_NUM), .WR_FIFO_NUM(WR_FIFO_NUM), .RD_FIFO_SIZE(RD_FIFO_SIZE), .WR_FIFO_SIZE(WR_FIFO_SIZE), .DQ(DQ), .IDX(IDX), .RA(RA), .CA(CA),.RA_POS_READ(RD_RA_POS), .RA_POS_WRITE(WR_RA_POS),.READ(READ),.WRITE(WRITE)) bs_dp
 (
    .clk(clk),         // Input clock
    .rst_n(rst_n),     // Synchronous reset
@@ -130,6 +130,7 @@ cntr_bs_dp #(.RD_FIFO_NUM(RD_FIFO_NUM), .WR_FIFO_NUM(WR_FIFO_NUM), .RD_FIFO_SIZE
    .idx_o(idx_o),     // Output index from txn controller/bank scheduler fifo
    .ra_o(ra_o),       // output row address from txn controller/bank scheeduler fifo
    .ca_o(ca_o),       // output col address from txn controller/bank scheeduler fifo
+   .type_o(type_o),  // Output type from scheduler fifo
    .grant(grant)
 );
 

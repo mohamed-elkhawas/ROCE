@@ -76,6 +76,7 @@ always @(*) begin
             {1'b1,4'b1xxx}  : NS = THREE; 
             {1'b1,4'bxxx1}  : NS = ZERO;   
          endcase
+      end
       ONE :begin
          casex({start,valid}) 
             {1'b1,4'bx1xx}  : NS = TWO;
@@ -83,6 +84,7 @@ always @(*) begin
             {1'b1,4'bxxx1}  : NS = ZERO;
             {1'b1,4'bxx1x}  : NS = ONE;                
          endcase
+      end
       TWO :begin
          casex({start,valid})
             {1'b1,4'b1xxx}  : NS = THREE; 
@@ -90,6 +92,7 @@ always @(*) begin
             {1'b1,4'bxx1x}  : NS = ONE;
             {1'b1,4'bx1xx}  : NS = TWO;                             
          endcase
+      end
       THREE :begin
          casex({start,valid}) 
             {1'b1,4'bxxx1}  : NS = ZERO;   
@@ -100,5 +103,5 @@ always @(*) begin
       end
          
    endcase
-
+end
 endmodule*/

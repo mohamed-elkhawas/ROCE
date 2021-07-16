@@ -8,7 +8,7 @@
         5- In case of no empty arrays, select first one.                            
 ********************************************************************************************************/
 
-module cnt_bs_sel
+/*module cnt_bs_sel
 #(parameter RA_BITS = 8 , parameter RA_POS = 8, parameter READ = 0 , parameter WRITE = 1 , parameter ARR_NUM_WR= 3 , parameter ARR_NUM_RD=4)
 (
    input   clk , rst_n , valid , in_type ,
@@ -16,11 +16,11 @@ module cnt_bs_sel
    input   [((ARR_NUM_WR + ARR_NUM_RD)*RA_BITS)-1:0] last_addr , 
    input   [RA_BITS-1:0] in_addr,   
    output  reg [ARR_NUM_WR + ARR_NUM_RD -1:0] push    /* write enable signal to add new request in all buffers*/
-);
+//);
 
-localparam  NUM_OF_BUFFERS = ARR_NUM_WR+ARR_NUM_RD;
+//localparam  NUM_OF_BUFFERS = ARR_NUM_WR+ARR_NUM_RD;
 
-/***************************************internal components and signals***************************************/
+/***************************************internal components and signals***************************************
 wire [ARR_NUM_RD-1 : 0 ] empty_rd , full_rd, mid_rd;
 wire [ARR_NUM_WR-1 : 0 ] empty_wr , full_wr, mid_wr; 
 
@@ -31,7 +31,7 @@ integer i ;
 assign {empty_rd , full_rd  , mid_rd} = { empty[ARR_NUM_RD-1:0] , full[ARR_NUM_RD-1:0] , mid[ARR_NUM_RD-1:0] }; 
 assign {empty_wr , full_wr  , mid_wr} = { empty[ARR_NUM_WR+ARR_NUM_RD -1:ARR_NUM_RD] , full[ARR_NUM_WR+ARR_NUM_RD -1:ARR_NUM_RD] , mid[ARR_NUM_WR+ARR_NUM_RD -1:ARR_NUM_RD] }; 
 
-/******************************************functions**********************************************************/
+/******************************************functions**********************************************************
 
 // return index of set bit in an input with one hot encoding style based on type of given request type
 function [$clog2(NUM_OF_BUFFERS)-1:0]  get_index;
@@ -59,7 +59,7 @@ function [$clog2(NUM_OF_BUFFERS)-1:0]  hot2idx;
             default    : hot2idx = 0 ;
     endcase
 endfunction 
-/*************************************************************************************************************/
+/*************************************************************************************************************
 always @(*) begin //find row Hits / burst hits signals
     for(i=0 ; i<NUM_OF_BUFFERS ; i=i+1) 
         row_hits[i]  = (valid==1'b1 && full[i]==1'b0) ? last_addr[i*RA_BITS +: RA_BITS] == in_addr :1'b0;//  input row hits
@@ -84,4 +84,4 @@ always @(*) begin // calculate push signals
     if(valid==1'b0) push = 7'd0 ;        
 end
 
-endmodule
+endmodule*/

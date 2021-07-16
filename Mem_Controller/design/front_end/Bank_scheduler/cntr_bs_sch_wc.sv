@@ -37,7 +37,7 @@ module cntr_bs_sch_wr(
   input wire                        rst_n;       // Synchronous reset                                    -> active low
   input wire                        start;       // Input start signal to increment the out              -> active high
   input wire [FIFO_NUM-1        :0] valid;    // Input valid signals to help choose proper next out 
-  output     [$clog2(FIFO_NUM)-1:0] idx ;        // Output counter value
+  output wire   [$clog2(FIFO_NUM)-1:0] idx ;        // Output counter value
 
 
 
@@ -74,12 +74,14 @@ always @(*) begin
             {1'b1,3'b1xx}  : NS = TWO;
             {1'b1,3'bxx1}  : NS = ZERO;   
          endcase
+      end
       ONE :begin
          casex({start,valid}) 
             {1'b1,3'b1xx}  : NS = TWO;
             {1'b1,3'bxx1}  : NS = ZERO;
             {1'b1,3'bx1x}  : NS = ONE;                
          endcase
+      end
       TWO :begin
          casex({start,valid})
             {1'b1,3'bxx1}  : NS = ZERO; 
@@ -89,3 +91,5 @@ always @(*) begin
       end
          
    endcase
+end
+endmodule
