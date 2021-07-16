@@ -2,16 +2,19 @@ module Arbiter
 #(  parameter INDEX_BITS = 7 , parameter RA_BITS = 16 , parameter CA_BITS = 10 , parameter DATA_BITS = 16)
 (   input  clk   ,
     input  rst_n  ,
-    input  [15:0] valid, 
+    input  [15:0] valid,
+    input  flag, 
     input  [(16 * DATA_BITS) -1 :0] data_i ,
     input  [(INDEX_BITS*16) -1 :0 ] idx_i ,
     input  [(RA_BITS*16)    -1 :0 ] row_i ,
     input  [(CA_BITS*16)    -1 :0 ] col_i ,
+    input  [(1*16)          -1 :0 ] t_i, //  type bit
 
     output [DATA_BITS  -1 :0 ]  data_o ,
     output [INDEX_BITS -1 :0 ]  idx_o  ,
     output [RA_BITS    -1 :0 ]  row_o  ,
     output [CA_BITS    -1 :0 ]  col_o  ,
+    output  [(1*16)          -1 :0 ] t_o,//  type bit
     output [1:0] ba_o , bg_o           ,
     output wor wr_en , 
     output [15:0] Ready 

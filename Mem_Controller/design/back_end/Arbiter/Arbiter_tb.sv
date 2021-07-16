@@ -23,6 +23,7 @@ localparam  CID_POS         =0,
 reg clk;
 reg rst_n;
 reg [15:0] valid ;
+reg flag;
 reg [15:0] [REQ_SIZE-1 : 0 ] data_in ; 
 
 
@@ -31,6 +32,7 @@ reg  [15:0] [DATA_BITS-1  : 0 ] data_i ;
 reg  [15:0] [INDEX_BITS-1 : 0 ] idx_i ;
 reg  [15:0] [RA_BITS-1    : 0 ] row_i ;
 reg  [15:0] [CA_BITS-1    : 0 ] col_i ;
+reg  [15:0]                     t_i ;
 
 
 /***outputs***/
@@ -41,6 +43,8 @@ wire   [DATA_BITS-1  : 0 ] data_o ;
 wire   [INDEX_BITS-1 : 0 ] idx_o ;
 wire   [RA_BITS-1    : 0 ] row_o ;
 wire   [CA_BITS-1    : 0 ] col_o ;
+wire   [15:0]               t_o ;
+
 wire [1:0] ba_o , bg_o ; 
 
 
@@ -84,6 +88,7 @@ initial begin
     rst_n = 0;
     //req=16'h0000;
     valid=16'h0000;
+    flag = 1'b1;
     #6
     rst_n = 1; 
     update_all_data(); // insert new data input
@@ -124,11 +129,11 @@ initial begin
 end
 
 Arbiter #(.INDEX_BITS(INDEX_BITS), .RA_BITS(RA_BITS), .CA_BITS(CA_BITS), .DATA_BITS(DATA_BITS)) arbiter
-(.clk(clk),.rst_n(rst_n), .valid(valid), .data_i(data_i) ,.idx_i(idx_i) ,.row_i(row_i) ,
-    .col_i(col_i) ,  .data_o(data_o) ,.idx_o(idx_o)  ,.row_o(row_o)  , .col_o(col_o)  ,
-    .ba_o(ba_o) ,.bg_o(bg_o), .wr_en(wr_en),.Ready(ready));
+(.clk(clk),.rst_n(rst_n), .valid(valid), .flag(flag) ,.data_i(data_i) ,.idx_i(idx_i) ,.row_i(row_i) ,
+    .col_i(col_i) ,  .t_i(t_i),.data_o(data_o) ,.idx_o(idx_o)  ,.row_o(row_o)  , .col_o(col_o)  ,
+    .t_o(t_o),.ba_o(ba_o) ,.bg_o(bg_o), .wr_en(wr_en),.Ready(ready));
 
-    
+
 
     
     

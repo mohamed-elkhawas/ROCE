@@ -25,17 +25,17 @@
 -Changing number of arrays requires editing only both functions to fit the new quantity of arrays,
     as all signals communcating with arrays are one hot encoded with each bit represents a single array.
 ********************************************************************************************************/
-`include "BS_Definitions.svh"
+//`include "BS_Definitions.svh"
 
 
 module BankScheduler
-#(parameter REQ_SIZE = 5 , parameter TYPE_POS = 5 ,parameter ROW_BITS = 4 , parameter ROW_POS=20 , parameter BURST_POS =20 ,parameter BURST_BITS =3,parameter ADDR_BITS=8)
+#(parameter REQ_SIZE = 5 , parameter TYPE_POS = 5 ,parameter ROW_BITS = 4 , parameter ROW_POS=20 , parameter BURST_POS =20 ,parameter BURST_BITS =3,parameter ADDR_BITS=8,parameter READ =1'b1,parameter WRITE =1'b1)
 (
-   input   clk , rst_n , grant_i , valid_i,
+   input   clk , rst_n , ready , valid_i, mode,
    input   [REQ_SIZE-1:0] data_in         ,// input data 
    output  grant_o                        ,// pop from (Mapper-schedular) FIFO      
    output  reg [REQ_SIZE-1:0] data_out    ,// output data
-   output  req                             // apply request to Arbiter to control the bus 
+   output  reg valid_o                         // apply request to Arbiter to control the bus 
 );
 
 /**********************************************Tunable parameters**********************************************/
@@ -77,11 +77,12 @@ wire hwm , lwm , in_type , out_type , valid_burst; //valid burst--> indicats whe
 
 
 /************************************************FSM signals*****************************************************/
-localparam [1:0] // 3 states are required
-    IDLE             = 2'b00,
-    NEW_WRITE_BURST  = 2'b01,
-    SAME_WRITE_BURST = 2'b10,
-    READ_BURST       = 2'b11;
+// FSM states
+  localparam [2:0] EMPTY       = 3'b000;
+  localparam [2:0] WAITING     = 3'b001;
+  localparam [2:0] FINISH      = 3'b010;
+  localparam [2:0] WRITE_BURST = 3'b011;
+  localparam [2:0] READ_BURST  = 3'b100;
 
 reg [1:0] CS, NS;
 reg [ALL_ARR-1:0] rd_en ; 
@@ -95,19 +96,18 @@ assign {empty_wr , full_wr} = { empty[ARR_NUM_WR+ARR_NUM_RD -1:ARR_NUM_RD] , ful
 assign valid_burst = burst_addr[BURST_BITS] ; //valid bit is the last bit in burst address register.
 
 assign in_type  = data_in[TYPE_POS] ;
-assign out_type = ( |rd_en ==1'b1 && |rd_en[ALL_ARR-1:ARR_NUM_RD] == 1'b1 )? `WRITE:`READ; //if there is read enable and its on a write array. 
+assign out_type = ( |rd_en ==1'b1 && |rd_en[ALL_ARR-1:ARR_NUM_RD] == 1'b1 )? WRITE:READ; //if there is read enable and its on a write array. 
 
 
 
 assign grant_o = |wr_en ; // whenever new request is processed, then it will be stored in arrays successfully
-assign req = ! (&empty) ; // if at least one array is not full, issue request for arbiter to control the bus
 /******************************************functions**********************************************************/
 
 // return index of set bit in an input with one hot encoding style based on type of given request type
 function [$clog2(ALL_ARR)-1:0]  get_index;
     input [ALL_ARR-1:0] in ;
     input request_type ;
-    get_index = (request_type == `READ)?
+    get_index = (request_type == READ)?
                     hot2idx( { 3'b000, in[ARR_NUM_RD-1:0]}):
                     hot2idx( { in[ALL_ARR-1:ARR_NUM_RD] , 4'b0000});
 endfunction
@@ -157,10 +157,10 @@ end
 always @(*) begin // calculate write enable signals
     wr_en=7'd0;
     casex({in_hits, in_type})  
-        {7'bxxx0000,`READ}, {7'b000xxxx,`WRITE}: begin // no hits available
-            if( (in_type == `READ && |empty_rd == 1'b1 )|| (in_type == `WRITE && |empty_wr == 1'b1 )) //an empty array found
+        {7'bxxx0000,READ}, {7'b000xxxx,WRITE}: begin // no hits available
+            if( (in_type == READ && |empty_rd == 1'b1 )|| (in_type == WRITE && |empty_wr == 1'b1 )) //an empty array found
                 wr_en[get_index(empty , in_type)]=1'b1;
-            else if( (in_type == `READ && &full_rd == 1'b0 )|| (in_type == `WRITE && &full_wr == 1'b0 ))//unfull array found, select first unfull array
+            else if( (in_type == READ && &full_rd == 1'b0 )|| (in_type == WRITE && &full_wr == 1'b0 ))//unfull array found, select first unfull array
                 wr_en[get_index(~full , in_type)]=1'b1;                
         end
         // hits found, select first available hit
@@ -175,9 +175,9 @@ always@(posedge clk) begin //update write requests counter
     end
     else begin
         casex ({ {in_type , grant_o } , out_type  }) 
-            { {`WRITE , 1'b1 } , `READ  } : wr_cnt <= wr_cnt+1;
-            { {1'bx , 1'b0 }   , `WRITE } : wr_cnt <= wr_cnt-1;
-            { {`READ  , 1'b1 } , `WRITE } : wr_cnt <= wr_cnt-1;
+            { {WRITE , 1'b1 } , READ  } : wr_cnt <= wr_cnt+1;
+            { {1'bx , 1'b0 }   , WRITE } : wr_cnt <= wr_cnt-1;
+            { {READ  , 1'b1 } , WRITE } : wr_cnt <= wr_cnt-1;
             default : wr_cnt <= wr_cnt;
         endcase 
     end
@@ -205,7 +205,7 @@ end
 // UPDATE FSM 
 always @(posedge clk)begin
     if(!rst_n)begin
-        CS  <= IDLE;
+        CS  <= EMPTY;
     end
     else begin
         CS  <= NS;
@@ -213,87 +213,86 @@ always @(posedge clk)begin
 end
 
 
-// Compute Next State
 always @(*) begin
-    NS=CS;
+    NS = CS ;
+    rst_burst=1'b1;//active low
+    valid_o = 1'b0 ; 
     case(CS) 
-        IDLE:begin
-            if( &empty == 1'b1  || grant_i==1'b0) // all empty || no grant given to drain requests                    
-                NS=IDLE;    
-            else if (grant_i ==1'b1)begin
-                if ( hwm==1'b1 ||( lwm && &empty_rd==1'b1) ) //hight watermark or low water mark with empty reads  
-                    NS=NEW_WRITE_BURST;
-                else if( &empty_rd == 1'b0 ) //hwm == 1'b0 && &empty_rd == 1'b0
-                    NS=READ_BURST;
-            end       
+        EMPTY :begin
+            if(mode == READ) begin
+                if( &empty_rd == 1'b1  )  //all read fifos are empty
+                    NS = EMPTY ;
+                else if( &empty_rd == 1'b0 ) begin // at least one read fifo is not empty
+                    NS = WAITING;
+                    valid_o  = 1'b1 ;
+                end
+            end
+            else if(mode == WRITE) begin
+                if( &empty_wr == 1'b1  ) //all write fifos are empty
+                    NS = EMPTY ;
+                else if( &empty_wr == 1'b0 ) begin // at least one write fifo is not empty
+                    NS = WAITING;
+                    valid_o  = 1'b1 ;
+                end
+            end
         end
+        WAITING:begin 
+            if(mode == READ && &empty_rd == 1'b1 || mode == WRITE && &empty_wr == 1'b1 )begin //current mode has no requests
+                NS = EMPTY ;
+                valid_o = 1'b0 ; 
+            end
+            else begin // Current mode has already stored requests
+                if (ready == 1'b0) begin
+                    NS = WAITING ;
+                    valid_o = 1'b1; 
+                end
+                else if (ready == 1'b1) begin
+                    if(mode == READ)begin
+                        NS = READ_BURST ;
+                        rd_en[get_index(empty,READ)] = 1'b1;
+                    end  
+                    else if(mode == WRITE)begin
+                        NS = WRITE_BURST ;
+                        rd_en[get_index(empty,READ)] = 1'b1;
+                    end                     
+                end
+            end
+        end
+        FINISH :begin
+            if(mode == READ && &empty_rd == 1'b1 || mode == WRITE && &empty_wr == 1'b1 )begin //current mode has no requests
+                NS = EMPTY ;
+                valid_o = 1'b0 ; 
+            end
+            else begin // Current mode has already stored requests      
+                NS = WAITING ;
+                valid_o = 1'b1; 
+            end
+        end           
         READ_BURST : begin
-            if ( |out_hits[ARR_NUM_RD-1:0] == 1'b1 ) begin // burst hit exists
-                NS=READ_BURST;
+            if ( |in_hits[ARR_NUM_RD-1:0] == 1'b1 ) begin // burst hit exists
+                NS  = READ_BURST;
+                valid_o = 1'b1 ;
+                rd_en[get_index(in_hits,READ)] = 1'b1;
             end
             else begin // burst hit does not exist 
-                NS=IDLE;
+                NS = FINISH ;
+                rst_burst =1'b0;
             end                             
         end
-        NEW_WRITE_BURST ,SAME_WRITE_BURST :begin
-            if ( |out_hits[ALL_ARR- 1:ARR_NUM_RD] == 1'b1  ) begin // burst hit exists
-                NS=SAME_WRITE_BURST;
-            end
-            else begin  // no burst hits
-                if (lwm == 1'b0) begin // continue drain write till low watermark
-                    NS=NEW_WRITE_BURST;
-                end
-                else if(lwm ==1'b1) begin //low water mark is set and no hits found
-                    NS=IDLE;
-                end 
-            end      
-        end 
-    endcase
-end
-
-//compute output
-always @(*)begin
-    rd_en=7'd0 ;
-    rst_burst=1'b1;//active low
-    case(CS) 
-        IDLE:begin
-            if( &empty == 1'b1 || grant_i==1'b0 ) begin// all empty || no grant given to drain requests            
-                rd_en=7'd0;
-                rst_burst=0;
-            end
-            else if (grant_i ==1'b1)begin
-                if ( hwm==1'b1 ||( lwm && &empty_rd==1'b1) )   // get first unempty array, no hits required
-                    rd_en[get_index(~empty,`WRITE)]=1'b1;
-                else if( &empty_rd == 1'b0 ) // get first unempty array, no hits required
-                    rd_en[get_index(~empty,`READ)]=1'b1;
-            end    
-
-        end    
-        READ_BURST:begin
-            if ( |out_hits[ARR_NUM_RD-1:0] == 1'b1 ) begin // burst hit exists
-                rd_en[get_index(out_hits,`READ)]=1'b1;
+        WRITE_BURST : begin
+            if ( |in_hits[ALL_ARR-1:ARR_NUM_RD] == 1'b1 ) begin // burst hit exists
+                NS  = WRITE_BURST;
+                valid_o= 1'b1 ;
+                rd_en[get_index(in_hits,WRITE)] = 1'b1;
             end
             else begin // burst hit does not exist 
-                rd_en=0;
-                rst_burst=0;
-            end        
-        end
-        NEW_WRITE_BURST , SAME_WRITE_BURST :begin
-            if ( |out_hits[ALL_ARR- 1:ARR_NUM_RD] == 1'b1  ) begin // burst hit exists
-                rd_en[get_index(out_hits,`WRITE)]=1'b1;
-            end
-            else begin  // continue drain write bursts till low water mark
-                if (lwm == 1'b0) 
-                    rd_en[get_index(~empty,`WRITE)]=1'b1;
-                else begin
-                    rd_en=0;
-                    rst_burst=0;
-                end
-            end 
+                NS = FINISH ;
+                rst_burst =1'b0;
+            end       
         end 
     endcase
-    
 end
+
 
 
 endmodule

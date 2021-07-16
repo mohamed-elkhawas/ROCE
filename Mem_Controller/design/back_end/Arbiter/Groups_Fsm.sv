@@ -1,6 +1,7 @@
 module Groups_Fsm
 (   
     input  clk, rst_n,
+    input  flag ,    // if flag is 1 from burst hanndler, then we can drain  more bursts
     input  [3:0] Req , //request from bank groups to enable each bank group fsm
     input  [3:0] Done, // acknoledge from each bank group fsm after Starting a burst from scheduler is finished
     output reg Start_A, Start_B, Start_C, Start_D,
@@ -82,21 +83,23 @@ always @ (*)begin
     NS = CS ;
     case (CS)
         IDLE: begin
-            if (ReqA == 1'b1)begin
-                //Start_A = 1'b1;
-                NS=GROUP_A;
-            end
-            else if (ReqB == 1'b1)begin
-                //Start_B = 1'b1;
-                NS=GROUP_B;
-            end
-            else if (ReqC == 1'b1)begin
-                //Start_C = 1'b1;
-                NS=GROUP_C;
-            end
-            else if (ReqD == 1'b1)begin
-                //Start_D = 1'b1;
-                NS=GROUP_D;
+            if(flag ==1'b1) begin
+                if (ReqA == 1'b1)begin
+                    //Start_A = 1'b1;
+                    NS=GROUP_A;
+                end
+                else if (ReqB == 1'b1)begin
+                    //Start_B = 1'b1;
+                    NS=GROUP_B;
+                end
+                else if (ReqC == 1'b1)begin
+                    //Start_C = 1'b1;
+                    NS=GROUP_C;
+                end
+                else if (ReqD == 1'b1)begin
+                    //Start_D = 1'b1;
+                    NS=GROUP_D;
+                end
             end
         end
         GROUP_A: begin
@@ -106,13 +109,15 @@ always @ (*)begin
                 NS=GROUP_A;
             end 
             else begin
-                if (ReqB == 1'b1)
-                    NS=GROUP_B;
-                else if (ReqC == 1'b1)
-                    NS=GROUP_C;
-                else if (ReqD == 1'b1)
-                    NS=GROUP_D;
-                else 
+                if(flag ==1'b1) begin
+                    if (ReqB == 1'b1)
+                        NS=GROUP_B;
+                    else if (ReqC == 1'b1)
+                        NS=GROUP_C;
+                    else if (ReqD == 1'b1)
+                        NS=GROUP_D;
+                end
+                else if(flag  == 1'b0 )
                     NS=IDLE;
             end
         end
@@ -123,13 +128,15 @@ always @ (*)begin
                 NS=GROUP_B;
             end
             else begin
-                if (ReqC == 1'b1)
-                    NS=GROUP_C;
-                else if (ReqD == 1'b1)
-                    NS=GROUP_D;
-                else if (ReqA == 1'b1)
-                    NS=GROUP_A;
-                else 
+                if(flag ==1'b1) begin
+                    if (ReqC == 1'b1)
+                        NS=GROUP_C;
+                    else if (ReqD == 1'b1)
+                        NS=GROUP_D;
+                    else if (ReqA == 1'b1)
+                        NS=GROUP_A;
+                end
+                else if(flag  == 1'b0 )
                     NS=IDLE;
             end
         end
@@ -140,13 +147,15 @@ always @ (*)begin
                 NS=GROUP_C;
             end 
             else begin
-                if (ReqD == 1'b1)
-                    NS=GROUP_D;
-                else if (ReqA == 1'b1)
-                    NS=GROUP_A;
-                else if (ReqB == 1'b1)
-                    NS=GROUP_B;
-                else 
+                if(flag ==1'b1) begin
+                    if (ReqD == 1'b1)
+                        NS=GROUP_D;
+                    else if (ReqA == 1'b1)
+                        NS=GROUP_A;
+                    else if (ReqB == 1'b1)
+                        NS=GROUP_B;
+                end
+                else if(flag  == 1'b0 )
                     NS=IDLE;
             end
         end
@@ -157,13 +166,15 @@ always @ (*)begin
                 NS=GROUP_D;
             end 
             else begin
-                if (ReqA == 1'b1)
-                    NS=GROUP_B;
-                else if (ReqB == 1'b1)
-                    NS=GROUP_C;
-                else if (ReqC == 1'b1)
-                    NS=GROUP_D;
-                else 
+                if(flag ==1'b1) begin
+                    if (ReqA == 1'b1)
+                        NS=GROUP_B;
+                    else if (ReqB == 1'b1)
+                        NS=GROUP_C;
+                    else if (ReqC == 1'b1)
+                        NS=GROUP_D;
+                end
+                else if(flag  == 1'b0 )
                     NS=IDLE;
             end
         end

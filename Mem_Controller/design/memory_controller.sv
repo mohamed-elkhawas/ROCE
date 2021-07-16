@@ -43,6 +43,15 @@ logic the_type;
 logic [ data_width -1  : 0 ] data_in;
 logic [ read_entries_log -1 : 0 ] index;
 
+// from arbiter to scheduler
+wire [15:0] ready ;
+
+//from scheduler ro arbiter
+wire  [(DATA_BITS*16) -1 :0] data_o ,
+wire  [(INDEX_BITS*16) -1 :0 ] idx_o ,
+wire  [(RA_BITS*16)    -1 :0 ] row_o ,
+wire  [(CA_BITS*16)    -1 :0 ] col_o ,
+wire  [(1*16)          -1 :0 ] t_o, //  type bit
 
 // .* connect every connection with it's name
 
@@ -51,10 +60,16 @@ front_end #( .REQ_SIZE(REQ_SIZE) ) the_front_end (.*);
 back_end #(.no_of_bursts(4),.INDEX_BITS(7) ,.RA_BITS(16) ,.CA_BITS(10) ,.DATA_BITS(16))
 
 	the_back_end(
-	// your connections
+	//inputs from scheduler
+	.data_i(data_o),.idx_i(idx_o),.row_i(row_o),.col_i(col_o),.t_i(t_o),
+	// output to scheduler
+	.Ready(ready),
 	.returner_valid(request_done_valid),.returner_type(the_type),.returner_data(data_in),.returner_index(index), // to returner
 	.CS_n,.CA,.CAI,.DM_n,.DQ,.DQS_t,.DQS_c,.ALERT_n // memory ports
 	);
+
+
+
 
 
 endmodule

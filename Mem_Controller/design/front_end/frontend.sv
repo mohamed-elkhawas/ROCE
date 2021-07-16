@@ -1,4 +1,34 @@
-`include "BS_Definitions.svh"
+
+/*
+	request format---> request type bit + index bits + address bits + data (if write request).
+*/
+
+ 
+
+`define READ  1'b0
+`define WRITE 1'b1
+
+
+// size of request
+`define ROW_BITS        16
+`define COL_BITS        10
+`define ADDR_BITS       `ROW_BITS+`COL_BITS
+`define INDEX_BITS      7
+`define TYPE_BIT		1
+`define DATA_BITS       16
+`define REQUEST_SIZE	`ADDR_BITS+`INDEX_BITS+`TYPE_BIT+`DATA_BITS // address + index + request type+ data bits 
+`define BURST_BITS		4 ///just to detect burst --> not an additional bits to request
+
+//positions of bits
+`define TYPE_POS    42
+//`define ADDR_POS   1
+`define BURST_POS  5
+`define ROW_POS    10
+`define COL_POS    0      
+
+
+
+
 
 module front_end import types_def::*;
 #( parameter REQ_SIZE = 32 )
@@ -26,12 +56,12 @@ module front_end import types_def::*;
 
     ///////////////////// scheduler  \\\\\\\\\\\\\\\\\\\\\\\\\
 	output [banks_no-1:0] [REQ_SIZE-1 :0] out,//////////////////////////////////////////////////////////////////
-    input [banks_no-1:0] grant_i
+    input [banks_no-1:0] ready,
+    output [banks_no-1:0] valid_o
 );
 
 /**********************************************constant parameters**********************************************/
 localparam BANK_NUM = 16;
-		  
 /*************************************************************************************************************/
 
 
@@ -56,9 +86,12 @@ generate
         .valid_i(bank_out_valid[g]),.grant_o(grant_o[g]),.request_o( out_fifo_sch[g]),.index_o(idx_out[g]),
         .valid_o(valid_out[g]), .grant_i(pop[g]));    
         
-        BankScheduler #(.REQ_SIZE(REQ_SIZE),.TYPE_POS(`TYPE_POS),.ROW_BITS(`ROW_BITS),.ROW_POS(`ROW_POS),.BURST_POS(`BURST_POS),
-        	.BURST_BITS(`BURST_BITS),.VALID_POS(`VALID_POS),.ADDR_BITS(`ADDR_BITS)) 
-        BS      ( .clk(clk),.rst_n(rst_n),.grant_i(grant_i[g]),.in({valid_out[g],out_fifo_sch[g].address,idx_out[g],out_fifo_sch[g].req_type,out_fifo_sch[g].data}),.pop(pop[g]),.out(out[g]) );
+        BankScheduler #(.REQ_SIZE(`REQUEST_SIZE),.TYPE_POS(`TYPE_POS),.ROW_BITS(`ROW_BITS),.ROW_POS(`ROW_POS),.BURST_POS(`BURST_POS),
+        	.BURST_BITS(`BURST_BITS),.ADDR_BITS(`ADDR_BITS),.READ(`READ),.WRITE(`WRITE)) 
+        BS      ( .clk(clk),.rst_n(rst_n),.ready(ready),.valid_i(valid_out[g]),.data_in({out_index,out_fifo_sch[g]}),.grant_o(pop[g]),.data_out(out),.valid_o(valid_o[g]) );
+    
+
+
     end   
 endgenerate
 

@@ -1,11 +1,13 @@
 `include "BS_Definitions.svh"
 
+
+
 module BankScheduler_tb();
 
 /***inputs***/
 reg clk;
 reg rst_n;
-reg grant_i;
+reg ready;
 reg [`REQUEST_SIZE-1:0] in;
 reg valid_i ; 
 
@@ -36,7 +38,7 @@ initial begin
     
     clk=0;
     rst_n = 0;
-    grant_i=0;
+    ready=0;
     #6
     rst_n=1;
     valid_i=1'b1;
@@ -54,7 +56,7 @@ initial begin
     in={8'hdf,8'd6,`WRITE,7'd0};
     #10
     in={8'hdf,8'd7,`WRITE,7'd0};
-    grant_i=1;
+    ready=1;
     #10
     in={8'hbf,8'd8,`WRITE,7'd0}; 
     #10
@@ -70,8 +72,8 @@ generic_fifo #(.DATA_WIDTH(`REQUEST_SIZE) ,.DATA_DEPTH(4)) fifo
 ( .clk(clk),.rst_n(rst_n), .data_i(in),.valid_i(valid_i),.grant_o(fifo_grant_to_mapper),.data_o(data_out), .valid_o(valid_o),.grant_i(grant_o) ,.test_mode_i(1'b0));
 
 
-BankScheduler #(.REQ_SIZE(`REQUEST_SIZE),.TYPE_POS(`TYPE_POS),.ROW_BITS(`ROW_BITS),.ROW_POS(`ROW_POS),.BURST_POS(`BURST_POS),.BURST_BITS(`BURST_BITS),.ADDR_BITS(`ADDR_BITS)) BS
-( .clk(clk),.rst_n(rst_n),.grant_i(grant_i),.valid_i(valid_o),.data_in(data_out),.grant_o(grant_o),.data_out(out),.req(req) );
+BankScheduler #(.REQ_SIZE(`REQUEST_SIZE),.TYPE_POS(`TYPE_POS),.ROW_BITS(`ROW_BITS),.ROW_POS(`ROW_POS),.BURST_POS(`BURST_POS),.BURST_BITS(`BURST_BITS),.ADDR_BITS(`ADDR_BITS),.READ(`READ),.WRITE(`WRITE)) BS
+( .clk(clk),.rst_n(rst_n),.ready(ready),.valid_i(valid_o),.data_in(data_out),.grant_o(grant_o),.data_out(out),.valid_o(req) );
 
 
 endmodule
