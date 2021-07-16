@@ -52,6 +52,7 @@ back_end #(.no_of_bursts(4),.INDEX_BITS(7) ,.RA_BITS(16) ,.CA_BITS(10) ,.DATA_BI
 
 	the_back_end(
 	// your connections
+	.returner_valid(request_done_valid),.returner_type(the_type),.returner_data(data_in),.returner_index(index), // to returner
 	.CS_n,.CA,.CAI,.DM_n,.DQ,.DQS_t,.DQS_c,.ALERT_n // memory ports
 	);
 
