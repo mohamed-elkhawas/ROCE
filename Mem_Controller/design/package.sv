@@ -5,7 +5,7 @@ package types_def;
 		data_width  = 16, 	
 		address_width = 30,
 		read_entries  = 64,
-		read_entries_log = 7,
+		read_entries_log = 6,
 		write_entries = 64,
 		write_entries_log = 6,
 		banks_no = 16,

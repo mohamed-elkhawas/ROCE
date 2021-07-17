@@ -7,7 +7,7 @@ parameter RA_POS   = 10;
 parameter CA       = 10;
 parameter RA       = 16;
 parameter DQ       = 16;
-parameter IDX      = 7;
+parameter IDX      = 6;
 parameter WR_FIFO_SIZE = 2;
 parameter WR_FIFO_NUM =3;
 
@@ -24,7 +24,7 @@ logic wd,rd;
 logic t ; 
 r_type the_type;
 logic request_done_valid;
-logic  [ 31 : 0 ] in_data;
+logic  [ 15 : 0 ] in_data,data_out;
 logic  [ 5 : 0 ] index;
 
 //outputs
@@ -78,14 +78,21 @@ initial begin
 	rst_n = 1'b1;
 	in_valid = 1'b1;
 
-	repeat(30) begin //insert new input data
+	/*repeat(30) begin //insert new input data
         @ (posedge clk);
 		// new address / data /  type input
         in_request.address = $urandom() ;
 		in_request.data= $urandom();
 		t = $urandom()%2; //in_request.req_type
-    end
+    end*/
 
+	repeat(30) begin //insert new input data
+        @ (posedge clk);
+		// new address / data /  type input
+        in_request.address = 0 ;
+		in_request.data= $urandom();
+		t = $urandom()%2; //in_request.req_type
+    end
 
 	/*@(posedge clk)
 	in_busy =0 ;

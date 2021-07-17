@@ -1,6 +1,6 @@
 module txn_controller import types_def::*;
 
-#( parameter data_width = 32 )
+#( parameter data_width = 16 )
  
  (
 	input clk,    // Clock

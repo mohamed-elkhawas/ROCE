@@ -6,7 +6,7 @@ module front_end import types_def::*;
    parameter CA       = 10,
    parameter RA       = 16,
    parameter DQ       = 16,
-   parameter IDX      = 7,
+   parameter IDX      = 6,
    parameter WR_FIFO_SIZE = 2,
    parameter WR_FIFO_NUM =3
 )
@@ -72,10 +72,22 @@ opt_request [banks_no-1:0] out_fifo_sch;
 wire [banks_no-1:0] [read_entries_log-1:0] idx_out;
 wire [15:0] [WR_BITS  -1 : 0] num;
 wire mode ;
-txn_controller tx(.clk(clk),.rst_n(rst_n),.in_valid(in_valid),.in_request({in_request_type ,in_request_data ,in_request_address}),
-                  .out_busy2(out_busy),.out_req2(request_out),.out_index2(out_index),
-                  .fifo_grant_o(grant_o),.bank_out_valid2(bank_out_valid),.request_done_valid(request_done_valid),
-                  .the_type(the_type),.data_in(data_in),.index(index),.write_done(write_done),.read_done(read_done),.data_out(data_out));
+txn_controller #(.data_width(16)) tx
+(
+  .clk(clk),
+  .rst_n(rst_n),
+  .in_valid(in_valid),
+  .in_request({in_request_type ,in_request_data ,in_request_address}),
+  .out_busy2(out_busy),.out_req2(request_out),.out_index2(out_index),
+  .fifo_grant_o(grant_o),.bank_out_valid2(bank_out_valid),
+  .request_done_valid(request_done_valid),
+  .the_type(the_type),
+  .data_in(data_in),
+  .index(index),
+  .write_done(write_done),
+  .read_done(read_done)
+  ,.data_out(data_out)
+);
 
 
 genvar g;
