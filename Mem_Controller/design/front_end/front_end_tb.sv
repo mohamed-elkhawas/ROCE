@@ -21,7 +21,7 @@ logic [15 : 0] in_busy;
 
 logic in_valid ;
 logic wd,rd;
-
+logic t ; 
 r_type the_type;
 logic request_done_valid;
 logic  [ 31 : 0 ] in_data;
@@ -37,12 +37,13 @@ wire [15:0]            t_o;
 
 front_end #( .READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(IDX),.WR_FIFO_SIZE(WR_FIFO_SIZE),.WR_FIFO_NUM(WR_FIFO_NUM) )fe
  (
+	
 	.clk(clk),
 	.rst_n(rst_n),
 	.in_valid(in_valid),
-	.in_request_type(in_request[data_width+address_width-1:0]),
-  	.in_request_data(in_request[data_width+address_width-1:address_width]),
-  	.in_request_address(in_request[address_width-1:0]),
+	.in_request_type(t),
+  	.in_request_data(in_request.data),
+  	.in_request_address(in_request.address),
 	.out_busy(out_busy),
 	.request_done_valid(request_done_valid),
 	.the_type(the_type),
@@ -80,10 +81,9 @@ initial begin
 	repeat(30) begin //insert new input data
         @ (posedge clk);
 		// new address / data /  type input
-        in_request[address_width-1:0] = $urandom() ;
-		in_request[data_width+address_width-1:address_width]=$urandom();
-		in_request[data_width+address_width-1:0]  = $urandom();
-
+        in_request.address = $urandom() ;
+		in_request.data= $urandom();
+		t = $urandom()%2; //in_request.req_type
     end
 
 
