@@ -1,44 +1,23 @@
 
-/*
-	request format---> request type bit + index bits + address bits + data (if write request).
-*/
-
- 
-
-`define READ  1'b0
-`define WRITE 1'b1
-
-
-// size of request
-`define ROW_BITS        16
-`define COL_BITS        10
-`define ADDR_BITS       `ROW_BITS+`COL_BITS
-`define INDEX_BITS      7
-`define TYPE_BIT		1
-`define DATA_BITS       16
-`define REQUEST_SIZE	`ADDR_BITS+`INDEX_BITS+`TYPE_BIT+`DATA_BITS // address + index + request type+ data bits 
-`define BURST_BITS		4 ///just to detect burst --> not an additional bits to request
-
-//positions of bits
-`define TYPE_POS    42
-//`define ADDR_POS   1
-`define BURST_POS  5
-`define ROW_POS    10
-`define COL_POS    0      
-
-
-
-
-
 module front_end_tb import types_def::*;();
+
+parameter READ     = 1'b1;
+parameter WRITE    = 1'b0;
+parameter RA_POS   = 10;
+parameter CA       = 10;
+parameter RA       = 16;
+parameter DQ       = 16;
+parameter IDX      = 7;
+parameter WR_FIFO_SIZE = 2;
+parameter WR_FIFO_NUM =3;
+
 
 /***inputs***/
 reg  clk;
 reg  rst_n;
-reg  grant_i;
-
+reg  [15:0] ready;
 request in_request;
-logic [15:0] in_busy;
+logic [15 : 0] in_busy;
 
 logic in_valid ;
 logic wd,rd;
@@ -47,36 +26,85 @@ r_type the_type;
 logic request_done_valid;
 logic  [ 31 : 0 ] in_data;
 logic  [ 5 : 0 ] index;
-wire [15:0] valid ;
 
+//outputs
+wire [15:0]            valid_o;
+wire [15:0][DQ  -1 :0] dq_o;
+wire [15:0][IDX -1 :0] idx_o;
+wire [15:0][RA  -1 :0] ra_o;
+wire [15:0][CA  -1 :0] ca_o;
+wire [15:0]            t_o;
 
-front_end #( .REQ_SIZE( `REQUEST_SIZE ) )fe
- (.clk(clk),.rst_n(rst_n),.in_valid(in_valid),.in_request_type(in_request[data_width+address_width-1:0]),
-  .in_request_data(in_request[data_width+address_width-1:address_width]),.in_request_address(in_request[address_width-1:0]),
-  .out_busy(out_busy),.request_done_valid(request_done_valid),.the_type(the_type),.data_in(in_data),.index(index),
-  .write_done(write_done),.read_done(read_done),.data_out(data_out),.out(out),.ready(grant_i), .valid_o(valid)
-
+front_end #( .READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(IDX),.WR_FIFO_SIZE(WR_FIFO_SIZE),.WR_FIFO_NUM(WR_FIFO_NUM) )fe
+ (
+	.clk(clk),
+	.rst_n(rst_n),
+	.in_valid(in_valid),
+	.in_request_type(in_request[data_width+address_width-1:0]),
+  	.in_request_data(in_request[data_width+address_width-1:address_width]),
+  	.in_request_address(in_request[address_width-1:0]),
+	.out_busy(out_busy),
+	.request_done_valid(request_done_valid),
+	.the_type(the_type),
+	.data_in(in_data),
+	.index(index),
+	.write_done(write_done),
+	.read_done(read_done),
+	.data_out(data_out),
+    .ready(ready),
+	.valid_o(valid_o),
+	.dq_o(dq_o),
+	.idx_o(idx_o),
+	.ra_o(ra_o),
+	.ca_o(ca_o),
+	.t_o(t_o)
 );
-
-
 
 // Clock generator
   always
   begin
-    #1 clk = 1;
-    #1 clk = 0;
+    #5 clk = 1;
+    #5 clk = 0;
   end
 
-initial begin   
-    rst_n = 0;
-	# 10 rst_n = 1;
-	#11
 
-	@(posedge clk)
+
+initial begin   
+    rst_n = 1'b0;
+	ready = 1'b0;
+	request_done_valid = 1'b0;
+	#8 
+	rst_n = 1'b1;
+	in_valid = 1'b1;
+
+	repeat(30) begin //insert new input data
+        @ (posedge clk);
+		// new address / data /  type input
+        in_request[address_width-1:0] = $urandom() ;
+		in_request[data_width+address_width-1:address_width]=$urandom();
+		in_request[data_width+address_width-1:0]  = $urandom();
+
+    end
+
+
+	/*@(posedge clk)
 	in_busy =0 ;
 	request_done_valid = 0;
 	index =0;
 	grant_i =0;
+
+	.in_valid(in_valid),
+	.in_request_type(in_request[data_width+address_width-1:0]),
+  	.in_request_data(in_request[data_width+address_width-1:address_width]),
+  	.in_request_address(in_request[address_width-1:0]),
+
+	  
+	repeat(30) begin //insert new random data
+        @ (posedge clk);
+        {idx_i,dq_i,ra_i,ca_i,type_i}  = {$urandom(),$urandom()};
+        if(type_i == READ )  begin push = 7'b1<<rd_arr[$urandom%4];  end
+        if(type_i == WRITE ) begin push = 7'b1<<wr_arr[$urandom%3];  end
+    end
 
 	for (int i = 0; i < 64; i++) begin
 		////////////////////////////// single read
@@ -116,7 +144,7 @@ initial begin
 	in_valid = 0 ;
 
 	#100
-	$stop;
+	$stop;*/
 
 end
 

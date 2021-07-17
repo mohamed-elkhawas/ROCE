@@ -11,7 +11,9 @@
 module generic_fifo
 #(
    parameter                       DATA_WIDTH = 32,
-   parameter                       DATA_DEPTH = 4
+   parameter                       DATA_DEPTH = 4 , 
+   parameter                       RA_POS = 20  , ////////////////////
+   parameter                       RA_BITS = 10  ////////////////////
 )
 (
    input  logic                                    clk,
@@ -20,6 +22,8 @@ module generic_fifo
    input  logic [DATA_WIDTH-1:0]                   data_i,
    input  logic                                    valid_i,
    output logic                                    grant_o,//!full=1
+   output logic [RA_BITS-1:0]                      last_addr, ////////////////////
+   output logic                                    mid, ////////////////////
    //POP SIDE
    output logic [DATA_WIDTH-1:0]                   data_o,
    output logic                                    valid_o,//!empty =1
@@ -75,7 +79,6 @@ module generic_fifo
       begin
           grant_o = 1'b1;
           valid_o = 1'b0;
-
           case(valid_i)
           1'b0 :
           begin
@@ -103,7 +106,6 @@ module generic_fifo
       begin
           grant_o = 1'b1;
           valid_o = 1'b1;
-
           case({valid_i,grant_i})
 
           2'b01:
@@ -169,7 +171,6 @@ module generic_fifo
           grant_o = 1'b0;
           valid_o = 1'b1;
           gate_clock      = 1'b1;
-
           case(grant_i)
           1'b1:
           begin
@@ -221,5 +222,29 @@ module generic_fifo
    end
 
    assign data_o = FIFO_REGISTERS[Pop_Pointer_CS];
+   assign last_addr = FIFO_REGISTERS[Push_Pointer_CS][RA_POS +: RA_BITS] ;////////////////////
+  
+  always_comb//////////////////////////
+   begin
 
-endmodule // generic_fifo
+      case(CS)
+      EMPTY:
+         mid = 1'b0;
+      MIDDLE:
+      begin
+         if(Push_Pointer_CS > Pop_Pointer_CS )
+                mid = (Push_Pointer_CS - Pop_Pointer_CS) >=  DATA_DEPTH/2;
+
+         else if (Push_Pointer_CS < Pop_Pointer_CS ) 
+                mid = (Pop_Pointer_CS - Push_Pointer_CS) >=  DATA_DEPTH/2;
+      end
+
+      FULL: 
+          mid = 1'b1;
+      default :
+          mid = 1'b1;
+
+      endcase
+   end
+   
+   endmodule // generic_fifo
