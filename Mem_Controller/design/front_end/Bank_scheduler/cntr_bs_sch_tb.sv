@@ -1,142 +1,106 @@
-/*module cntr_bs_sch_tb();
+module cntr_bs_sch_tb();
 
-localparam READ  = 1'b1,
-           WRITE = 1'b0;
+parameter READ  = 1'b1;
+parameter WRITE = 1'b0;
 
 //veloce request format
-localparam  CID_POS    = 0,
-            CA_POS     = 4,
-            RA_POS     = 14,
-            BA_POS     = 30,
-            BD_POS     = 32,
-            DATA_POS   = 33,
-            TYPE_POS   = 49,
-            INDEX_POS  = 50,
-            CID        = 4,
-            CA         = 10,
-            RA         = 16,
-            BA         = 2,
-            BD         = 2,
-            DATA       = 16,
-            TYPE       = 1,
-            INDEX      = 7,
-            REQ_SIZE   = CID+CA+RA+BA+BD+DATA+TYPE+INDEX ; 
+parameter  CID_POS  = 0;
+parameter  CA_POS   = 4;
+parameter  RA_POS   = 14;
+parameter  BA_POS   = 30;
+parameter  BG_POS   = 32;
+parameter  IDX_POS  = 34;
+parameter  TYPE_POS = 41;
+parameter  DQ_POS   = 42;
+parameter  CID      = 4;
+parameter  CA       = 10;
+parameter  RA       = 16;
+parameter  BA       = 2;
+parameter  BG       = 2;
+parameter  DQ       = 16;
+parameter  TYPE     = 1;
+parameter  IDX      = 7;
+parameter  REQ_SIZE = CID + CA + RA + BA + BG + DQ + TYPE + IDX ; 
 
-//scheduler stored read requests format
-localparam  RA_POS_READ     =0,
-            INDEX_POS_READ  =16,
-            REQ_SIZE_READ   =RA+INDEX;
-
-//scheduler stored write requests format
-localparam  RA_POS_WRITE    =0,
-            DATA_POS_WRITE  =16,
-            INDEX_POS_WRITE =32,
-            REQ_SIZE_WRITE  =REQ_SIZE_READ+DATA;
-
-//fifos parameters
-parameter  RD_FIFO_SIZE = 4;
-parameter  WR_FIFO_SIZE = 2;
-parameter  RD_FIFO_NUM  = 4;
-parameter  WR_FIFO_NUM  = 3;
-parameter  FIFO_NUM     = RD_FIFO_NUM + WR_FIFO_NUM;
+//scheduler stored requests format
+localparam RD_SIZE    = RA + IDX + CA;
+localparam WR_SIZE    = RD_SIZE + DQ ;
 
 
-localparam BURST = RA+CA-4;
+//scheduler fifos parameters
+localparam  RD_FIFO_SIZE = 4;
+localparam  WR_FIFO_SIZE = 2;
+localparam  RD_FIFO_NUM  = 4;
+localparam  WR_FIFO_NUM  = 3;
+
+
+localparam FIFO_NUM     = RD_FIFO_NUM + WR_FIFO_NUM;
+localparam BURST        = RA + CA - 4;
+localparam RA_ALL       = RA * FIFO_NUM    ;
 
 //inputs
 reg clk;
 reg rst_n;
 reg mode;
 reg ready;
-reg [FIFO_NUM       -1 : 0] valid_in_fifo;
-reg [REQ_SIZE_WRITE -1 : 0] write_input;
-reg [REQ_SIZE_READ  -1 : 0] read_input;
-
-//inputs to fifos before scheduler
-reg   [RA-1    : 0 ] row_i ;
-reg   [CA-1    : 0 ] col_i ;
-reg  valid ;
+reg                   valid_in_fifo; // valid bit from input source to fifos
+reg [FIFO_NUM -1 : 0] push;
+reg [DQ  -1 :0] dq_i;
+reg [IDX -1 :0] idx_i;
+reg [RA  -1 :0] ra_i;
+reg [CA  -1 :0] ca_i;
+reg             type_i;
 
 //intermediate signals
-wire [(BURST*RD_FIFO_NUM) -1  : 0] rd_i ;           //input burst addresses from read fifos
-wire [(BURST*WR_FIFO_NUM) -1  : 0] wr_i ;           //input burst addresses from write fifos
-wire [FIFO_NUM            -1  : 0] valid_fifo_sch;  //valid output signals from fifos to scheduler
-wire [FIFO_NUM            -1  : 0] grant_sch_fifo;  //pop siganls from scheduler to fifos
-wire [FIFO_NUM            -1 :  0] grant_o ;
-wire [FIFO_NUM            -1 :  0] mid  ;
+wire [FIFO_NUM -1 : 0][BURST -1  : 0] burst_i ;  //input burst addresses from fifos
+wire [FIFO_NUM -1 : 0] empty;  //valid output signals from fifos to scheduler
+wire [FIFO_NUM -1 : 0] pop;    //pop siganls from scheduler to fifos
 
 //output signals
-wire                   valid_sch_arbiter ;
-wire [FIFO_NUM -1 : 0] grant_fifo_input  ; //grant from fifo to input source
-wire [FIFO_NUM -1 : 0] mid  ;
+wire             valid_sch_arbiter ;
+wire [DQ  -1 :0] dq_o;
+wire [IDX -1 :0] idx_o;
+wire [RA  -1 :0] ra_o;
+wire [CA  -1 :0] ca_o;
+wire             type_o;
+
 always #5 clk = ~clk;
+byte rd_arr[4] = {8'd0, 8'd1, 8'd2, 8'd3};
+byte wr_arr[3] = {8'd4, 8'd5, 8'd6};
 
-integer i ,f;
-initial begin
-    //$monitor("(`FIFO_NUM)*(`REQ_SIZE_READ) = %d `FIFO_NUM*`REQ_SIZE_READ = %d",(FIFO_NUM)*(REQ_SIZE_READ),`FIFO_NUM*`REQ_SIZE_READ);
-    //`ARR_NUM_RD,`ARR_NUM_WR);
-    //f=$fopen("output.txt","w");
-    /*clk=0;
-    rst_n = 0;
-    #6
-    rst_n=1;
-    pop = 7'd0;
-    valid = 1'b1 ;
-    fork  //use fork for  parallel operations
-        repeat(200) begin //insert new input data
-            @ (posedge clk);
-            in={$urandom(),$urandom()};
-            // now write the stored requests in fifo to compare with results
-           //$fwrite(f,"%h\n",5);
-            if(valid == 1'b1 && in[`TYPE_POS] == (`READ))
-                $monitor("%h\n",{in[`INDEX_POS+:`INDEX],in[`RA_POS +:`RA]});
-            if(valid == 1'b1 && in[`TYPE_POS] == (`WRITE))
-                $monitor("%h\n",{in[`INDEX_POS_WRITE+:`INDEX],in[`DATA_POS+:`DATA],in[`RA_POS+:`RA]});
-        end
-        /*repeat(200) begin //update valid signal before the next positive edge as valid is a mealy ouput from sender
-            @ (negedge clk);
-            valid = $urandom%2;
-        end
-    join
-    //$fclose(f);
-end
-
-
-genvar g;
-generate
-    for (g=0; g < RD_FIFO_NUM; g=g+1)  begin
-       generic_fifo #(.DATA_WIDTH(REQ_SIZE_READ), .DATA_DEPTH(RD_FIFO_SIZE), .RA_POS(RA_POS_READ) , .RA(RA)) rd_fifo
-        (
-            .clk(clk),
-            .rst_n(rst_n),
-            .data_i(read_input),
-            .valid_i(valid_in_fifo[g]),
-            .grant_o(grant_fifo_input[g]),
-            .last_addr(rd_i[g*BURST +: BURST]),
-            .mid(mid[g]),
-            .data_o(data_out_read[(g*(REQ_SIZE_READ)) +: (REQ_SIZE_READ)]),
-            .valid_o(valid_fifo_sch[g]),
-            .grant_i(grant_o[g])
-        );    
+/*integer  max_ ; 
+task fill(idx,type_);
+     max_ =  (type_ == READ)? RD_FIFO_SIZE : WR_FIFO_SIZE ;
+     @ (posedge clk)
+     push = 1<<idx;
+    for(integer k = 0 ; k<max_ ; k=k+1 ) begin
+        {idx_i,dq_i,ra_i,ca_i}  = {$urandom(),$urandom()};
     end
-    for (g= RD_FIFO_NUM; g < FIFO_NUM; g=g+1)  begin
-       generic_fifo #(.DATA_WIDTH(REQ_SIZE_WRITE) ,.DATA_DEPTH(WR_FIFO_SIZE), .RA_POS(RA_POS_WRITE) , .RA(RA)) wr_fifo
-        (
-            .clk(clk),
-            .rst_n(rst_n),
-            .data_i(write_input),
-            .valid_i(valid_in_fifo[g]),
-            .grant_o(grant_fifo_input[g]),
-            .last_addr(wr_i[g*BURST +: BURST]),
-            .mid(mid[g]),
-            .data_o(data_out_write[(g-(RD_FIFO_NUM))*(REQ_SIZE_WRITE)+:(REQ_SIZE_WRITE)]),
-            .valid_o(valid_fifo_sch[g]),
-            .grant_i(grant_o[g])
-        );
-    end      
-endgenerate
+    
+        
+endtask*/
 
 
+initial begin
+    clk=0;
+    rst_n = 0;
+    mode = READ ; 
+    ready = 1'b0;
+    #6
+    rst_n = 1;
+    valid_in_fifo = 1'b1;
+    //first fill in the fifos with random data
+    repeat(30) begin //insert new input data
+        @ (posedge clk);
+        {idx_i,dq_i,ra_i,ca_i,type_i}  = {$urandom(),$urandom()};
+        if(type_i == READ )  begin push = 7'b1<<rd_arr[$urandom%4];  end
+        if(type_i == WRITE ) begin push = 7'b1<<wr_arr[$urandom%3];  end
+    end
+    @ (posedge clk);
+    valid_in_fifo = 1'b0;
+    // turn on scheduler
+    ready = 1'b1;
+end
 
 cntr_bs_sch #(.READ(READ), .WRITE (WRITE), .RD_FIFO_NUM(RD_FIFO_NUM), .WR_FIFO_NUM(WR_FIFO_NUM), .BURST(BURST) ) scheduler
 (
@@ -144,16 +108,31 @@ cntr_bs_sch #(.READ(READ), .WRITE (WRITE), .RD_FIFO_NUM(RD_FIFO_NUM), .WR_FIFO_N
    .rst_n(rst_n),              // Synchronous reset                                                     -> active low
    .ready(ready),              // Ready signal from arbiter                                             -> active high
    .mode(mode),                // Input controller mode to switch memory interface bus into write mode 
-   .rd_i(rd_i),                // Input read burst address
-   .wr_i(wr_i),                // Input write burst address
-   .valid_i(valid_fifo_sch),   // Input valid from fifos                
-   .grant_o(grant_sch_fifo),   // Output grant signals to fifos
+   .burst_i(burst_i),          // Input burst addresses
+   .empty(empty),              // Input valid from fifos                
+   .pop(pop),                  // Output grant signals to fifos
    .valid_o(valid_sch_arbiter) //Output valid for arbiter
 );
 
 
-Selector #(.RA_BITS(RA_BITS),.RA_POS(RA_POS) , .READ(READ), .WRITE (WRITE), .ARR_NUM_WR(WR_FIFO_NUM), .ARR_NUM_RD(RD_FIFO_NUM) selector
-(.clk(clk), .rst_n(rst_n), .valid(valid), .in_type(in[TYPE_POS]),.empty(~valid_o) , .full(~grant_o), .mid(mid),
- .last_addr(last_addr),.in_addr(in[RA_POS +: RA]), .push(push));
+cntr_bs_dp #(.RD_FIFO_NUM(RD_FIFO_NUM), .WR_FIFO_NUM(WR_FIFO_NUM), .RD_FIFO_SIZE(RD_FIFO_SIZE), .WR_FIFO_SIZE(WR_FIFO_SIZE), .DQ(DQ), .IDX(IDX), .RA(RA), .CA(CA),.RA_POS(RA_POS),.READ(READ),.WRITE(WRITE)) bs_dp
+(
+   .clk(clk),        // Input clock
+   .rst_n(rst_n),    // Synchronous reset
+   .push(push),      // Input pop signals in a one-hot style to the bank scheduler fifos
+   .pop(pop),         // Input pop signals in a one-hot style to the bank scheduler fifos
+   .valid_i(valid_in_fifo),   // Input valid bit from txn controller/bank scheduler fifo
+   .dq_i(dq_i),       // Input data from txn controller/bank scheduler fifo
+   .idx_i(idx_i),     // Input index from txn controller/bank scheduler fifo
+   .ra_i(ra_i),       // Input row address from txn controller/bank scheeduler fifo
+   .ca_i(ca_i),       // Input col address from txn controller/bank scheeduler fifo
+   .empty(empty),     // Output valid signals of scheduler fifos
+   .dq_o(dq_o),       // Output data from txn controller/bank scheduler fifo
+   .idx_o(idx_o),     // Output index from txn controller/bank scheduler fifo
+   .ra_o(ra_o),       // output row address from txn controller/bank scheeduler fifo
+   .ca_o(ca_o),       // output col address from txn controller/bank scheeduler fifo
+   .first_burst(burst_i), //Output head burst of each fifo
+   .type_o(type_o)   // Output type from scheduler fifo
+);
 
-endmodule*/
+endmodule

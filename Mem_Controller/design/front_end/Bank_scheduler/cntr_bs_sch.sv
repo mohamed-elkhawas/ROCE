@@ -22,80 +22,71 @@
 //
 //----------------------------------------------------------------------
 
-/*module cntr_bs_sch
-#(parameter READ =1'b1 , parameter WRITE = 1'b0 , parameter RD_FIFO_NUM = 4, parameter WR_FIFO_NUM  = 3, parameter BURST = 16 )
+module cntr_bs_sch
+#(
+    parameter READ        = 1'b1 ,
+    parameter WRITE       = 1'b0 ,
+    parameter RD_FIFO_NUM = 4,
+    parameter WR_FIFO_NUM = 3,
+    parameter BURST       = 16
+)
 (
    clk,      // Input clock
    rst_n,    // Synchronous reset                                                     -> active low
    ready,    // Ready signal from arbiter                                             -> active high
    mode,     // Input controller mode to switch memory interface bus into write mode 
-   rd_i,     // Input read burst address
-   wr_i,     // Input write burst address
-   valid_i,  // Input valid from fifos                
-   grant_o,  // Output grant signals to fifos
-   valid_o   //Output valid for arbiter
+   burst_i,  // Input burst addresses
+   empty,    // Input empty signals from fifos                
+   pop,      // Output pop signals to fifos
+   valid_o   // Output valid for arbiter
 );
 
 //*****************************************************************************
 // Parameters definitions                                                                
 //*****************************************************************************  
   localparam FIFO_NUM = RD_FIFO_NUM + WR_FIFO_NUM ;
-  localparam RD       = BURST * RD_FIFO_NUM ; 
-  localparam WR       = BURST * WR_FIFO_NUM ; 
-
-
-  // FSM states
-  localparam [2:0] EMPTY       = 3'b000;
-  localparam [2:0] WAITING     = 3'b001;
-  localparam [2:0] FINISH      = 3'b010;
-  localparam [2:0] WRITE_BURST = 3'b011;
-  localparam [2:0] READ_BURST  = 3'b100;
-
-
+  localparam FIFOS_BITS = $clog2(FIFO_NUM);
 //*****************************************************************************
 // Ports declarations                                                             
 //*****************************************************************************    
-  input wire                              clk;      // Input clock
-  input wire                              rst_n;    // Synchronous reset                                                    -> active low                               
-  input wire                              ready;    // Input Ready signal from arbiter                                      -> active high        
-  input wire                              mode;     // Input controller mode to switch memory interface bus into write mode
-  input wire [RD -1                  : 0] rd_i;     // Input burst address
-  input wire [WR -1                  : 0] wr_i;     // Input burst address
-  input wire [FIFO_NUM -1            : 0] valid_i;  // Input valid from fifos                          
-  output reg [FIFO_NUM -1            : 0] grant_o;  // Output grant signals to fifos
-  output reg                              valid_o;  //Output valid for arbiter
+  input wire                   clk;      // Input clock
+  input wire                   rst_n;    // Synchronous reset                                                    -> active low                               
+  input wire                   ready;    // Input Ready signal from arbiter                                      -> active high        
+  input wire                   mode;     // Input controller mode to switch memory interface bus into write mode
+  input wire [FIFO_NUM -1 : 0][BURST -1 : 0] burst_i;     // Input burst addresses
+  input wire [FIFO_NUM -1 : 0] empty;    // Input empty signals from fifos                           
+  output reg [FIFO_NUM -1 : 0] pop;      // Output pop signals to fifos
+  output reg                   valid_o;  // Output valid for arbiter
 
 
 
 //*****************************************************************************
 // Internal signals declarations                                                             
 //*****************************************************************************
-  reg  [$clog2(RD_FIFO_NUM) -1 : 0] rd_idx;        // read counter index
-  reg  [$clog2(RD_FIFO_NUM) -1 : 0] wr_idx;        // write counter index
-  wire [FIFO_NUM    -1         : 0] empty;         
+  //reg  [$clog2(RD_FIFO_NUM) -1 : 0] rd_idx;        // read counter index
+  //reg  [$clog2(RD_FIFO_NUM) -1 : 0] wr_idx;        // write counter index
   wire [RD_FIFO_NUM -1         : 0] rd_empty  ;
   wire [WR_FIFO_NUM -1         : 0] wr_empty  ;
-  wire                              rd_start  ;
-  wire                              wr_start  ;
-  reg  [1                      : 0] start;          // Start signals to index counters    
+  //wire                              rd_start  ;
+  //wire                              wr_start  ;
+  //reg  [1                      : 0] start;          // Start signals to index counters    
   reg  [FIFO_NUM            -1 : 0] hits ;
 
-  assign empty = ~valid_i ;
   assign {rd_empty , wr_empty} = { empty[RD_FIFO_NUM-1:0] , empty[FIFO_NUM -1 : RD_FIFO_NUM] }; 
-  assign {wr_Start , rd_Start} = {start[1] , start[0]};
+  //assign {wr_Start , rd_Start} = {start[1] , start[0]};
   integer i ;
 
 
-  // FSM signals
-  reg [1:0] CS, NS;
-  reg [BURST -1 : 0] CB , NB; //CB-> valid bit + current burst address ----- NB-> next burst
+  // FSM states
+  enum reg [2:0] { EMPTY, WAITING, FINISH, WR_BURST, RD_BURST } CS, NS;
+  reg [BURST -1 : 0] CB , NB; //CB-> current burst address ----- NB-> next burst
 
 //*****************************************************************************
 // Functions declarations                                                             
 //*****************************************************************************    
 
 // return index of set bit in an input with one hot encoding style based on type of given request type
-function [$clog2(FIFO_NUM)-1:0]  get_index;
+function [FIFOS_BITS-1:0]  get_index;
     input [FIFO_NUM -1 : 0] in ;
     input request_type ;
     get_index = (request_type == READ)?
@@ -106,8 +97,8 @@ endfunction
 
 // It returns index of first one bit with one hot style.
 // we use casex to call function for non-hot encoded input.
-function [$clog2(FIFO_NUM)-1:0]  hot2idx;
-    input [FIFO_NUM -1 : 0] in ;
+function [FIFOS_BITS -1 : 0] hot2idx;
+    input [FIFO_NUM - 1 : 0] in ;
     casex (in)
             7'bxxxxxx1 : hot2idx = 0 ;
             7'bxxxxx10 : hot2idx = 1 ;
@@ -126,11 +117,8 @@ endfunction
 // find burst hits                                                         
 //*****************************************************************************    
 always @(*) begin 
-    for(i=0 ; i<RD_FIFO_NUM ; i=i+1) 
-        hits[i] = (empty[i] == 1'b0 )? rd_i[i*BURST : BURST] == CB : 1'b0;
-    for(i=RD_FIFO_NUM ; i<FIFO_NUM; i=i+1) 
-        //hits[i] = (empty[i] ==1'b0 )? wr_i[((i+1)*REQ_SIZE_WRITE)-1 : ((i+1)*REQ_SIZE_WRITE)-BURST_BITS-1] ==  CB[BURST:1]  :1'b0;
-        hits[i] = (empty[i] == 1'b0 )? wr_i[i*BURST : BURST] == CB : 1'b0;
+    for(i = 0 ; i<FIFO_NUM ; i=i+1) 
+        hits[i] = (empty[i] == 1'b0 )? burst_i[i] == CB : 1'b0;
 end
 
 
@@ -140,7 +128,7 @@ end
 always @(posedge clk)begin
     if(!rst_n) begin
         CS <= EMPTY;
-        CB <= {BURST{1'b0};
+        CB <= {BURST{1'b0}};
     end
     else begin
         CS  <= NS ;
@@ -155,9 +143,9 @@ always @(*) begin
     NS = CS ;
     NB = CB ;  
     valid_o = 1'b0 ; 
-    grant_o = {FIFO_NUM{1'b0}};
-    rd_start = 1'b0;
-    wr_start = 1'b0;
+    pop = {FIFO_NUM{1'b0}};
+    //rd_start = 1'b0;
+    //wr_start = 1'b0;
     case(CS) 
         EMPTY :begin
             if(mode == READ) begin
@@ -166,7 +154,7 @@ always @(*) begin
                 else if( &rd_empty == 1'b0 ) begin // at least one read fifo is not empty
                     NS = WAITING;
                     valid_o  = 1'b1 ;
-                    rd_start = 1'b1 ; 
+                    //rd_start = 1'b1 ; 
                 end
             end
             else if(mode == WRITE) begin
@@ -175,7 +163,7 @@ always @(*) begin
                 else if( &wr_empty == 1'b0 ) begin // at least one write fifo is not empty
                     NS = WAITING;
                     valid_o  = 1'b1 ;
-                    wr_start = 1'b1 ;  
+                    //wr_start = 1'b1 ;  
                 end
             end
         end
@@ -191,14 +179,18 @@ always @(*) begin
                 end
                 else if (ready == 1'b1) begin
                     if(mode == READ)begin
-                        NS = READ_BURST ;
-                        grant_o[rd_idx] = 1'b1;
-                        NB = rd_i[rd_idx] ;  
+                        NS = RD_BURST ;
+                        pop[get_index(~empty,READ)] = 1'b1;
+                        NB = burst_i[get_index(~empty,READ)] ;
+                        //pop[rd_idx] = 1'b1;
+                        //NB = rd_i[rd_idx] ;  
                     end  
                     else if(mode == WRITE)begin
-                        NS = WRITE_BURST ;
-                        grant_o[wr_idx] = 1'b1;
-                        NB = wr_i[wr_idx] ;   
+                        NS = WR_BURST ;
+                        pop[get_index(~empty,WRITE)] = 1'b1;
+                        NB = burst_i[get_index(~empty,WRITE)] ;
+                        //pop[wr_idx] = 1'b1;
+                        //NB = wr_i[wr_idx] ;   
                     end                     
                 end
             end
@@ -213,26 +205,26 @@ always @(*) begin
                 valid_o = 1'b1; 
             end
         end           
-        READ_BURST : begin
+        RD_BURST : begin
             if ( |hits[RD_FIFO_NUM-1:0] == 1'b1 ) begin // burst hit exists
-                NS  = READ_BURST;
+                NS  = RD_BURST;
                 valid_o = 1'b1 ;
-                grant_o[get_index(hits,READ)] = 1'b1;
+                pop[get_index(hits,READ)] = 1'b1;
             end
             else begin // burst hit does not exist 
                 NS = FINISH ;
-                rd_start = 1'b1 ; //increment counter for round robin over fifos
+                //rd_start = 1'b1 ; //increment counter for round robin over fifos
             end                             
         end
-        WRITE_BURST : begin
+        WR_BURST : begin
             if ( |hits[FIFO_NUM-1:RD_FIFO_NUM] == 1'b1 ) begin // burst hit exists
-                NS  = WRITE_BURST;
+                NS  = WR_BURST;
                 valid_o= 1'b1 ;
-                grant_o[get_index(hits,WRITE)] = 1'b1;
+                pop[get_index(hits,WRITE)] = 1'b1;
             end
             else begin // burst hit does not exist 
                 NS = FINISH ;
-                wr_start = 1'b1;
+                //wr_start = 1'b1;
             end       
         end 
     endcase
@@ -242,10 +234,10 @@ end
 //*****************************************************************************
 // Index counters instants                                      
 //*****************************************************************************
-cntr_bs_sch_wr wr_cnt(   
+/*cntr_bs_sch_wr wr_cnt(   
    .clk(clk),        // Input clock
    .rst_n(rst_n),    // Synchronous reset                                    -> active low
-   .start(wr_start),    // Input start signal to increment the out              -> active high
+   .start(wr_start), // Input start signal to increment the out              -> active high
    .valid(valid_i),  // Input valid signals to help choose proper next out 
    .idx(wr_idx)      // Output idx value
 );
@@ -256,6 +248,6 @@ cntr_bs_sch_rc rd_cnt(
    .start(rd_start), // Input start signal to increment the out              -> active high
    .valid(valid_i),  // Input valid signals to help choose proper next out 
    .idx(wr_idx)      // Output idx value
-);
+);*/
 
-endmodule*/
+endmodule

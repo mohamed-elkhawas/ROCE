@@ -1,53 +1,76 @@
-/********************************************************************************************************
-    - A Heuristic critera depends on my opinion, may not be the optimum way. It is a greedy sequence
-    that always targets most empty fifo.
-        1- First, check for hits in all arrays.
-        2- If multiple hits are available, select first one.
-        3- In case of no hits exists, check for empty arrays first.
-        4- If multiple empty arrays are available, select first one.
-        5- In case of no empty arrays, select first one.                            
-********************************************************************************************************/
+//----------------------------------------------------------------------
+//                                                                     
+// Description: Selector part of bank scheduler module of the controller.                   
+//              
+//          
+// Functionality: Selecting best fifo to insert new input in it stisfying a heuristic criteria, 
+//                may not be the optimum way. It is a greedy sequence that always targets 
+//                most empty fifo.
+//                   1- First, check for hits in all fifos.
+//                   2- If multiple hits are available, select first one.
+//                   3- In case of no hits exists, check for empty fifos first.
+//                   4- If multiple empty fifos are available, select first one.
+//                   5- In case of no empty fifos, select first one.                         
+//                
+//    
+// Modifications: Editing number of fifos requires edit signal width in both functions.
+//                Also, It requires manual edit on computing push signals block.
+//----------------------------------------------------------------------
 
-/*module cnt_bs_sel
-#(parameter RA_BITS = 8 , parameter RA_POS = 8, parameter READ = 0 , parameter WRITE = 1 , parameter ARR_NUM_WR= 3 , parameter ARR_NUM_RD=4)
+module cntr_bs_sel
+#(
+    parameter RA           = 8,
+    parameter READ         = 30,
+    parameter WRITE        = 36,
+    parameter RD_FIFO_NUM  = 4,
+    parameter WR_FIFO_NUM  = 3
+)
 (
-   input   clk , rst_n , valid , in_type ,
-   input   [ARR_NUM_WR + ARR_NUM_RD -1:0] empty , full, mid ,
-   input   [((ARR_NUM_WR + ARR_NUM_RD)*RA_BITS)-1:0] last_addr , 
-   input   [RA_BITS-1:0] in_addr,   
-   output  reg [ARR_NUM_WR + ARR_NUM_RD -1:0] push    /* write enable signal to add new request in all buffers*/
-//);
+   valid_i, // Input valid bit from txn controller/bank scheduler fifo
+   ra_i,    // Input row address from txn controller/bank scheeduler fifo
+   t_i,     // Input type from txn controller/bank scheeduler fifo
+   last_ra, // Output last row addresses from all bank scheduler fifos
+   full,    // Output full signals of scheduler fifos
+   mid,     // Output mid signals of scheduler fifos
+   empty,   // Output empty signals of scheduler fifos
+   push     // Output push signals for all fifos
+);
 
-//localparam  NUM_OF_BUFFERS = ARR_NUM_WR+ARR_NUM_RD;
+//*****************************************************************************
+// Parameters definitions                                                                
+//*****************************************************************************  
+  localparam FIFO_NUM = RD_FIFO_NUM + WR_FIFO_NUM ;
+  localparam FIFOS_BITS = $clog2(FIFO_NUM);
+//*****************************************************************************
+// Ports declarations                                                             
+//*****************************************************************************   
+  input wire                               valid_i; // Input valid bit from txn controller/bank scheduler fifo
+  input wire  [RA       -1 : 0]            ra_i;    // Input row address from txn controller/bank scheeduler fifo
+  input wire                               t_i;     // Input type from txn controller/bank scheeduler fifo
+  input wire [FIFO_NUM -1 : 0][RA -1 : 0] last_ra;  // output last row addresses from all bank scheduler fifosoutput reg [DQ       -1 : 0] dq_o;    // Output data from txn controller/bank scheeduler fifos
+  input wire [FIFO_NUM -1 : 0] full ;               // Output full signals of scheduler fifos
+  input wire [FIFO_NUM -1 : 0] mid ;                // Output mid signals of scheduler fifos
+  input wire [FIFO_NUM -1 : 0] empty ;              // Output empty signals of scheduler fifos
+  output reg [FIFO_NUM -1 : 0] push;                // Output push signals for all fifos
 
-/***************************************internal components and signals***************************************
-wire [ARR_NUM_RD-1 : 0 ] empty_rd , full_rd, mid_rd;
-wire [ARR_NUM_WR-1 : 0 ] empty_wr , full_wr, mid_wr; 
-
-reg [NUM_OF_BUFFERS-1:0] row_hits  ;
-
-integer i ;
-
-assign {empty_rd , full_rd  , mid_rd} = { empty[ARR_NUM_RD-1:0] , full[ARR_NUM_RD-1:0] , mid[ARR_NUM_RD-1:0] }; 
-assign {empty_wr , full_wr  , mid_wr} = { empty[ARR_NUM_WR+ARR_NUM_RD -1:ARR_NUM_RD] , full[ARR_NUM_WR+ARR_NUM_RD -1:ARR_NUM_RD] , mid[ARR_NUM_WR+ARR_NUM_RD -1:ARR_NUM_RD] }; 
-
-/******************************************functions**********************************************************
+//*****************************************************************************
+// Functions declarations                                                             
+//*****************************************************************************    
 
 // return index of set bit in an input with one hot encoding style based on type of given request type
-function [$clog2(NUM_OF_BUFFERS)-1:0]  get_index;
-    input [NUM_OF_BUFFERS-1:0] in ;
+function [FIFOS_BITS -1:0]  get_index;
+    input [FIFO_NUM -1 :0] in ;
     input request_type ;
     get_index = (request_type == READ)?
-                    hot2idx( { 3'b000, in[ARR_NUM_RD-1:0]}):
-                    hot2idx( { in[NUM_OF_BUFFERS-1:ARR_NUM_RD] , 4'b0000});
+                    hot2idx( { 3'b000, in[RD_FIFO_NUM-1:0]}):
+                    hot2idx( { in[FIFO_NUM -1 : RD_FIFO_NUM] , 4'b0000});
 endfunction
-
 
 // It returns index of first one bit with one hot style.
 // we use casex to call function for non-hot encoded input.
 
-function [$clog2(NUM_OF_BUFFERS)-1:0]  hot2idx;
-    input [NUM_OF_BUFFERS-1:0] in ;
+function [FIFOS_BITS -1 :0]  hot2idx;
+    input [FIFO_NUM -1 :0] in ;
     casex (in)
             7'bxxxxxx1 : hot2idx = 0 ;
             7'bxxxxx10 : hot2idx = 1 ;
@@ -59,29 +82,50 @@ function [$clog2(NUM_OF_BUFFERS)-1:0]  hot2idx;
             default    : hot2idx = 0 ;
     endcase
 endfunction 
-/*************************************************************************************************************
-always @(*) begin //find row Hits / burst hits signals
-    for(i=0 ; i<NUM_OF_BUFFERS ; i=i+1) 
-        row_hits[i]  = (valid==1'b1 && full[i]==1'b0) ? last_addr[i*RA_BITS +: RA_BITS] == in_addr :1'b0;//  input row hits
-        //out_hits[i] = (valid_burst==1'b1 && empty[i]==1'b0)? first_addr[i*BURST_BITS +: BURST_BITS] ==  burst_addr[BURST_BITS-1:0]      :1'b0;// output burst hits
+
+//*****************************************************************************
+// Internal signals declarations                                                             
+//*****************************************************************************
+wire [RD_FIFO_NUM -1 : 0] rd_empty , rd_full, rd_mid;
+wire [WR_FIFO_NUM -1 : 0] wr_empty , wr_full, wr_mid; 
+
+reg [FIFO_NUM -1 : 0] hits  ;
+
+integer i ;
+
+assign {rd_empty , rd_full  , rd_mid} = { empty[RD_FIFO_NUM             -1 :           0] , full[RD_FIFO_NUM -1 :           0] , mid[RD_FIFO_NUM -1 :           0] }; 
+assign {wr_empty , wr_full  , wr_mid} = { empty[FIFO_NUM -1 : RD_FIFO_NUM] , full[FIFO_NUM    -1 : RD_FIFO_NUM] , mid[FIFO_NUM    -1 : RD_FIFO_NUM] }; 
+
+
+
+//*****************************************************************************
+// Find row Hits                                                       
+//*****************************************************************************
+always @(*) begin 
+    for(i=0 ; i<FIFO_NUM ; i=i+1) 
+        hits[i]  = (valid_i == 1'b1 && full[i] == 1'b0) ? last_ra[i] == ra_i :1'b0;//  input row hits
 end
 
-always @(*) begin // calculate push signals
+
+//*****************************************************************************
+// calculate push signals                                              
+//*****************************************************************************
+always @(*) begin  
     push=7'd0;
-    casex({row_hits, in_type})  
+    casex({hits, t_i})  
         {7'bxxx0000,READ}, {7'b000xxxx,WRITE}: begin // no hits available
-            if( (in_type == READ && |empty_rd == 1'b1 )|| (in_type == WRITE && |empty_wr == 1'b1 )) //an empty array found
-                push[get_index(empty , in_type)]=1'b1;
-            else if( (in_type == READ && &mid_rd == 1'b0 )|| (in_type == WRITE && &mid_wr == 1'b0 ))//almost empty array found, select first one
-                push[get_index(~mid , in_type)]=1'b1;
-            else if( (in_type == READ && &full_rd == 1'b0 )|| (in_type == WRITE && &full_wr == 1'b0 ))//unfull array found, select first unfull array
-                push[get_index(~full , in_type)]=1'b1;                
+            if( (t_i == READ && |rd_empty == 1'b1 )|| (t_i == WRITE && |wr_empty == 1'b1 )) //an empty array found
+                push[get_index(empty , t_i)]=1'b1;
+            else if( (t_i == READ && &rd_mid == 1'b0 )|| (t_i == WRITE && &wr_mid == 1'b0 ))//almost empty array found, select first one
+                push[get_index(~mid , t_i)]=1'b1;
+            else if( (t_i == READ && &rd_full == 1'b0 )|| (t_i == WRITE && &wr_full == 1'b0 ))//unfull array found, select first unfull array
+                push[get_index(~full , t_i)]=1'b1;                
         end
         // hits found, select first available hit
-        default : push[get_index(row_hits, in_type)]=1'b1;
+        default : push[get_index(hits, t_i)]=1'b1;
     endcase
 
-    if(valid==1'b0) push = 7'd0 ;        
+    if(valid_i == 1'b0) push = 7'd0 ;        
 end
 
-endmodule*/
+endmodule

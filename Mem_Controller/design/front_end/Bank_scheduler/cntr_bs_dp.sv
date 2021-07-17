@@ -7,8 +7,8 @@
 //               
 //                
 //    
-// Modifications: entry demux logic and exit demux logic are both will be changed manually 
-//                in case of changing of number of fifos.
+// Modifications: Exit mux logic will be changed manually in case of changing of
+//                number of fifos.
 //                Also, function hot2idx and exit mux will be edited.
 //              
 //----------------------------------------------------------------------
@@ -23,8 +23,7 @@ module cntr_bs_dp
   parameter IDX          = 7,
   parameter RA           = 16,
   parameter CA           = 10 ,
-  parameter RA_POS_READ  = 5 ,
-  parameter RA_POS_WRITE = 5,
+  parameter RA_POS       = 5 ,
   parameter READ         = 1'b1,
   parameter WRITE        = 1'b0
 )
@@ -41,12 +40,13 @@ module cntr_bs_dp
    last_ra, // Output last row addresses from all bank scheduler fifos
    full,    // Output full signals of scheduler fifos
    mid,     // Output mid signals of scheduler fifos
-   valid_o, // Output valid signals of scheduler fifos
+   empty,   // Output empty signals of scheduler fifos
    dq_o,    // Output data from data path
    idx_o,   // Output index from data path
    ra_o,    // output row address from data path
    ca_o,    // output col address from data path
    type_o,  // Output type from scheduler fifo
+   first_burst, //Output head burst of each fifo
    grant
 );
 
@@ -60,29 +60,31 @@ module cntr_bs_dp
   localparam DQ_ALL   = DQ          * FIFO_NUM    ;
   localparam RD_SIZE  = RA          + CA          +IDX ; //1 for type bit
   localparam WR_SIZE  = RD_SIZE     + DQ ;
+  localparam BURST    = CA          + RA   - 4    ;
   localparam FIFOS_BITS = $clog2(FIFO_NUM);
 //*****************************************************************************
 // Ports declarations                                                             
 //*****************************************************************************    
-  input wire                   clk;          // Input clock
-  input wire                   rst_n;        // Synchronous reset           input wire [FIFO_NUM -1 : 0] push;         // Input push signals in a one-hot style to the bank scheduler fifos
-  input wire [FIFO_NUM -1 : 0] push;         // Input pop signals in a one-hot style to the bank scheduler fifos                                              
-  input wire [FIFO_NUM -1 : 0] pop;          // Input pop signals in a one-hot style to the bank scheduler fifos                                              
-  input wire                   valid_i;      // Input valid bit from txn controller/bank scheduler fifo
-  input wire [DQ       -1 : 0] dq_i;         // Input data from txn controller/bank scheeduler fifos
-  input wire [IDX      -1 : 0] idx_i;        // Input index from txn controller/bank scheeduler fifos
-  input wire [RA       -1 : 0] ra_i;         // Input row address from txn controller/bank scheeduler fifo
-  input wire [RA       -1 : 0] ca_i;         // Input col address from txn controller/bank scheeduler fifo
-  output wire[RA_ALL   -1 : 0] last_ra;      // output last row addresses from all bank scheduler fifosoutput reg [DQ       -1 : 0] dq_o;    // Output data from txn controller/bank scheeduler fifos
-  output wire [FIFO_NUM -1 : 0] full ;       // Output full signals of scheduler fifos
-  output reg [FIFO_NUM -1 : 0] mid ;         // Output mid signals of scheduler fifos
-  output reg [FIFO_NUM -1 : 0] valid_o ;     // Output valid signals of scheduler fifos
-  output reg [DQ       -1 : 0] dq_o;         // Output data from txn controller/bank scheduler fifo
-  output reg [IDX      -1 : 0] idx_o;        // Output index from txn controller/bank scheeduler fifos
-  output reg [RA       -1 : 0] ra_o;         // output row address from txn controller/bank scheeduler fifo
-  output reg [RA       -1 : 0] ca_o;         // output col address from txn controller/bank scheeduler fifo
-  output reg [RA       -1 : 0] type_o;       // Output type from scheeduler fifos
-  output wor                   grant;        // Output grant from fifos to txn controller/bank scheduler fifo
+  input wire                    clk;          // Input clock
+  input wire                    rst_n;        // Synchronous reset           input wire [FIFO_NUM -1 : 0] push;         // Input push signals in a one-hot style to the bank scheduler fifos
+  input wire  [FIFO_NUM -1 : 0] push;         // Input pop signals in a one-hot style to the bank scheduler fifos                                              
+  input wire  [FIFO_NUM -1 : 0] pop;          // Input pop signals in a one-hot style to the bank scheduler fifos                                              
+  input wire                    valid_i;      // Input valid bit from txn controller/bank scheduler fifo
+  input wire  [DQ       -1 : 0] dq_i;         // Input data from txn controller/bank scheeduler fifos
+  input wire  [IDX      -1 : 0] idx_i;        // Input index from txn controller/bank scheeduler fifos
+  input wire  [RA       -1 : 0] ra_i;         // Input row address from txn controller/bank scheeduler fifo
+  input wire  [CA       -1 : 0] ca_i;         // Input col address from txn controller/bank scheeduler fifo
+  output wire [RA_ALL   -1 : 0] last_ra;      // output last row addresses from all bank scheduler fifosoutput reg [DQ       -1 : 0] dq_o;    // Output data from txn controller/bank scheeduler fifos
+  output wire [FIFO_NUM -1 : 0] full ;        // Output full signals of scheduler fifos
+  output reg  [FIFO_NUM -1 : 0] mid ;         // Output mid signals of scheduler fifos
+  output wire [FIFO_NUM -1 : 0] empty ;       // Output empty signals of scheduler fifos
+  output reg  [DQ       -1 : 0] dq_o;         // Output data from txn controller/bank scheduler fifo
+  output reg  [IDX      -1 : 0] idx_o;        // Output index from txn controller/bank scheeduler fifos
+  output reg  [RA       -1 : 0] ra_o;         // output row address from txn controller/bank scheeduler fifo
+  output reg  [CA       -1 : 0] ca_o;         // output col address from txn controller/bank scheeduler fifo
+  output reg                    type_o;       // Output type from scheduler fifos
+  output reg [FIFO_NUM -1 : 0] [BURST -1 : 0] first_burst; //Output head burst of each fifo
+  output wire                    grant;        // Output grant from fifos to txn controller/bank scheduler fifo
 //*****************************************************************************
 // Functions declarations                                                             
 //*****************************************************************************    
@@ -105,19 +107,20 @@ endfunction
 // Internal signals declarations                                                             
 //*****************************************************************************
   //intermedate output port signals with fifos
-  reg [CA_ALL  -1 :0] f_ca_o;
-  reg [RA_ALL  -1 :0] f_ra_o;
-  reg [DQ_ALL  -1 :0] f_dq_o;
-  reg [IDX_ALL -1 :0] f_idx_o;
+  reg [FIFO_NUM    -1 : 0][CA  -1 :0] f_ca_o;
+  reg [FIFO_NUM    -1 : 0][RA  -1 :0] f_ra_o;
+  reg [WR_FIFO_NUM -1 : 0][DQ  -1 :0] f_dq_o;
+  reg [FIFO_NUM    -1 : 0][IDX -1 :0] f_idx_o;
   
   
-  wire [FIFOS_BITS -1 : 0] ex_sel;  // exit request Demux sel signal   
+  wire [FIFOS_BITS -1 : 0] ex_sel;  // exit request mux sel signal   
   wire [FIFO_NUM   -1 : 0] grant_o;
-  assign en_sel  = hot2idx(push);
+  wire [FIFO_NUM   -1 : 0] valid_o;
   assign ex_sel  = hot2idx(pop);
   assign full = ~grant_o;
-  assign grant = push ;
-
+  assign empty = ~valid_o;
+  assign grant = |push ;
+  integer i ;
 //*****************************************************************************
 // Bank scheduler fifos instances                                                          
 //*****************************************************************************   
@@ -125,18 +128,24 @@ endfunction
 genvar g;
 generate
     for (g=0; g < RD_FIFO_NUM; g=g+1)  begin
-       generic_fifo #(.DATA_WIDTH(RD_SIZE), .DATA_DEPTH(RD_FIFO_SIZE), .RA_POS(RA_POS_READ) , .RA_BITS(RA) ) rd_fifo
+       generic_fifo #(.DATA_WIDTH(RD_SIZE), .DATA_DEPTH(RD_FIFO_SIZE), .RA_POS(RA_POS) , .RA_BITS(RA) ) rd_fifo
         (.clk(clk),.rst_n(rst_n),.data_i({idx_i,ra_i,ca_i}),.valid_i(push[g]),.grant_o(grant_o[g]),
-        .last_addr(last_ra[g*RA +: RA]),.mid(mid[g]),.data_o({f_idx_o[g*IDX+:IDX],f_ra_o[g*RA+:RA],f_ca_o[g*CA+:CA]}),.valid_o(valid_o[g]),.grant_i(pop[g]));    
+        .last_addr(last_ra[g*RA +: RA]),.mid(mid[g]),.data_o({f_idx_o[g],f_ra_o[g],f_ca_o[g]}),.valid_o(valid_o[g]),.grant_i(pop[g]));    
     end
     for (g= RD_FIFO_NUM; g < FIFO_NUM; g=g+1)  begin
-       generic_fifo #(.DATA_WIDTH(WR_SIZE) ,.DATA_DEPTH(WR_FIFO_SIZE), .RA_POS(RA_POS_WRITE) , .RA_BITS(RA) ) wr_fifo
-        (.clk(clk),.rst_n(rst_n),.data_i({idx_i,dq_i,ra_i,ca_i}),.valid_i(push[g]),.grant_o(grant_o[g]),
-        .last_addr(last_ra[g*RA +: RA]),.mid(mid[g]),.data_o({f_idx_o[g*IDX+:IDX],f_dq_o[(g-RD_FIFO_NUM)*DQ +:DQ],f_ra_o[g*RA+:RA],f_ca_o[g*CA+:CA]}),.valid_o(valid_o[g]),.grant_i(pop[g]));
+       generic_fifo #(.DATA_WIDTH(WR_SIZE) ,.DATA_DEPTH(WR_FIFO_SIZE), .RA_POS(RA_POS) , .RA_BITS(RA) ) wr_fifo
+        (.clk(clk),.rst_n(rst_n),.data_i({dq_i,idx_i,ra_i,ca_i}),.valid_i(push[g]),.grant_o(grant_o[g]),
+        .last_addr(last_ra[g*RA +: RA]),.mid(mid[g]),.data_o({f_idx_o[g],f_dq_o[(g-RD_FIFO_NUM)],f_ra_o[g],f_ca_o[g]}),.valid_o(valid_o[g]),.grant_i(pop[g]));
     end      
 endgenerate                                                 
 
-
+//*****************************************************************************
+// Assigning burst bits                                                        
+//*****************************************************************************
+always @(*) begin
+  for(i =0 ;i< FIFO_NUM ; i++)
+      first_burst[i] = {f_ra_o[i] , f_ca_o[i][CA-1:4]};
+end
 
 //*****************************************************************************
 // exit mux

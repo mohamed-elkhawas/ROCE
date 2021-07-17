@@ -1,32 +1,58 @@
-module cntr_bs_sch_rc
-#(parameter ARR_NUM_WR , parameter ARR_SIZE_WR , parameter READ = 1'b1 , parameter WRITE = 1'b0 )
+//----------------------------------------------------------------------
+//                                                                     
+// Description: write requests counter of Bank scheduler in the memory controller                   
+//              
+//          
+// Functionality: Trace the current number of write requests in the bank scheduler            
+//----------------------------------------------------------------------
+
+module cntr_bs_cnt
+#(
+    parameter WR_FIFO_NUM  = 3,
+    parameter WR_FIFO_SIZE = 2,
+    parameter READ = 1'b1 ,
+    parameter WRITE = 1'b0 
+)
 (
-   input   clk , rst_n , in_type , out_type , grant_o, //grant_o =1 in case of successful reading the input to scheduler
-   output  lwm , hwm                           // apply request to Arbiter to control the bus 
-);
+   clk,     // Input clock
+   rst_n,   // Synchronous reset  
+   t_i,     // Input type from txn controller/bank scheeduler fifo
+   t_o,     // Input type of output from scheduler to Arbiter
+   wr_valid,// Input successful push to scheduler fifo
+   rd_valid,// Input successful pop from scheduler fifo
+   wr_cnt   // Output Number of write requests in the scheduler to controller mode
+); 
 
-localparam LOW_WM  = 2,//(ARR_NUM_WR*ARR_SIZE_WR)*(10/100),//low water mark percentage of total write requests.
-           HIGH_WM = 5;//(ARR_NUM_WR*ARR_SIZE_WR)*(70/100);//high water mark percentage of total write requests.
+//*****************************************************************************
+// Parameters definitions                                                                
+//*****************************************************************************  
+  localparam WR_BITS  = $clog2(WR_FIFO_SIZE * WR_FIFO_NUM) ; 
 
 
-           
-reg [$clog2(ARR_NUM_WR*ARR_SIZE_WR):0] wr_cnt;
-
+//*****************************************************************************
+// Ports declarations                                                             
+//*****************************************************************************    
+  input wire                   clk;      // Input clock
+  input wire                   rst_n;    // Synchronous reset           
+  input wire                   t_i;      // Input type from txn controller/bank scheeduler fifo
+  input wire                   t_o;      // Input type of output from scheduler to Arbiter
+  input wire                   wr_valid; // Input successful writing to scheduler fifo
+  input wire                   rd_valid; // Input successful reading from scheduler fifo     
+  output reg [WR_BITS  -1 : 0] wr_cnt;   // Number of write requests in the scheduler to controller mode
+             
 
 always@(posedge clk) begin //update write requests counter
     if(!rst_n) begin
         wr_cnt <= 0;
     end
     else begin
-        casex ({ {in_type , grant_o } , out_type  }) 
-            { {WRITE , 1'b1 } , READ  } : wr_cnt <= wr_cnt+1;
-            { {1'bx , 1'b0 }  , WRITE } : wr_cnt <= wr_cnt-1;
-            { {READ  , 1'b1 } , WRITE } : wr_cnt <= wr_cnt-1;
+        casex ( { {t_i   , wr_valid } , {t_o   , rd_valid}  }) 
+            { {WRITE , 1'b1} , {READ , 1'b1} } , { {WRITE , 1'b1} , {1'bx , 1'b0} } : wr_cnt <= wr_cnt+1;
+            { {READ  , 1'b1} , {WRITE , 1'b1} }, { {1'bx  , 1'b0} , {WRITE , 1'b1} } : wr_cnt <= wr_cnt-1;
             default : wr_cnt <= wr_cnt;
         endcase 
     end
 end
 
-assign {hwm , lwm} = { wr_cnt>=HIGH_WM  , wr_cnt<=LOW_WM };
 
 endmodule
