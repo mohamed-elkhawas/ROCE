@@ -119,6 +119,7 @@ end
 
 
 always_ff @(posedge clk) begin 
+
 	
 	if (empty_bursts_counter > 1) begin
 		start_new_burst <= 1;
@@ -138,8 +139,9 @@ always_ff @(posedge clk) begin
 	end
 end
 
+always_comb begin 
 
-always_comb begin // calculate which burst and new_burst_flag
+	in_burst = older_in_burst;
 	
 	if (arbiter_valid) begin
 
@@ -158,15 +160,19 @@ always_comb begin // calculate which burst and new_burst_flag
 					if (burst[2].state == empty) begin
 						in_burst = 2;
 					end
-					else in_burst = 3;
+					else begin
+						if (burst[3].state == empty) begin
+							in_burst = 3;
+						end
+						else  in_burst = older_in_burst; 
+					end
 				end
 			end//////////////////////////////////////////////////////////// that is enough changing ;)
 		end	
-		else new_burst_flag =0;	
+		else begin new_burst_flag =0; in_burst = older_in_burst; end
 	end
-	else new_burst_flag =0;
+	else begin new_burst_flag =0; in_burst = older_in_burst; end
 end
-
 
 always_ff @(posedge clk) begin // handels storage input states and requests indices 
 
