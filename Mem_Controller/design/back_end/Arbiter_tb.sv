@@ -129,9 +129,26 @@ initial begin
 end
 
 Arbiter #(.IDX(IDX),.RA(RA),.CA(CA),.DQ(DQ)) arbiter
-(.clk(clk),.rst_n(rst_n), .valid(valid), .flag(flag) ,.data_i(data_i) ,.idx_i(idx_i) ,.row_i(row_i) ,
-    .col_i(col_i) ,  .t_i(t_i),.data_o(data_o) ,.idx_o(idx_o)  ,.row_o(row_o)  , .col_o(col_o)  ,
-    .t_o(t_o),.ba_o(ba_o) ,.bg_o(bg_o), .wr_en(wr_en),.Ready(ready));
+(
+    .clk(clk),
+    .rst_n(rst_n),
+    .valid(valid),
+    .flag(flag) ,
+    .data_i(data_i) ,
+    .idx_i(idx_i) ,
+    .row_i(row_i) ,
+    .col_i(col_i) ,
+    .t_i(t_i),
+    .data_o(data_o) ,
+    .idx_o(idx_o)  ,
+    .row_o(row_o)  ,
+    .col_o(col_o)  ,
+    .t_o(t_o),
+    .ba_o(ba_o) ,
+    .bg_o(bg_o), 
+    .wr_en(wr_en),
+    .ready(ready)
+);
 
 
 

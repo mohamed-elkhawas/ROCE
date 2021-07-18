@@ -22,7 +22,7 @@ module Arbiter
     output   t_o,//  type bit
     output [1:0] ba_o , bg_o           ,
     output wor wr_en , 
-    output [15:0] Ready 
+    output [15:0] ready 
 );
 
     
@@ -45,8 +45,8 @@ genvar i ;
 generate
     for(i = 0 ; i<4  ; i=i+1) begin
         Bank_Group_Fsm Bank( .clk(clk), .rst_n(rst_n), .start(start_signals[i]) , /*.Bank_Req(Req[i*4 +: 4]) ,*/
-                        .Valid(valid[i*4 +: 4]) , .Ready_A(Ready[(i*4)+0]), .Ready_B(Ready[(i*4)+1]) , .Ready_C(Ready[(i*4)+2]),
-                        .Ready_D(Ready[(i*4)+3]) ,.sel(bank_sel[i*2 +: 2]) , .en(en[i])  , .done(done[i]) , .Req(req[i]) );
+                        .Valid(valid[i*4 +: 4]) , .Ready_A(ready[(i*4)+0]), .Ready_B(ready[(i*4)+1]) , .Ready_C(ready[(i*4)+2]),
+                        .Ready_D(ready[(i*4)+3]) ,.sel(bank_sel[i*2 +: 2]) , .en(en[i])  , .done(done[i]) , .Req(req[i]) );
     end
 endgenerate
 

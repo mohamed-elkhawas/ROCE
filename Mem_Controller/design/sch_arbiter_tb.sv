@@ -1,7 +1,7 @@
-/*module sch_arbiter_tb();
+module sch_arbiter_tb();
 
-parameter READ     = 1'b1;
-parameter WRITE    = 1'b0;
+parameter READ     = 1'b0;
+parameter WRITE    = 1'b1;
 parameter RA_POS   = 10;
 parameter BA       = 2;
 parameter BG       = 2;
@@ -9,6 +9,7 @@ parameter CA       = 10;
 parameter RA       = 16;
 parameter DQ       = 16;
 parameter IDX      = 6;
+parameter REQ_SIZE = DQ+1+IDX+RA+CA;
 parameter WR_FIFO_SIZE = 2;
 parameter WR_FIFO_NUM  = 3;
 
@@ -16,7 +17,11 @@ parameter WR_FIFO_NUM  = 3;
 //inputs
 reg  clk;
 reg  rst_n;
-reg  valid_i ; 
+reg  valid ; 
+reg [REQ_SIZE -1 :0] data;
+
+// Intermediate signals
+wire             valid_fifo_sch;
 wire [DQ  -1 :0] dq_i;
 wire [IDX -1 :0] idx_i;
 wire [RA  -1 :0] ra_i;
@@ -24,10 +29,22 @@ wire [CA  -1 :0] ca_i;
 wire [BA  -1 :0] ba_i;
 wire [BG  -1 :0] bg_i;
 wire             t_i;
+wire grant_sch_fifo;
+wire ready;
+wire        valid_sch_arbiter;
+
+wire [DQ  -1 :0] dq_sch_arb;
+wire [IDX -1 :0] idx_sch_arb;
+wire [RA  -1 :0] ra_sch_arb;
+wire [CA  -1 :0] ca_sch_arb;
+wire [BA  -1 :0] ba_sch_arb;
+wire [BG  -1 :0] bg_sch_arb;
+wire             t_sch_arb;
+
+
 
 
 //outputs
-wire             valid_o;
 wire [DQ  -1 :0] dq_o;
 wire [IDX -1 :0] idx_o;
 wire [RA  -1 :0] ra_o;
@@ -43,61 +60,75 @@ always #5 clk = ~clk;
 initial begin 
     clk = 0 ;  
     rst_n = 1'b0;
-    valid_i = 1'b1;
+    valid = 1'b1;
 	#8 
 	rst_n = 1'b1;
 
-	repeat(30) begin //insert new input data
+	repeat(10) begin //insert new input data
         @ (posedge clk);
-		// new address / data /  type input
-        in_request.address = $urandom() ;
-		in_request.data= $urandom();
-		t = $urandom()%2; //in_request.req_type
+		data = {$urandom(),$urandom()};
     end
 
-
-generic_fifo #( .DATA_WIDTH(RA+CA+IDX+DQ),.DATA_DEPTH(15),.RA_POS(RA_POS),.RA_BITS(RA) ) mapper_fifo
+end
+generic_fifo #( .DATA_WIDTH(REQ_SIZE),.DATA_DEPTH(10),.RA_POS(RA_POS),.RA_BITS(RA) ) mapper_fifo
 (
     .clk(clk),
     .rst_n(rst_n),
-    .data_i({idx_i,ra_i,ca_i}),
-    .valid_i(push[g]),
-    .grant_o(grant_o[g]),
-    .last_addr(last_ra[g*RA +: RA]),
-    .mid(mid[g]),
-    .data_o({f_idx_o[g],f_ra_o[g],f_ca_o[g]}),
-    .valid_o(valid_o[g]),
-    .grant_i(pop[g])
+    .data_i(data),
+    .valid_i(valid),
+    .data_o({dq_i,t_i,idx_i,ra_i,ca_i}),
+    .valid_o(valid_fifo_sch),
+    .grant_i(grant_sch_fifo)
 );    
        
+cntr_bs#(.READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(IDX)) BankScheduler
+(
+   .clk(clk),         // Input clock
+   .rst_n(rst_n),     // Synchronous reset
+   .ready(ready),     //ready bit from arbiter      
+   .mode(READ),       // Input controller mode to switch memory interface bus into write mode 
+   .valid_i(valid_fifo_sch),   // Input valid bit from txn controller/bank scheduler fifo
+   .dq_i(dq_i),       // Input data from txn controller/bank scheduler fifo
+   .idx_i(idx_i),     // Input index from txn controller/bank scheduler fifo
+   .ra_i(ra_i),       // Input row address from txn controller/bank scheeduler fifo
+   .ca_i(ca_i),       // Input col address from txn controller/bank scheeduler fifo
+   .t_i(t_i),         // Input type from txn controller/bank scheeduler fifo
+   .valid_o(valid_sch_arbiter), // Output valid for arbiter
+   .dq_o(dq_o),       // Output data from from data path
+   .idx_o(idx_o),     // Output index from from data path
+   .ra_o(ra_o),       // output row address from data path
+   .ca_o(ca_o),       // output col address from data path
+   .t_o(t_o),         // Output type from scheduler fifo
+   .grant(grant_sch_fifo)     // pop from (Mapper-schedular) FIFO      
+   //.num(num)          // Number of write requests in the scheduler to controller mode
+); 
 
 
-front_end #( .READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(IDX),.WR_FIFO_SIZE(WR_FIFO_SIZE),.WR_FIFO_NUM(WR_FIFO_NUM) )fe
- (
-	
-	.clk(clk),
-	.rst_n(rst_n),
-	.in_valid(in_valid),
-	.in_request_type(t),
-  	.in_request_data(in_request.data),
-  	.in_request_address(in_request.address),
-	.out_busy(out_busy),
-	.request_done_valid(request_done_valid),
-	.the_type(the_type),
-	.data_in(in_data),
-	.index(index),
-	.write_done(write_done),
-	.read_done(read_done),
-	.data_out(data_out),
-    .ready(ready),
-	.valid_o(valid_o),
-	.dq_o(dq_o),
-	.idx_o(idx_o),
-	.ra_o(ra_o),
-	.ca_o(ca_o),
-	.t_o(t_o)
+Arbiter #(.IDX(IDX),.RA(RA),.CA(CA),.DQ(DQ)) arbiter
+(
+    .clk(clk),
+    .rst_n(rst_n),
+    .valid({15'b0,valid_sch_arbiter}),
+    .flag(1'b1) ,
+    .data_i(dq_sch_arb) ,
+    .idx_i(idx_sch_arb) ,
+    .row_i(ra_sch_arb) ,
+    .col_i(ca_sch_arb) ,
+    .t_i(t_sch_arb),
+    .data_o(dq_o) ,
+    .idx_o(idx_o)  ,
+    .row_o(ra_o)  ,
+    .col_o(ca_o)  ,
+    .t_o(t_o),
+    .ba_o(ba_o) ,
+    .bg_o(bg_o), 
+    //.wr_en(wr_en),
+    .ready(ready)
 );
 
 
 
-endmodule*/
+
+
+
+endmodule
