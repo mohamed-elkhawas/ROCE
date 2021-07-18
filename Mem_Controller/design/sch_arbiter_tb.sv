@@ -30,7 +30,7 @@ wire [BA  -1 :0] ba_i;
 wire [BG  -1 :0] bg_i;
 wire             t_i;
 wire grant_sch_fifo;
-wire ready;
+wire [15 : 0 ] ready;
 wire        valid_sch_arbiter;
 
 wire [DQ  -1 :0] dq_sch_arb;
@@ -41,7 +41,9 @@ wire [BA  -1 :0] ba_sch_arb;
 wire [BG  -1 :0] bg_sch_arb;
 wire             t_sch_arb;
 
-
+// from scheduler to controller mode
+wire rd_empty;
+wire [$clog2(WR_FIFO_SIZE * WR_FIFO_NUM)-1:0] num ;
 
 
 //outputs
@@ -85,7 +87,7 @@ cntr_bs#(.READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(
 (
    .clk(clk),         // Input clock
    .rst_n(rst_n),     // Synchronous reset
-   .ready(ready),     //ready bit from arbiter      
+   .ready(ready[0]),     //ready bit from arbiter      
    .mode(READ),       // Input controller mode to switch memory interface bus into write mode 
    .valid_i(valid_fifo_sch),   // Input valid bit from txn controller/bank scheduler fifo
    .dq_i(dq_i),       // Input data from txn controller/bank scheduler fifo
@@ -94,13 +96,23 @@ cntr_bs#(.READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(
    .ca_i(ca_i),       // Input col address from txn controller/bank scheeduler fifo
    .t_i(t_i),         // Input type from txn controller/bank scheeduler fifo
    .valid_o(valid_sch_arbiter), // Output valid for arbiter
-   .dq_o(dq_o),       // Output data from from data path
-   .idx_o(idx_o),     // Output index from from data path
-   .ra_o(ra_o),       // output row address from data path
-   .ca_o(ca_o),       // output col address from data path
-   .t_o(t_o),         // Output type from scheduler fifo
-   .grant(grant_sch_fifo)     // pop from (Mapper-schedular) FIFO      
-   //.num(num)          // Number of write requests in the scheduler to controller mode
+   .dq_o(dq_sch_arb),       // Output data from from data path
+   .idx_o(idx_sch_arb),     // Output index from from data path
+   .ra_o(ra_sch_arb),       // output row address from data path
+   .ca_o(ca_sch_arb),       // output col address from data path
+   .t_o(t_sch_arb),         // Output type from scheduler fifo
+   .rd_empty(rd_empty),     // Output empty signal for read requests for each bank
+   .grant(grant_sch_fifo),     // pop from (Mapper-schedular) FIFO      
+   .num(num)          // Number of write requests in the scheduler to controller mode
+); 
+
+cntr_mode#(.WR_FIFO_SIZE(WR_FIFO_SIZE),.WR_FIFO_NUM(WR_FIFO_NUM),.READ(READ),.WRITE(WRITE)) cntr_mode
+(
+   .clk(clk),     // Input clock
+   .rst_n(rst_n), // Synchronous reset
+   .rd_empty({ {15{1'b1}},rd_empty }),     // Input empty signal for read requests for each bank 
+   .num({45'd0,num}),     // Input number of write requests for each bank
+   .mode(mode)    // Output controller mode
 ); 
 
 
@@ -110,11 +122,11 @@ Arbiter #(.IDX(IDX),.RA(RA),.CA(CA),.DQ(DQ)) arbiter
     .rst_n(rst_n),
     .valid({15'b0,valid_sch_arbiter}),
     .flag(1'b1) ,
-    .data_i(dq_sch_arb) ,
-    .idx_i(idx_sch_arb) ,
-    .row_i(ra_sch_arb) ,
-    .col_i(ca_sch_arb) ,
-    .t_i(t_sch_arb),
+    .data_i({  {15*DQ{1'b0}} , dq_sch_arb}) ,
+    .idx_i({  {15*IDX{1'b0}} ,idx_sch_arb}) ,
+    .row_i({  {15*RA{1'b0}} ,ra_sch_arb}) ,
+    .col_i({  {15*CA{1'b0}} ,ca_sch_arb}) ,
+    .t_i({  {15{1'b0}} ,t_sch_arb}),
     .data_o(dq_o) ,
     .idx_o(idx_o)  ,
     .row_o(ra_o)  ,

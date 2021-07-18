@@ -71,7 +71,10 @@ wire [banks_no-1:0] pop , valid_out;
 opt_request [banks_no-1:0] out_fifo_sch;
 wire [banks_no-1:0] [read_entries_log-1:0] idx_out;
 wire [15:0] [WR_BITS  -1 : 0] num;
+
+// schedulers and controller mode 
 wire mode ;
+wire [15:0] rd_empty;
 txn_controller #(.data_width(16)) tx
 (
   .clk(clk),
@@ -85,8 +88,8 @@ txn_controller #(.data_width(16)) tx
   .data_in(data_in),
   .index(index),
   .write_done(write_done),
-  .read_done(read_done)
-  ,.data_out(data_out)
+  .read_done(read_done),
+  .data_out(data_out)
 );
 
 
@@ -115,7 +118,8 @@ generate
             .ra_o(ra_o[g]),       // output row address from data path
             .ca_o(ca_o[g]),       // output col address from data path
             .t_o(t_o[g]),         // Output type from scheduler fifo
-            .grant(pop[g]),     // pop from (Mapper-schedular) FIFO      
+            .rd_empty(rd_empty),  // Output empty signal for read requests for each bank
+            .grant(pop[g]),       // pop from (Mapper-schedular) FIFO      
             .num(num[g])          // Number of write requests in the scheduler to controller mode
         ); 
 end   
@@ -123,9 +127,10 @@ endgenerate
 
 cntr_mode#(.WR_FIFO_SIZE(WR_FIFO_SIZE),.WR_FIFO_NUM(WR_FIFO_NUM),.READ(READ),.WRITE(WRITE)) cntr_mode
 (
-.clk(clk),    // Input clock
-.rst_n(rst_n),  // Synchronous reset  
-.num(num),    // Input number of write requests for each bank
-.mode(mode)   // Output controller mode
+.clk(clk),           // Input clock
+.rst_n(rst_n),       // Synchronous reset  
+.rd_empty(rd_empty), // Input empty signal for read requests for each bank
+.num(num),           // Input number of write requests for each bank
+.mode(mode)          // Output controller mode
 );
 endmodule

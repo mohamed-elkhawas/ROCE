@@ -34,8 +34,9 @@ module cntr_bs
    ra_o,    // output row address from data path
    ca_o,    // output col address from data path
    t_o,     // Output type from scheeduler fifos
+   rd_empty,// Output empty signal for read requests for each bank
    grant,   // pop from (Mapper-schedular) FIFO      
-   num     // Number of write requests in the scheduler to controller mode
+   num      // Number of write requests in the scheduler to controller mode
    
 ); 
      
@@ -72,10 +73,10 @@ module cntr_bs
   output reg  [RA       -1 : 0] ra_o;         // output row address from txn controller/bank scheeduler fifo
   output reg  [CA       -1 : 0] ca_o;         // output col address from txn controller/bank scheeduler fifo
   output reg                    t_o;          // Output type from scheduler fifos
+  output wire                   rd_empty;     // Output empty signal for read requests for each bank
   output wire                   grant;        // pop from (Mapper-schedular) FIFO      
   output wire [WR_BITS  -1 : 0] num;          // Number of write requests in the scheduler to controller mode
   
-
 
 
 //*****************************************************************************
@@ -85,6 +86,7 @@ wire [FIFO_NUM -1 : 0][RA -1 : 0] last_ra ;
 wire [FIFO_NUM -1 : 0] full, mid, empty, push, pop ; 
 wire [FIFO_NUM -1 : 0] [BURST -1 : 0] burst_i  ;   
 
+assign rd_empty = &empty[RD_FIFO_NUM -1 : 0]; //rd_empty =1 in case of all read fifos are empty
 
 cntr_bs_sel#(.RA(RA),.READ(READ),.WRITE(WRITE),.RD_FIFO_NUM(RD_FIFO_NUM),.WR_FIFO_NUM(WR_FIFO_NUM)) selector
 (

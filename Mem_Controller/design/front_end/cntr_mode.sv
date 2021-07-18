@@ -15,10 +15,11 @@ module cntr_mode
     parameter WRITE = 1'b1
 )
 (
-   clk,    // Input clock
-   rst_n,  // Synchronous reset  
-   num,    // Input number of write requests for each bank
-   mode   // Output controller mode
+   clk,       // Input clock
+   rst_n,     // Synchronous reset 
+   rd_empty,  // Input empty signal for read requests for each bank 
+   num,       // Input number of write requests for each bank
+   mode       // Output controller mode
 ); 
 
 //*****************************************************************************
@@ -36,10 +37,11 @@ module cntr_mode
 //*****************************************************************************
 // Ports declarations                                                             
 //*****************************************************************************    
-  input wire                 clk;   // Input clock
-  input wire                 rst_n; // Synchronous reset           
-  input wire [15 : 0] [WR_BITS -1 :0] num;   // Input number of write requests for each bank
-  output reg  mode;  // Output controller mode
+  input wire                          clk;      // Input clock
+  input wire                          rst_n;    // Synchronous reset           
+  input wire [15 : 0]                 rd_empty; // Input empty signal for read requests for each bank
+  input wire [15 : 0] [WR_BITS -1 :0] num;      // Input number of write requests for each bank
+  output reg                          mode;     // Output controller mode
 
 
 //*****************************************************************************
@@ -84,7 +86,7 @@ always @(*) begin
     case(CS) 
         READ_MODE :begin
             mode = READ;
-            if (hwm == 1'b1)
+            if (hwm == 1'b1 || (lwm && |rd_empty) ) //high watermark or low watermark with no read requests available
               NS = WRITE_MODE ;
         end
         WRITE_MODE :begin
