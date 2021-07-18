@@ -80,7 +80,7 @@ Arbiter #(.IDX(IDX),.RA(RA),.CA(CA_),.DQ(DQ_)) arbiter
     .ba_o(ba_o) ,
     .bg_o(bg_o),
      .wr_en(wr_en),
-     .Ready(ready)
+     .ready(ready)
 );
 
 
