@@ -9,7 +9,10 @@ module burst_handler import types_def::*;
 	//////////////////////////////////////////////////////////////// timing_controller
 	output burst_states_type [no_of_bursts-1:0] out_burst_state,
 	output r_type [no_of_bursts-1:0] out_burst_type,
-	output logic [address_width-1:4] [no_of_bursts-1:0] out_burst_address,
+
+	output logic [1:0] [no_of_bursts-1:0] out_burst_address_bank,
+	output logic [1:0] [no_of_bursts-1:0] out_burst_address_bg,
+	output logic [15:0] [no_of_bursts-1:0] out_burst_address_row,
 
 	input command in_burst_cmd,
 	input [$clog2(no_of_bursts)-1:0] in_cmd_index,
@@ -21,7 +24,7 @@ module burst_handler import types_def::*;
 	input address_type in_req_address,
 	input [data_width -1:0] arbiter_data,
 	input [read_entries_log -1:0] arbiter_index,
-	input r_type arbiter_type,
+	input arbiter_type_temp,
 	
 	/////////////////////////////////////////////////////////////// memory interface
 	output logic CS_n                ,// Chip Select -> active low
@@ -97,6 +100,8 @@ command cmd_to_send;
 
 logic [$clog2(no_of_bursts) :0]  empty_bursts_counter;
 
+r_type arbiter_type;
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // there are 3 main blocks with 1 storage element shared between them													//
 // input requests from arbiter to storage and to timing cont. 	// turn timing cmds  to memory // return reqto returner //
@@ -104,6 +109,13 @@ logic [$clog2(no_of_bursts) :0]  empty_bursts_counter;
 
 
 // updating burst_storage  //dealing with arbiter // outputs burst states, address and type
+
+always_comb begin 
+	if (arbiter_type_temp == 0) begin
+		arbiter_type = read;
+	end
+	else arbiter_type = write;
+end
 
 
 always_ff @(posedge clk) begin 
@@ -177,7 +189,12 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 				new_burst_counter <= 0;
 
 				burst[in_burst].state <= started_filling; 	out_burst_state[in_burst] <= started_filling;
-				burst[in_burst].address <= in_req_address[address_width-1:4]; out_burst_address[in_burst] <= in_req_address[address_width-1:4];
+				burst[in_burst].address <= in_req_address[address_width-1:4];
+
+				out_burst_address_row[in_burst] <= in_req_address.row;
+				out_burst_address_bg[in_burst] <= in_req_address.bank_group;
+				out_burst_address_bank[in_burst] <= in_req_address.bank;
+				
 				burst[in_burst].the_type <= arbiter_type; out_burst_type[in_burst] <= arbiter_type;
 				// the column last 4 bits are the req place in the burst
 				if (arbiter_type == write) begin
@@ -212,7 +229,9 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 		for (int i = 0; i < no_of_bursts; i++) begin
 			burst[i].state <= empty;
 			burst[i].mask <= 0;
-			out_burst_address[i] <= 0;
+			out_burst_address_bank[i] <= 0;
+			out_burst_address_bg[i] <= 0;
+			out_burst_address_row[i] <= 0;
 		end
 	end
 end
