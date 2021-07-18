@@ -27,9 +27,7 @@ module generic_fifo
    //POP SIDE
    output logic [DATA_WIDTH-1:0]                   data_o,
    output logic                                    valid_o,//!empty =1
-   input  logic                                    grant_i,//pop
-
-   input  logic                                    test_mode_i
+   input  logic                                    grant_i//pop
 );
 
 

@@ -27,7 +27,7 @@ assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
 
 memory_controller the_memory_controller (.*);
-veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
+//veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
 
 // tbx clkgen inactive_negedge
@@ -61,6 +61,8 @@ initial begin
 	in_valid = 0;
 
 	delay(100);
+	@(posedge clk)
+	@(posedge clk)
 	rst_n = 1'b1;
 	for (int i = 0; i < 100000; i++) begin
 		@(posedge clk)

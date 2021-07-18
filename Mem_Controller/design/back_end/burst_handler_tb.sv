@@ -16,7 +16,7 @@ r_type arbiter_type;
 
 logic test;
 
-memory_s_best_friend m (clk,rst_n,out_burst_state,out_burst_type,
+burst_handler m (clk,rst_n,out_burst_state,out_burst_type,
 	out_burst_address,in_burst_cmd,in_cmd_index,start_new_burst,arbiter_valid,in_req_address,
 	arbiter_data,arbiter_index,arbiter_type,returner_valid,returner_type,returner_data,returner_index);//,test);
 

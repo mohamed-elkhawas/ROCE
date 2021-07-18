@@ -9,12 +9,30 @@ logic clk,rst,wd,rd;
 
 r_type the_type;
 logic request_done_valid;
-logic  [ 31 : 0 ] in_data;
+logic  [ 15 : 0 ] in_data;
 logic  [ 5 : 0 ] index;
 
-txn_controller t (clk,rst,in_valid,in_request,out_busy,out_req,out_index,grant_o,bank_out_valid,
+logic  [ data_width -1 : 0 ] data_out;
+opt_request out_req2;// to bank fifo
+logic [read_entries_log -1:0] out_index2;// to the bank fifo
 
-	request_done_valid,the_type,in_data,index,wd,rd,data);
+logic  [15:0] bank_out_valid2; // to bank fifo
+
+txn_controller t (clk,
+rst,
+in_valid,
+in_request,
+out_busy,
+out_req,
+out_index,
+grant_o,
+bank_out_valid,
+
+request_done_valid,the_type,in_data,index,wd,rd,data
+);
+
+
+
 
 // Clock generator
 // tbx clkgen inactive_negedge

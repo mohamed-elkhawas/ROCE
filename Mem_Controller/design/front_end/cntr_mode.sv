@@ -28,6 +28,9 @@ module cntr_mode
   parameter LOW_WM  = 7'd32;  //low watermark 30% of total write requests.
   parameter HIGH_WM = 7'd64;  //high watermark 60% of total write requests.
 
+  //parameter LOW_WM  = 7'd3;  //low watermark 30% of total write requests.
+  //parameter HIGH_WM = 7'd6;  //high watermark 60% of total write requests.
+
   localparam WR_BITS  = $clog2(WR_FIFO_SIZE * WR_FIFO_NUM) ; 
 
 //*****************************************************************************
