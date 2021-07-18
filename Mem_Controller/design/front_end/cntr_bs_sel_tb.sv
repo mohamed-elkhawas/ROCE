@@ -1,5 +1,6 @@
-`define rand_(len) $urandom_range(2^(len)-1,0)
+//`define rand_(len) $urandom_range(2^(len)-1,0)
 module cntr_bs_sel_tb();
+// pragma attribute txn_controller_tb partition_module_xrt
 
 parameter READ  = 1'b1;
 parameter WRITE = 1'b0;
@@ -53,8 +54,8 @@ reg [FIFO_NUM -1 : 0][RA -1 : 0] last_ra;
 wire [FIFO_NUM -1 : 0] push;
 
 
-always #5 clk = ~clk;
-integer k;
+//always #5 clk = ~clk;
+/*integer k;
 
 initial begin
     clk = 0 ;
@@ -70,7 +71,7 @@ initial begin
         for(k = 0 ; k< FIFO_NUM ; k=k+1) 
             last_ra[k] = `rand_(RA);
     end
-end
+end*/
 cntr_bs_sel#(.RA(RA),.READ(READ),.WRITE(WRITE),.RD_FIFO_NUM(RD_FIFO_NUM),.WR_FIFO_NUM(WR_FIFO_NUM)) selector
 (
    .valid_i(valid),   // Input valid bit from txn controller/bank scheduler fifo

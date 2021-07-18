@@ -1,26 +1,16 @@
 module cntr_bs_tb();
 
-parameter READ  = 1'b1;
-parameter WRITE = 1'b0;
+// pragma attribute txn_controller_tb partition_module_xrt
 
-//veloce request format
-parameter  CID_POS  = 0;
-parameter  CA_POS   = 4;
-parameter  RA_POS   = 14;
-parameter  BA_POS   = 30;
-parameter  BG_POS   = 32;
-parameter  IDX_POS  = 34;
-parameter  TYPE_POS = 41;
-parameter  DQ_POS   = 42;
-parameter  CID      = 4;
+
+parameter READ  = 1'b0;
+parameter WRITE = 1'b1;
+
+parameter  RA_POS   = 10;
 parameter  CA       = 10;
 parameter  RA       = 16;
-parameter  BA       = 2;
-parameter  BG       = 2;
 parameter  DQ       = 16;
-parameter  TYPE     = 1;
-parameter  IDX      = 7;
-parameter  REQ_SIZE = CID + CA + RA + BA + BG + DQ + TYPE + IDX ; 
+parameter  IDX      = 6;
 
 //scheduler stored requests format
 localparam RD_SIZE    = RA + IDX + CA;
@@ -68,10 +58,19 @@ wire valid_o;
 wire grant;
 
 
-always #5 clk = ~clk;
+// Clock generator
+// tbx clkgen inactive_negedge
+initial  begin
+    clk = 0;
+    #5;
+    forever 
+    #5 clk = ~clk;
+end
+
+//XlResetGenerator #(10) resetGenerator ( clk, rst);
+
 
 initial begin   
-    clk=0;
     rst_n = 0;
     ready = 0;
     valid_i = 0;
@@ -83,7 +82,7 @@ initial begin
         @ (posedge clk);
         {idx_i,dq_i,ra_i,ca_i,t_i}  = {$urandom(),$urandom()};
     end
-    ready=1'b1;
+    ready=1'b1;// Arbiter give access to scheduler to drain
 end
 
 cntr_bs#(.READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(IDX)) BankScheduler

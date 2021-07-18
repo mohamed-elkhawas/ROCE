@@ -108,3 +108,22 @@ back_end #(.no_of_bursts(4),.IDX(IDX),.RA(RA),.CA_(CA_),.DQ_(DQ_))the_back_end
 
 
 endmodule
+
+//veloce request format
+/*parameter  CID_POS  = 0;
+parameter  CA_POS   = 4;
+parameter  RA_POS   = 14;
+parameter  BA_POS   = 30;
+parameter  BG_POS   = 32;
+parameter  IDX_POS  = 34;
+parameter  TYPE_POS = 41;
+parameter  DQ_POS   = 42;
+parameter  CID      = 4;
+parameter  CA       = 10;
+parameter  RA       = 16;
+parameter  BA       = 2;
+parameter  BG       = 2;
+parameter  DQ       = 16;
+parameter  TYPE     = 1;
+parameter  IDX      = 7;
+parameter  REQ_SIZE = CID + CA + RA + BA + BG + DQ + TYPE + IDX ; */
