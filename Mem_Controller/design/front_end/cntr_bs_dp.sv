@@ -20,7 +20,7 @@ module cntr_bs_dp
   parameter RD_FIFO_SIZE = 4,
   parameter WR_FIFO_SIZE = 3,
   parameter DQ           = 16,
-  parameter IDX          = 7,
+  parameter IDX          = 6,
   parameter RA           = 16,
   parameter CA           = 10 ,
   parameter RA_POS       = 5 ,

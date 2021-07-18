@@ -31,11 +31,17 @@ module memory_controller import types_def::*; (
 
 
 ////////////// internal connections \\\\\\\\\\\\\\
+parameter READ     = 1'b0;
+parameter WRITE    = 1'b1;
+parameter RA_POS   = 10;
+parameter CA_       = 10;
+parameter RA       = 16;
+parameter DQ_       = 16;
+parameter IDX      = 6;
+parameter WR_FIFO_SIZE = 2;
+parameter WR_FIFO_NUM =3;
 
-parameter REQ_SIZE = 50; ///////////////////////////// change  it ya  hussin
 
-logic [banks_no-1:0] [REQ_SIZE-1 :0] out;
-logic [banks_no-1:0] grant_i;
 
 
 logic request_done_valid;
@@ -43,33 +49,62 @@ logic the_type;
 logic [ data_width -1  : 0 ] data_in;
 logic [ read_entries_log -1 : 0 ] index;
 
+
+
 // from arbiter to scheduler
 wire [15:0] ready ;
 
 //from scheduler ro arbiter
-wire  [(DATA_BITS*16) -1 :0] data_o ,
-wire  [(INDEX_BITS*16) -1 :0 ] idx_o ,
-wire  [(RA_BITS*16)    -1 :0 ] row_o ,
-wire  [(CA_BITS*16)    -1 :0 ] col_o ,
-wire  [(1*16)          -1 :0 ] t_o, //  type bit
-
+wire [15:0]            valid_o;
+wire [15:0][DQ_  -1 :0] dq_o;
+wire [15:0][IDX -1 :0] idx_o;
+wire [15:0][RA  -1 :0] ra_o;
+wire [15:0][CA_  -1 :0] ca_o;
+wire [15:0]            t_o;
 // .* connect every connection with it's name
 
-front_end #( .REQ_SIZE(REQ_SIZE) ) the_front_end (.*); 
+front_end #( .READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA_),.RA(RA),.DQ(DQ_),.IDX(IDX),.WR_FIFO_SIZE(WR_FIFO_SIZE),.WR_FIFO_NUM(WR_FIFO_NUM) ) the_front_end
+(.*); 
 
-back_end #(.no_of_bursts(4),.INDEX_BITS(7) ,.RA_BITS(16) ,.CA_BITS(10) ,.DATA_BITS(16))
-
-	the_back_end(
-	//inputs from scheduler
-	.data_i(data_o),.idx_i(idx_o),.row_i(row_o),.col_i(col_o),.t_i(t_o),
-	// output to scheduler
-	.Ready(ready),
-	.returner_valid(request_done_valid),.returner_type(the_type),.returner_data(data_in),.returner_index(index), // to returner
+back_end #(.no_of_bursts(4),.IDX(IDX),.RA(RA),.CA_(CA_),.DQ_(DQ_))the_back_end
+(
+    .clk,    
+    .rst_n,  
+	.valid_i(valid_o),   // Input valid bit from txn controller/bank scheduler fifo
+    .data_i(dq_o),       // Input data from txn controller/bank scheduler fifo
+    .idx_i(idx_o),     // Input index from txn controller/bank scheduler fifo
+    .row_i(ra_o),       // Input row address from txn controller/bank scheeduler fifo
+    .col_i(ca_o),       // Input col address from txn controller/bank scheeduler fifo
+    .t_i (t_o),
+    .ready(ready) ,
+    .returner_valid(request_done_valid),
+	.returner_type(the_type),
+	.returner_data(data_in),
+	.returner_index(index), // to returner
 	.CS_n,.CA,.CAI,.DM_n,.DQ,.DQS_t,.DQS_c,.ALERT_n // memory ports
-	);
+);
 
-
-
+	/*.clk(clk),
+	.rst_n(rst_n),
+	.in_valid(in_valid),
+	.in_request_type(t),
+  	.in_request_data(in_request.data),
+  	.in_request_address(in_request.address),
+	.out_busy(out_busy),
+	.request_done_valid(request_done_valid),
+	.the_type(the_type),
+	.data_in(in_data),
+	.index(index),
+	.write_done(write_done),
+	.read_done(read_done),
+	.data_out(data_out),
+    .ready(ready),
+	.valid_o(valid_o),
+	.dq_o(dq_o),
+	.idx_o(idx_o),
+	.ra_o(ra_o),
+	.ca_o(ca_o),
+	.t_o(t_o)*/
 
 
 endmodule

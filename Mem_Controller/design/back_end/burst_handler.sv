@@ -7,9 +7,9 @@ module burst_handler import types_def::*;
 	input rst_n,  // synchronous reset active low
 
 	//////////////////////////////////////////////////////////////// timing_controller
-	output burst_states_type [no_of_bursts:0] out_burst_state,
-	output r_type [no_of_bursts:0] out_burst_type,
-	output logic [address_width-1:4] [no_of_bursts:0] out_burst_address,
+	output burst_states_type [no_of_bursts-1:0] out_burst_state,
+	output r_type [no_of_bursts-1:0] out_burst_type,
+	output logic [address_width-1:4] [no_of_bursts-1:0] out_burst_address,
 
 	input command in_burst_cmd,
 	input [$clog2(no_of_bursts)-1:0] in_cmd_index,
@@ -83,11 +83,11 @@ logic [$clog2(no_of_bursts) -1:0] in_burst , older_in_burst , out_burst;
 
 logic new_burst_flag , return_req;
 
-logic [$clog2(no_of_bursts) -1:0][$clog2(burst_lentgh) -1:0] burst_data_counter;
+logic [$clog2(no_of_bursts) -1:0][$clog2(burst_length) -1:0] burst_data_counter;
 
 logic [burst_length-1:0] first_one_in_mask;
 
-logic [$clog2(burst_lentgh)-1:0] first_one_id;
+logic [$clog2(burst_length)-1:0] first_one_id;
 
 logic [$clog2(rd_to_data)-1:0] data_wait_counter;
 

@@ -1,8 +1,8 @@
 
 module front_end_tb import types_def::*;();
 
-parameter READ     = 1'b1;
-parameter WRITE    = 1'b0;
+parameter READ     = 1'b0;
+parameter WRITE    = 1'b1;
 parameter RA_POS   = 10;
 parameter CA       = 10;
 parameter RA       = 16;
@@ -74,25 +74,28 @@ initial begin
     rst_n = 1'b0;
 	ready = 1'b0;
 	request_done_valid = 1'b0;
+	in_valid = 1'b0;
 	#8 
 	rst_n = 1'b1;
-	in_valid = 1'b1;
+	
 
-	/*repeat(30) begin //insert new input data
+	repeat(30) begin //insert new input data
         @ (posedge clk);
+		in_valid = 1'b1;
 		// new address / data /  type input
         in_request.address = $urandom() ;
 		in_request.data= $urandom();
 		t = $urandom()%2; //in_request.req_type
-    end*/
+    end
 
-	repeat(30) begin //insert new input data
+	ready[1] = 1'b1;
+	/*repeat(30) begin //insert new input data
         @ (posedge clk);
 		// new address / data /  type input
         in_request.address = 0 ;
 		in_request.data= $urandom();
 		t = $urandom()%2; //in_request.req_type
-    end
+    end*/
 
 	/*@(posedge clk)
 	in_busy =0 ;

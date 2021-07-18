@@ -1,20 +1,26 @@
 
 module back_end import types_def::*;
-#(parameter no_of_bursts  = 4, parameter INDEX_BITS = 7 , parameter RA_BITS = 16 , parameter CA_BITS = 10 , parameter DATA_BITS = 16)
+#(
+  parameter no_of_bursts  = 4,
+  parameter IDX          = 6,
+  parameter RA           = 16,
+  parameter CA_           = 10 , //parameter CA= 10 , but we have output port with same name :(
+  parameter DQ_          = 16   //parameter DQ= 16 , but we have output port with same name :(
+)
 (  
     input clk,    
     input rst_n,  
     
     //arbiter inputs
-    input [15:0] valid , // from schedulers
-    input  [(16 * DATA_BITS) -1 :0] data_i ,
-    input  [(INDEX_BITS*16) -1 :0 ] idx_i ,
-    input  [(RA_BITS*16)    -1 :0 ] row_i ,
-    input  [(CA_BITS*16)    -1 :0 ] col_i ,
+    input [15:0] valid_i , // from schedulers
+    input  [(16 * DQ_) -1 :0] data_i ,
+    input  [(IDX*16) -1 :0 ] idx_i ,
+    input  [(RA*16)    -1 :0 ] row_i ,
+    input  [(CA_*16)    -1 :0 ] col_i ,
+    input  [16 -1 :0 ] t_i ,
 
     //arbiter output 
     output [15:0] ready , 
-    
     // burst handler outputs to returner
     output logic returner_valid,
     output r_type returner_type,
@@ -34,10 +40,12 @@ module back_end import types_def::*;
 );
 
     // intemediate signals between arbiter and burst handler
-    wire   [DATA_BITS-1  : 0 ] data_o ;
-    wire   [INDEX_BITS-1 : 0 ] idx_o ;
-    wire   [RA_BITS-1    : 0 ] row_o ;
-    wire   [CA_BITS-1    : 0 ] col_o ;
+    wire   [DQ_-1  : 0 ] data_o ;
+    wire   [IDX-1 : 0 ] idx_o ;
+    wire   [RA-1    : 0 ] row_o ;
+    wire   [CA_-1    : 0 ] col_o ;
+    wire                       t_o;
+    wire [1:0] ba_o , bg_o           ;
     wire wr_en ; //enable write to burst handler
 
     // intemediate signals between burst handler and timing controller
@@ -47,22 +55,57 @@ module back_end import types_def::*;
 
     wire command burst_cmd_o;   // start cmd 
     wire [$clog2(no_of_bursts)-1:0] cmd_index_o;
-    wire [$clog2(no_of_bursts) :0]  empty_bursts_counter;
+    wire   start_new_burst;
 
 
-Arbiter #(.INDEX_BITS(INDEX_BITS), .RA_BITS(RA_BITS), .CA_BITS(CA_BITS), .DATA_BITS(DATA_BITS)) arbiter
-(.clk(clk),.rst_n(rst_n), .valid(valid), .data_i(data_i) ,.idx_i(idx_i) ,.row_i(row_i) ,
-    .col_i(col_i) ,  .data_o(data_o) ,.idx_o(idx_o)  ,.row_o(row_o)  , .col_o(col_o)  ,
-    .ba_o(ba_o) ,.bg_o(bg_o), .wr_en(wr_en),.Ready(ready));
+Arbiter #(.IDX(IDX),.RA(RA),.CA(CA_),.DQ(DQ_)) arbiter
+(
+    .clk(clk),
+    .rst_n(rst_n),
+     .valid(valid_i),
+      .flag(start_new_burst), 
+      .data_i(data_i) ,
+      .idx_i(idx_i) ,
+      .row_i(row_i) ,
+    .col_i(col_i) ,
+    .t_i(t_i),
+      .data_o(data_o) ,
+      .idx_o(idx_o)  ,
+      .row_o(row_o)  ,
+       .col_o(col_o)  ,
+      .t_o(t_o),
+    .ba_o(ba_o) ,
+    .bg_o(bg_o),
+     .wr_en(wr_en),
+     .Ready(ready)
+);
 
 
 
-burst_handler #(.no_of_bursts (4))  the_handler  (.clk(clk),.rst_n(rst_n),.out_burst_state(burst_state),.out_burst_type(burst_type),
-    .out_burst_address(burst_address),.in_burst_cmd(burst_cmd_o),.in_cmd_index(cmd_index_o),.start_new_burst(/*add your port here*/),.arbiter_valid(wr_en),.in_req_address({col_o,row_o}),
-    .arbiter_data(data_o),.arbiter_index(idx_o),.arbiter_type(1'b1/*data_o[TYPE_POS+:TYPE_BITS]*/),.returner_valid(returner_valid),
-    .returner_type(returner_type),.returner_data(returner_data),.returner_index(returner_index),.CS_n,.CA,.CAI,.DM_n,.DQ,.DQS_t,.DQS_c,.ALERT_n);
+burst_handler #(.no_of_bursts(no_of_bursts))  the_handler  (.clk(clk),.rst_n(rst_n),.out_burst_state(burst_state),.out_burst_type(burst_type),
+    .out_burst_address(burst_address),
+    .in_burst_cmd(burst_cmd_o),
+    .in_cmd_index(cmd_index_o),
+    .start_new_burst(start_new_burst),
+    .arbiter_valid(wr_en),
+    .in_req_address({bg_o,ba_o,row_o,col_o}),
+    .arbiter_data(data_o),
+    .arbiter_index(idx_o),
+    .arbiter_type(t_o),
+    .returner_valid(returner_valid),
+    .returner_type(returner_type),
+    .returner_data(returner_data),
+    .returner_index(returner_index),
+    .CS_n,.CA,.CAI,.DM_n,.DQ,.DQS_t,.DQS_c,.ALERT_n);
 
-timing_controller the_timing_controller (.clk(clk),.rst_n(rst_n),.in_burst_state(burst_state),.in_burst_type(burst_type),.in_burst_address(burst_address),.burst_start_next_cmd(burst_cmd_o),.cmd_i(cmd_index_o));
-
-
+timing_controller#(.no_of_bursts(no_of_bursts) )the_timing_controller
+ (
+  .clk(clk),
+  .rst_n(rst_n),
+  .in_burst_state(burst_state),
+  .in_burst_type(burst_type),
+  .in_burst_address(burst_address),
+  .burst_cmd_o(burst_cmd_o),
+  .cmd_index_o(cmd_index_o)
+ );
 endmodule

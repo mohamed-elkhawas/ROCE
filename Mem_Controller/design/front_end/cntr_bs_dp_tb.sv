@@ -19,7 +19,7 @@ parameter  BA       = 2;
 parameter  BG       = 2;
 parameter  DQ       = 16;
 parameter  TYPE     = 1;
-parameter  IDX      = 7;
+parameter  IDX      = 6;
 parameter  REQ_SIZE = CID + CA + RA + BA + BG + DQ + TYPE + IDX ; 
 
 //scheduler stored requests format

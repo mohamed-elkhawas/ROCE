@@ -16,9 +16,9 @@ logic CS_n;
 logic [13:0] CA;              
 logic CAI;          
 logic [2:0] DM_n;          
-logic [data_width-1:0] DQ;          
-logic [2:0] DQS_t , DQS_c ;
-logic ALERT_n;
+wire [data_width-1:0] DQ;          
+wire [2:0] DQS_t , DQS_c ;
+wire ALERT_n;
 
 ////////////// signals to the memory \\\\\\\\\\\
 
@@ -38,7 +38,7 @@ initial  begin
     #1 clk = ~clk;
 end
 
-XlResetGenerator #(10) resetGenerator ( clk, rst);
+//XlResetGenerator #(10) resetGenerator ( clk, rst);
 
 task delay(cycle);
 	repeat (cycle) begin
@@ -57,11 +57,11 @@ logic [address_width-1:0] the_right_data = 0;
 	
 initial begin
 
-	
+	rst_n =1'b0;
 	in_valid = 0;
 
 	delay(100);
-
+	rst_n = 1'b1;
 	for (int i = 0; i < 100000; i++) begin
 		@(posedge clk)
 		
@@ -102,7 +102,7 @@ initial begin
 			in_valid =0;
 
 			if (done_entering_flag == 0) begin
-				$display("finished entering %d requests after %d cycle",lines_no,i);
+				$display("finished entering 1024 requests after %d cycle",i);
 			end
 			done_entering_flag = 1;
 		
