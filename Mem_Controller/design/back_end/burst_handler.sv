@@ -10,9 +10,9 @@ module burst_handler import types_def::*;
 	output burst_states_type [no_of_bursts-1:0] out_burst_state,
 	output r_type [no_of_bursts-1:0] out_burst_type,
 
-	output logic [1:0] [no_of_bursts-1:0] out_burst_address_bank,
-	output logic [1:0] [no_of_bursts-1:0] out_burst_address_bg,
-	output logic [15:0] [no_of_bursts-1:0] out_burst_address_row,
+	output logic [no_of_bursts-1:0] [1:0]  out_burst_address_bank,
+	output logic [no_of_bursts-1:0] [1:0]  out_burst_address_bg,
+	output logic [no_of_bursts-1:0] [15:0]  out_burst_address_row,
 
 	input command in_burst_cmd,
 	input [$clog2(no_of_bursts)-1:0] in_cmd_index,
