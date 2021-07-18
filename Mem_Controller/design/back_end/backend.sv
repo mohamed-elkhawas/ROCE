@@ -51,7 +51,10 @@ module back_end import types_def::*;
     // intemediate signals between burst handler and timing controller
     wire burst_states_type [no_of_bursts-1:0] burst_state; // started_filling ,almost_done , full , empty , returning_data
     wire r_type [no_of_bursts-1:0] burst_type;
-    wire address_type [no_of_bursts-1:0] burst_address; /// I need the row , bank and bank_group bits
+
+    logic [1:0] [no_of_bursts-1:0] burst_address_bank;
+    logic [1:0] [no_of_bursts-1:0] burst_address_bg;
+    logic [15:0] [no_of_bursts-1:0] burst_address_row;
 
     wire command burst_cmd_o;   // start cmd 
     wire [$clog2(no_of_bursts)-1:0] cmd_index_o;
@@ -83,7 +86,9 @@ Arbiter #(.IDX(IDX),.RA(RA),.CA(CA_),.DQ(DQ_)) arbiter
 
 
 burst_handler #(.no_of_bursts(no_of_bursts))  the_handler  (.clk(clk),.rst_n(rst_n),.out_burst_state(burst_state),.out_burst_type(burst_type),
-    .out_burst_address(burst_address),
+    .out_burst_address_bank(burst_address_bank),
+    .out_burst_address_bg(burst_address_bg),
+    .out_burst_address_row(burst_address_row),
     .in_burst_cmd(burst_cmd_o),
     .in_cmd_index(cmd_index_o),
     .start_new_burst(start_new_burst),
@@ -91,7 +96,7 @@ burst_handler #(.no_of_bursts(no_of_bursts))  the_handler  (.clk(clk),.rst_n(rst
     .in_req_address({bg_o,ba_o,row_o,col_o}),
     .arbiter_data(data_o),
     .arbiter_index(idx_o),
-    .arbiter_type(t_o),
+    .arbiter_type_temp(t_o),
     .returner_valid(returner_valid),
     .returner_type(returner_type),
     .returner_data(returner_data),
@@ -104,8 +109,11 @@ timing_controller#(.no_of_bursts(no_of_bursts) )the_timing_controller
   .rst_n(rst_n),
   .in_burst_state(burst_state),
   .in_burst_type(burst_type),
-  .in_burst_address(burst_address),
+  .in_burst_address_bank(burst_address_bank),
+  .in_burst_address_bg(burst_address_bg),
+  .in_burst_address_row(burst_address_row),
   .burst_cmd_o(burst_cmd_o),
   .cmd_index_o(cmd_index_o)
  );
 endmodule
+
