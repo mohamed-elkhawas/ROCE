@@ -194,7 +194,7 @@ always_ff @(posedge clk) begin
 			b_counter_rd[i] <=  0;
 			b_counter_wr[i] <=  0;
 			b_counter_pre[i] <=  0;
-			b_active_row_valid[i] = 0;
+			b_active_row_valid[i] <= 0;
 		end
 		for (int i = 0; i < bank_group_no; i++) begin
 			bg_counter_act[i] <= 0;
