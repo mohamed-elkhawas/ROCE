@@ -9,9 +9,9 @@ module timing_controller import types_def::*;
 	input burst_states_type [no_of_bursts-1:0] in_burst_state, // started_filling ,almost_done , full , empty , returning_data
 	input r_type [no_of_bursts-1:0] in_burst_type,
 
-	input logic [1:0] [no_of_bursts-1:0] in_burst_address_bank,
-	input logic [1:0] [no_of_bursts-1:0] in_burst_address_bg,
-	input logic [15:0] [no_of_bursts-1:0] in_burst_address_row,
+	input [no_of_bursts-1:0] [1:0]  in_burst_address_bank,
+	input [no_of_bursts-1:0] [1:0]  in_burst_address_bg,
+	input [no_of_bursts-1:0] [15:0]  in_burst_address_row,
 
 	output command burst_cmd_o,	// start cmd 
 	output logic [$clog2(no_of_bursts)-1:0] cmd_index_o
