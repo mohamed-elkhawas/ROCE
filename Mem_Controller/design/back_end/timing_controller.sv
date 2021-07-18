@@ -8,7 +8,10 @@ module timing_controller import types_def::*;
 
 	input burst_states_type [no_of_bursts-1:0] in_burst_state, // started_filling ,almost_done , full , empty , returning_data
 	input r_type [no_of_bursts-1:0] in_burst_type,
-	input address_type [no_of_bursts-1:0] in_burst_address, /// I need the row , bank and bank_group bits
+
+	input logic [1:0] [no_of_bursts-1:0] in_burst_address_bank,
+	input logic [1:0] [no_of_bursts-1:0] in_burst_address_bg,
+	input logic [15:0] [no_of_bursts-1:0] in_burst_address_row,
 
 	output command burst_cmd_o,	// start cmd 
 	output logic [$clog2(no_of_bursts)-1:0] cmd_index_o
@@ -71,7 +74,7 @@ r_type last_cmd_type;
 logic [no_of_bursts-1:0][3:0] burst_bank_id; // from 0 to 15
 always_comb begin 
 	for (int i = 0; i < 4; i++) begin
-		burst_bank_id[i] = {in_burst_address[i].bank_group , in_burst_address[i].bank};
+		burst_bank_id[i] = {in_burst_address_bg[i] , in_burst_address_bank[i]};
 	end
 end
 
@@ -96,7 +99,7 @@ always_ff @(posedge clk) begin
 				if (burst_cmd == activate ) begin
 					b_counter_act[i] <=0;
 
-					b_active_row[i] <= in_burst_address[cmd_index].row;
+					b_active_row[i] <= in_burst_address_row[cmd_index];
 					b_active_row_valid[i] <= 1;	
 				end
 				else begin
@@ -155,7 +158,7 @@ always_ff @(posedge clk) begin
 
 		for (int i = 0; i < bank_group_no; i++) begin
 
-			if (burst_cmd == activate &&  i == in_burst_address[cmd_index].bank_group ) begin
+			if (burst_cmd == activate &&  i == in_burst_address_bg[cmd_index] ) begin
 				bg_counter_act[i] <= 0;
 			end
 			else begin
@@ -222,7 +225,7 @@ always_comb begin
 
 				if ( b_active_row_valid[burst_bank_id[i]] == 1 ) begin // there is active row
 		
-					if (b_active_row[burst_bank_id[i]] == in_burst_address[i].row) begin // same active row
+					if (b_active_row[burst_bank_id[i]] == in_burst_address_row[i]) begin // same active row
 					
 						if (in_burst_type[i] == last_cmd_type  ||  ( ( last_cmd_type == read_cmd && global_counter_rd > rd_to_wr-2 ) && ( last_cmd_type == write && global_counter_wr > wr_to_rd-2 ) ) ) begin // same type or rd_to_wr delays are done
 					
@@ -261,7 +264,7 @@ always_comb begin
 				end
 				else begin // no active row
 					
-					if (b_counter_pre[burst_bank_id[i]] > pre_to_act-2 && bg_counter_act[in_burst_address[i].bank_group] > act_to_act_diff_bank-2  && b_counter_act[burst_bank_id[i]] > act_to_act_same_bank-2 ) begin
+					if (b_counter_pre[burst_bank_id[i]] > pre_to_act-2 && bg_counter_act[in_burst_address_bg[i]] > act_to_act_diff_bank-2  && b_counter_act[burst_bank_id[i]] > act_to_act_same_bank-2 ) begin
 						round_roubin_in[i] = 1;
 						burst_cmd_temp[i] = activate ;
 					end
