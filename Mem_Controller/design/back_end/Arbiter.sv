@@ -51,7 +51,7 @@ generate
 endgenerate
 
 Data_Path #(.INDEX_BITS(IDX), .RA_BITS(RA), .CA_BITS(CA), .DATA_BITS(DQ)) D_path
-( .data_i(data_i), .idx_i(idx_i), .row_i(row_i), .col_i(col_i), .bank_sel(bank_sel), .group_sel(group_sel),
+( .data_i(data_i), .idx_i(idx_i), .row_i(row_i), .col_i(col_i), .bank_sel(bank_sel), .group_sel(group_sel),.t_i(t_i),.t_o(t_o),
    .data_o(data_o), .idx_o(idx_o), .row_o(row_o), .col_o(col_o),.ba_o(ba_o) , .bg_o(bg_o)) ;
 
 endmodule
