@@ -224,15 +224,15 @@ always_comb begin
 			if (in_burst_state[i] != empty && in_burst_state[i] != returning_data) begin //  there is requests to be sent
 
 				if ( b_active_row_valid[burst_bank_id[i]] == 1 ) begin // there is active row
-		
+
 					if (b_active_row[burst_bank_id[i]] == in_burst_address_row[i]) begin // same active row
-					
-						if (in_burst_type[i] == last_cmd_type  ||  ( ( last_cmd_type == read_cmd && global_counter_rd > rd_to_wr-2 ) && ( last_cmd_type == write && global_counter_wr > wr_to_rd-2 ) ) ) begin // same type or rd_to_wr delays are done
-					
+
+						if (in_burst_type[i] == last_cmd_type  ||  ( ( last_cmd_type == read && global_counter_rd > rd_to_wr-2 ) || ( last_cmd_type == write && global_counter_wr > wr_to_rd-2 ) ) ) begin // same type or rd_to_wr delays are done
+
 							if ( global_counter_rd > burst_time + rd_to_data + col_to_col-2 && global_counter_wr > burst_time + wr_to_data + col_to_col-2 ) begin // column to column time
-					
+
 								if (b_counter_act[burst_bank_id[i]] > act_to_col-2 ) begin // activate to read or write time passed
-					
+									
 									if (in_burst_type[i] == read) begin
 										
 										if (in_burst_state[i] == almost_done || in_burst_state[i] == full ) begin
