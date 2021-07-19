@@ -120,22 +120,16 @@ end
 
 always_ff @(posedge clk) begin 
 
+	start_new_burst <= 0;
 	
 	if (empty_bursts_counter > 1) begin
 		start_new_burst <= 1;
 	end
 	
 	else begin		
-		if (empty_bursts_counter == 1) begin
-			
-			if (start_new_burst == 1) begin
-				start_new_burst <= 0;
-			end
-			
-			else start_new_burst <= 1;
+		if (empty_bursts_counter == 1 && arbiter_valid == 0) begin
+			start_new_burst <= 1;
 		end
-		
-		else start_new_burst <= 0;
 	end
 end
 
