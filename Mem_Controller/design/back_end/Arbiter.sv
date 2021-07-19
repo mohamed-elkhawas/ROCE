@@ -21,7 +21,7 @@ module Arbiter
     output [CA    -1 :0 ]  col_o  ,
     output   t_o,//  type bit
     output [1:0] ba_o , bg_o           ,
-    output wor wr_en , 
+    output wr_en , 
     output [15:0] ready 
 );
 
@@ -36,7 +36,7 @@ wire [7:0] bank_sel  ;
 wire [3:0] start_signals ;
 
 assign start_signals = { Start_D, Start_C, Start_B,Start_A};
-assign wr_en = en ; 
+assign wr_en = |en ; 
 Groups_Fsm Bank_Groups(.clk(clk), .rst_n(rst_n), .flag(flag),.Req(req), .Done(done), .Start_A(Start_A),
                        .Start_B(Start_B), .Start_C(Start_C), .Start_D(Start_D),.sel(group_sel) );
 
