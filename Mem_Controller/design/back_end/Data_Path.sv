@@ -13,7 +13,7 @@ module Data_Path
     output reg [INDEX_BITS -1 :0 ]  idx_o  ,
     output reg [RA_BITS    -1 :0 ]  row_o  ,
     output reg [CA_BITS    -1 :0 ]  col_o  ,
-    output   t_o,//  type bit
+    output reg t_o,//  type bit
     output reg [1:0] ba_o , bg_o    //bank address , bank group
 );
 
@@ -136,11 +136,11 @@ end
 
 always @(*) begin
     casex(group_sel) 
-        2'd0   : {ba_o,bg_o,row_o,col_o,data_o,idx_o} = {BA_A,2'b00,A};
-        2'd1   : {ba_o,bg_o,row_o,col_o,data_o,idx_o} = {BA_B,2'b01,B};
-        2'd2   : {ba_o,bg_o,row_o,col_o,data_o,idx_o} = {BA_C,2'b10,C};
-        2'd3   : {ba_o,bg_o,row_o,col_o,data_o,idx_o} = {BA_D,2'b11,D};
-        default: {ba_o,bg_o,row_o,col_o,data_o,idx_o} = {2'b00,2'b00,{(REQ_SIZE){1'b0}}};
+        2'd0   : {ba_o,bg_o,t_o,row_o,col_o,data_o,idx_o} = {BA_A,2'b00,A};
+        2'd1   : {ba_o,bg_o,t_o,row_o,col_o,data_o,idx_o} = {BA_B,2'b01,B};
+        2'd2   : {ba_o,bg_o,t_o,row_o,col_o,data_o,idx_o} = {BA_C,2'b10,C};
+        2'd3   : {ba_o,bg_o,t_o,row_o,col_o,data_o,idx_o} = {BA_D,2'b11,D};
+        default: {ba_o,bg_o,t_o,row_o,col_o,data_o,idx_o} = {2'b00,2'b00,{(REQ_SIZE){1'b0}}};
     endcase
 end
 
