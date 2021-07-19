@@ -172,19 +172,19 @@ always @(*) begin
             if(mode == READ && &rd_empty == 1'b1 || mode == WRITE && &wr_empty == 1'b1 )begin //current mode has no requests
                 NS = EMPTY ;
                 //valid_o = 1'b0 ; 
-                $display("hi iam at NS = EMPTY");
+                //$display("hi iam at NS = EMPTY");
             end
             else if (ready == 1'b0) begin   // Current mode has already stored requests
                 NS = WAITING ;
                 //valid_o = 1'b1; 
-                $display("hi iam at ready = 1'b0 ");
+                //$display("hi iam at ready = 1'b0 ");
             end 
             else if (ready == 1'b1) begin
                 if(mode == READ)begin
                     NS = RD_BURST ;
                     pop[get_index(~empty,READ)] = 1'b1;
                     NB = burst_i[get_index(~empty,READ)] ;
-                    $display("hi iam at ready = 1'b1 , mode = read ");
+                    //$display("hi iam at ready = 1'b1 , mode = read ");
                     //pop[rd_idx] = 1'b1;
                     //NB = rd_i[rd_idx] ;  
                 end  
@@ -192,7 +192,7 @@ always @(*) begin
                     NS = WR_BURST ;
                     pop[get_index(~empty,WRITE)] = 1'b1;
                     NB = burst_i[get_index(~empty,WRITE)] ;
-                    $display("hi iam at ready = 1'b1 , mode = write ");
+                    //$display("hi iam at ready = 1'b1 , mode = write ");
                     //pop[wr_idx] = 1'b1;
                     //NB = wr_i[wr_idx] ;   
                 end                     

@@ -70,11 +70,11 @@ back_end #(.no_of_bursts(4),.IDX(IDX),.RA(RA),.CA_(CA_),.DQ_(DQ_))the_back_end
 (
     .clk,    
     .rst_n,  
-	.valid_i(valid_o),   // Input valid bit from txn controller/bank scheduler fifo
-    .data_i(dq_o),       // Input data from txn controller/bank scheduler fifo
-    .idx_i(idx_o),     // Input index from txn controller/bank scheduler fifo
-    .row_i(ra_o),       // Input row address from txn controller/bank scheeduler fifo
-    .col_i(ca_o),       // Input col address from txn controller/bank scheeduler fifo
+	.valid_i(valid_o),   // Input valid bit from  bank scheduler 
+    .data_i(dq_o),       // Input data from  bank scheduler 
+    .idx_i(idx_o),     // Input index from  bank scheduler 
+    .row_i(ra_o),       // Input row address from  bank scheduler 
+    .col_i(ca_o),       // Input col address from  bank scheduler 
     .t_i (t_o),
     .ready(ready) ,
     .returner_valid(request_done_valid),

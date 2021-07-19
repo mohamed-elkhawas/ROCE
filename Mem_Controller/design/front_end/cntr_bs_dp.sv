@@ -135,7 +135,7 @@ generate
     for (g= RD_FIFO_NUM; g < FIFO_NUM; g=g+1)  begin
        generic_fifo #(.DATA_WIDTH(WR_SIZE) ,.DATA_DEPTH(WR_FIFO_SIZE), .RA_POS(RA_POS) , .RA_BITS(RA) ) wr_fifo
         (.clk(clk),.rst_n(rst_n),.data_i({dq_i,idx_i,ra_i,ca_i}),.valid_i(push[g]),.grant_o(grant_o[g]),
-        .last_addr(last_ra[g*RA +: RA]),.mid(mid[g]),.data_o({f_idx_o[g],f_dq_o[(g-RD_FIFO_NUM)],f_ra_o[g],f_ca_o[g]}),.valid_o(valid_o[g]),.grant_i(pop[g]));
+        .last_addr(last_ra[g*RA +: RA]),.mid(mid[g]),.data_o({f_dq_o[(g-RD_FIFO_NUM)],f_idx_o[g],f_ra_o[g],f_ca_o[g]}),.valid_o(valid_o[g]),.grant_i(pop[g]));
     end      
 endgenerate                                                 
 

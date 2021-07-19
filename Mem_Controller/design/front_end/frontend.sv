@@ -118,7 +118,7 @@ generate
             .ra_o(ra_o[g]),       // output row address from data path
             .ca_o(ca_o[g]),       // output col address from data path
             .t_o(t_o[g]),         // Output type from scheduler fifo
-            .rd_empty(rd_empty),  // Output empty signal for read requests for each bank
+            .rd_empty(rd_empty[g]),  // Output empty signal for read requests for each bank
             .grant(pop[g]),       // pop from (Mapper-schedular) FIFO      
             .num(num[g])          // Number of write requests in the scheduler to controller mode
         ); 

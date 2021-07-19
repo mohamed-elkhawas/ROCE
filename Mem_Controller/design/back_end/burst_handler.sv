@@ -238,6 +238,7 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 			out_burst_address_bank[i] <= 0;
 			out_burst_address_bg[i] <= 0;
 			out_burst_address_row[i] <= 0;
+			out_burst_state[i] <= empty ;
 		end
 	end
 end

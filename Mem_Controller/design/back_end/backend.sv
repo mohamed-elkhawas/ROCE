@@ -49,14 +49,14 @@ module back_end import types_def::*;
     wire wr_en ; //enable write to burst handler
 
     // intemediate signals between burst handler and timing controller
-    wire burst_states_type [no_of_bursts-1:0] burst_state; // started_filling ,almost_done , full , empty , returning_data
-    wire r_type [no_of_bursts-1:0] burst_type;
+     burst_states_type [no_of_bursts-1:0] burst_state; // started_filling ,almost_done , full , empty , returning_data
+     r_type [no_of_bursts-1:0] burst_type;
 
-    logic [no_of_bursts-1:0] [1:0] in_burst_address_bank;
-    logic [no_of_bursts-1:0] [1:0] in_burst_address_bg;
-    logic [no_of_bursts-1:0] [15:0] in_burst_address_row;
+    logic [no_of_bursts-1:0] [1:0] burst_address_bank;
+    logic [no_of_bursts-1:0] [1:0] burst_address_bg;
+    logic [no_of_bursts-1:0] [15:0] burst_address_row;
 
-    wire command burst_cmd_o;   // start cmd 
+    command burst_cmd_o;   // start cmd 
     wire [$clog2(no_of_bursts)-1:0] cmd_index_o;
     wire   start_new_burst;
 
