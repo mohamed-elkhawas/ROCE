@@ -1,0 +1,13 @@
+\nomenclatureentry{AAI@[{AI}]\begingroup Artificial Intelligence\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{ADQN@[{DQN}]\begingroup Deep Q-Network\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{AReLU@[{ReLU}]\begingroup Rectified Linear Unit\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{ASPI@[{SPI}]\begingroup Serial Peripheral Interface\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{ASARSA@[{SARSA}]\begingroup State\textendash action\textendash reward\textendash state\textendash action\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{AMSE@[{MSE}]\begingroup Mean Square Error\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{AMAE@[{MAE}]\begingroup Mean Absolute Error\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{AMBE@[{MBE}]\begingroup Mean Bias Error\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{ACNN@[{CNN}]\begingroup Convolutional Neural Network\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{ASGD@[{SGD}]\begingroup Stochastic Gradient Descent\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{B$\chi^{2}$@[{$\chi^{2}$}]\begingroup Chi-Squared\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{B$\alpha_{s}$@[{$\alpha_{s}$}]\begingroup Specific attenuation\nomeqref {0}|nompageref}{1}
+\nomenclatureentry{Cr@[{r}]\begingroup Received\nomeqref {0}|nompageref}{1}
