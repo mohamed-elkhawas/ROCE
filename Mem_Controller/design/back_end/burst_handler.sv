@@ -92,7 +92,7 @@ logic [burst_length-1:0] first_one_in_mask;
 
 logic [$clog2(burst_length)-1:0] first_one_id;
 
-logic [$clog2(rd_to_data)-1:0] data_wait_counter;
+logic [$clog2(rd_to_data+1)-1:0] data_wait_counter;
 
 logic [$clog2(no_of_bursts) -1:0] cmd_burst_id;
 
@@ -401,7 +401,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 		
 			if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
 				
-				if (data_wait_counter != rd_to_data ) begin
+				if (data_wait_counter != rd_to_data +1 ) begin
 					data_wait_counter <= data_wait_counter +1;
 				end
 
