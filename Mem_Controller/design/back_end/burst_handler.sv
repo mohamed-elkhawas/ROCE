@@ -386,8 +386,8 @@ task ddr5_read_data(cmd_burst_id,counter);
 	if (burst[cmd_burst_id].mask[counter]) begin
    		burst[cmd_burst_id].data <= DQ   ;
 	end	
-	DQS_t_logic <= clk;
-	DQS_c_logic <= ~clk;
+	//DQS_t_logic <= clk;
+	//DQS_c_logic <= ~clk;
 endtask 
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -441,7 +441,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 				cmd_burst_id <= in_cmd_index;
 				cmd_to_send <= in_burst_cmd;
 
-				case (cmd_to_send)
+				case (in_burst_cmd)
 					activate:ddr5_activate_p1(cmd_burst_id);
 					read_cmd:ddr5_read_p1(cmd_burst_id);
 					write_cmd:ddr5_write_p1(cmd_burst_id);
@@ -451,7 +451,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 
 			else begin
 				data_wait_counter <= 0;
-				case (cmd_to_send)
+				case (in_burst_cmd)
 					activate:ddr5_activate_p2(cmd_burst_id);
 					read_cmd:ddr5_read_p2(cmd_burst_id);
 					write_cmd:ddr5_write_p2(cmd_burst_id);
