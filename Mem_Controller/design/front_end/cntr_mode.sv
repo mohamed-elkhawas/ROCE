@@ -86,12 +86,12 @@ always @(*) begin
     case(CS) 
         READ_MODE :begin
             mode = READ;
-            if (hwm == 1'b1 || (lwm && |rd_empty) ) //high watermark or low watermark with no read requests available
+            if (hwm == 1'b1 || (lwm == 1'b1 && &rd_empty == 1'b1) ) //high watermark or low watermark with no read requests available
               NS = WRITE_MODE ;
         end
         WRITE_MODE :begin
             mode = WRITE;
-            if (lwm == 1'b1)
+            if (lwm == 1'b1 && &rd_empty == 1'b0 ) // switch to read in case of it is lwm and at least there is one read request
               NS = READ_MODE ;
         end           
     endcase

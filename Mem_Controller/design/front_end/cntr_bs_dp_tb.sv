@@ -1,7 +1,7 @@
 module cntr_bs_dp_tb();
 
-parameter READ  = 1'b1;
-parameter WRITE = 1'b0;
+parameter READ  = 1'b0;
+parameter WRITE = 1'b1;
 
 //veloce request format
 parameter  CID_POS  = 0;

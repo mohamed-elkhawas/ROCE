@@ -3,7 +3,7 @@ module Groups_Fsm
     input  clk, rst_n,
     input  flag ,    // if flag is 1 from burst hanndler, then we can drain  more bursts
     input  [3:0] Req , //request from bank groups to enable each bank group fsm
-    input  [3:0] Done, // acknoledge from each bank group fsm after Starting a burst from scheduler is finished
+    input  [3:0] Done, // acknowledge from each bank group fsm after Starting a burst from scheduler is finished
     output reg Start_A, Start_B, Start_C, Start_D,
     output reg [1:0] sel
 );
@@ -54,14 +54,7 @@ always @(*) begin
     endcase
 end
 /************************************************FSM signals*****************************************************/
-localparam [2:0] 
-    IDLE    = 3'b000,
-    GROUP_A = 3'b001,
-    GROUP_B = 3'b010,
-    GROUP_C = 3'b011,
-    GROUP_D = 3'b100;
-
-reg [2:0] CS, NS ;
+enum reg [2:0] { IDLE, GROUP_A, GROUP_B, GROUP_C, GROUP_D } CS, NS;
 /*****************************************************************************************************************/
  
 //update fsm

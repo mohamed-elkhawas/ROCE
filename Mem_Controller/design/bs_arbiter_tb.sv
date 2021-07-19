@@ -1,4 +1,4 @@
-module sch_arbiter_tb();
+module bs_arbiter_tb();
 
 parameter READ     = 1'b0;
 parameter WRITE    = 1'b1;
@@ -37,8 +37,6 @@ wire [DQ  -1 :0] dq_sch_arb;
 wire [IDX -1 :0] idx_sch_arb;
 wire [RA  -1 :0] ra_sch_arb;
 wire [CA  -1 :0] ca_sch_arb;
-wire [BA  -1 :0] ba_sch_arb;
-wire [BG  -1 :0] bg_sch_arb;
 wire             t_sch_arb;
 
 // from scheduler to controller mode
@@ -56,16 +54,16 @@ wire [BG  -1 :0] bg_o;
 wire             t_o;
 
 
-
 always #5 clk = ~clk;
 
 initial begin 
     clk = 0 ;  
     rst_n = 1'b0;
-    valid = 1'b1;
-	#8 
+    valid = 1'b0;
+	@ (negedge clk);
 	rst_n = 1'b1;
-
+    valid = 1'b1 ;
+    data = {$urandom(),$urandom()};
 	repeat(10) begin //insert new input data
         @ (posedge clk);
 		data = {$urandom(),$urandom()};
@@ -78,17 +76,23 @@ generic_fifo #( .DATA_WIDTH(REQ_SIZE),.DATA_DEPTH(10),.RA_POS(RA_POS),.RA_BITS(R
     .rst_n(rst_n),
     .data_i(data),
     .valid_i(valid),
+    //.grant_o(grant_o[g]),
+    //.last_addr(last_ra[g*RA +: RA]),
+    //.mid(mid[g]),
     .data_o({dq_i,t_i,idx_i,ra_i,ca_i}),
+    //.data_o(data_o),
     .valid_o(valid_fifo_sch),
     .grant_i(grant_sch_fifo)
 );    
+   
+
        
 cntr_bs#(.READ(READ),.WRITE(WRITE),.RA_POS(RA_POS),.CA(CA),.RA(RA),.DQ(DQ),.IDX(IDX)) BankScheduler
 (
    .clk(clk),         // Input clock
    .rst_n(rst_n),     // Synchronous reset
    .ready(ready[0]),     //ready bit from arbiter      
-   .mode(READ),       // Input controller mode to switch memory interface bus into write mode 
+   .mode(mode),       // Input controller mode to switch memory interface bus into write mode 
    .valid_i(valid_fifo_sch),   // Input valid bit from txn controller/bank scheduler fifo
    .dq_i(dq_i),       // Input data from txn controller/bank scheduler fifo
    .idx_i(idx_i),     // Input index from txn controller/bank scheduler fifo

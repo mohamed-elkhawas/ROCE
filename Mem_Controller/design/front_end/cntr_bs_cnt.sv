@@ -10,8 +10,8 @@ module cntr_bs_cnt
 #(
     parameter WR_FIFO_NUM  = 3,
     parameter WR_FIFO_SIZE = 2,
-    parameter READ = 1'b1 ,
-    parameter WRITE = 1'b0 
+    parameter READ = 1'b0 ,
+    parameter WRITE = 1'b1 
 )
 (
    clk,     // Input clock

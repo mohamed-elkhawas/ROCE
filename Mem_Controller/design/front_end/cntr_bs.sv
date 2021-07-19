@@ -9,8 +9,8 @@
  
 module cntr_bs
 #(
-    parameter READ     = 1'b1,
-    parameter WRITE    = 1'b0,
+    parameter READ     = 1'b0,
+    parameter WRITE    = 1'b1,
     parameter RA_POS   = 14,
     parameter CA       = 10,
     parameter RA       = 16,

@@ -153,7 +153,7 @@ always @(*) begin
                     NS = EMPTY ;
                 else if( &rd_empty == 1'b0 ) begin // at least one read fifo is not empty
                     NS = WAITING;
-                    valid_o  = 1'b1 ;
+                    ////valid_o  = 1'b1 ;
                     //rd_start = 1'b1 ; 
                 end
             end
@@ -162,64 +162,64 @@ always @(*) begin
                     NS = EMPTY ;
                 else if( &wr_empty == 1'b0 ) begin // at least one write fifo is not empty
                     NS = WAITING;
-                    valid_o  = 1'b1 ;
+                    ////valid_o  = 1'b1 ;
                     //wr_start = 1'b1 ;  
                 end
             end
         end
         WAITING:begin 
+            valid_o = 1'b1; 
             if(mode == READ && &rd_empty == 1'b1 || mode == WRITE && &wr_empty == 1'b1 )begin //current mode has no requests
                 NS = EMPTY ;
-                valid_o = 1'b0 ; 
+                //valid_o = 1'b0 ; 
+                $display("hi iam at NS = EMPTY");
             end
-            else begin // Current mode has already stored requests
-                if (ready == 1'b0) begin
-                    NS = WAITING ;
-                    valid_o = 1'b1; 
-                end
-                else if (ready == 1'b1) begin
-                    if(mode == READ)begin
-                        NS = RD_BURST ;
-                        pop[get_index(~empty,READ)] = 1'b1;
-                        NB = burst_i[get_index(~empty,READ)] ;
-                        //pop[rd_idx] = 1'b1;
-                        //NB = rd_i[rd_idx] ;  
-                    end  
-                    else if(mode == WRITE)begin
-                        NS = WR_BURST ;
-                        pop[get_index(~empty,WRITE)] = 1'b1;
-                        NB = burst_i[get_index(~empty,WRITE)] ;
-                        //pop[wr_idx] = 1'b1;
-                        //NB = wr_i[wr_idx] ;   
-                    end                     
-                end
+            else if (ready == 1'b0) begin   // Current mode has already stored requests
+                NS = WAITING ;
+                //valid_o = 1'b1; 
+                $display("hi iam at ready = 1'b0 ");
+            end 
+            else if (ready == 1'b1) begin
+                if(mode == READ)begin
+                    NS = RD_BURST ;
+                    pop[get_index(~empty,READ)] = 1'b1;
+                    NB = burst_i[get_index(~empty,READ)] ;
+                    $display("hi iam at ready = 1'b1 , mode = read ");
+                    //pop[rd_idx] = 1'b1;
+                    //NB = rd_i[rd_idx] ;  
+                end  
+                else if(mode == WRITE)begin
+                    NS = WR_BURST ;
+                    pop[get_index(~empty,WRITE)] = 1'b1;
+                    NB = burst_i[get_index(~empty,WRITE)] ;
+                    $display("hi iam at ready = 1'b1 , mode = write ");
+                    //pop[wr_idx] = 1'b1;
+                    //NB = wr_i[wr_idx] ;   
+                end                     
             end
         end
         FINISH :begin
-            if(mode == READ && &rd_empty == 1'b1 || mode == WRITE && &wr_empty == 1'b1 )begin //current mode has no requests
-                NS = EMPTY ;
-                valid_o = 1'b0 ; 
-            end
-            else begin // Current mode has already stored requests      
+            valid_o = 1'b0 ; 
+            if(mode == READ && &rd_empty == 1'b1 || mode == WRITE && &wr_empty == 1'b1 ) //current mode has no requests
+                NS = EMPTY ;      
+            else  // Current mode has already stored requests      
                 NS = WAITING ;
-                valid_o = 1'b1; 
-            end
         end           
-        RD_BURST : begin
+        RD_BURST :begin
+            valid_o = 1'b1 ;
             if ( |hits[RD_FIFO_NUM-1:0] == 1'b1 ) begin // burst hit exists
-                NS  = RD_BURST;
-                valid_o = 1'b1 ;
-                pop[get_index(hits,READ)] = 1'b1;
+                NS  = RD_BURST;  
+                pop[get_index(hits,READ)] = 1'b1;  
             end
             else begin // burst hit does not exist 
                 NS = FINISH ;
                 //rd_start = 1'b1 ; //increment counter for round robin over fifos
             end                             
         end
-        WR_BURST : begin
+        WR_BURST : begin 
+            valid_o= 1'b1 ;
             if ( |hits[FIFO_NUM-1:RD_FIFO_NUM] == 1'b1 ) begin // burst hit exists
                 NS  = WR_BURST;
-                valid_o= 1'b1 ;
                 pop[get_index(hits,WRITE)] = 1'b1;
             end
             else begin // burst hit does not exist 
