@@ -30,15 +30,15 @@ module Arbiter
 wire Start_A, Start_B, Start_C, Start_D ; 
 wire [3:0] done ;
 wire [1:0] group_sel  ;
-wire [3:0] en   ;
 wire [3:0] req  ;
 wire [7:0] bank_sel  ;
 wire [3:0] start_signals ;
 
 assign start_signals = { Start_D, Start_C, Start_B,Start_A};
-assign wr_en = |en ; 
 Groups_Fsm Bank_Groups(.clk(clk), .rst_n(rst_n), .flag(flag),.Req(req), .Done(done), .Start_A(Start_A),
-                       .Start_B(Start_B), .Start_C(Start_C), .Start_D(Start_D),.sel(group_sel) );
+                       .Start_B(Start_B), .Start_C(Start_C), .Start_D(Start_D),
+                       .wr_en(wr_en) , 
+                       .sel(group_sel) );
 
 genvar i ; 
 generate
@@ -54,7 +54,6 @@ generate
                 .Ready_C(ready[(i*4)+2]),
             .Ready_D(ready[(i*4)+3]) ,
             .sel(bank_sel[i*2 +: 2]) ,
-                .en(en[i])  , 
                 .done(done[i]) , 
                 .Req(req[i]) 
         );

@@ -5,7 +5,7 @@ module Bank_Group_Fsm
     input  [3:0] Valid   ,
     output reg Ready_A, Ready_B, Ready_C, Ready_D, 
     output reg [1:0] sel , //bank index to drain from 
-    output reg  en , done,
+    output reg done,
     output Req
 );
 
@@ -44,7 +44,6 @@ end
 
 // Compute Next State and mealy outputs
 always @ (*)begin
-    en      = 1'b0  ;
     sel     = 2'd0  ;  //dont care
     Ready_A = 1'b0  ;
     Ready_B = 1'b0  ;
@@ -59,25 +58,21 @@ always @ (*)begin
         case (CS)
             IDLE: begin
                 if (valid_A == 1'b1)begin
-                    en      = 1'b1    ;
                     sel     = 2'd0    ;
                     Ready_A = 1'b1    ;
                     NS      = BANK_A  ;
                 end
                 else if (valid_B == 1'b1)begin
-                    en      = 1'b1    ;
                     sel     = 2'd1    ;
                     Ready_B   = 1'b1    ;
                     NS      = BANK_B ;
                 end
                 else if (valid_C == 1'b1)begin
-                    en      = 1'b1    ;
                     sel     = 2'd2    ;
                     Ready_C   = 1'b1    ;
                     NS      = BANK_C  ;
                 end
                 else if (valid_D == 1'b1)begin
-                    en      = 1'b1    ;
                     sel     = 2'd3    ;
                     Ready_D = 1'b1    ;
                     NS      = BANK_D  ;
@@ -86,7 +81,6 @@ always @ (*)begin
             BANK_A: begin
                 //if (valid_A == 1'b1 &&  valid_A == 1'b1 )begin
                 if (valid_A == 1'b1 )begin
-                    en       = 1'b1   ;
                     sel      = 2'd0   ;
                     Ready_A  = 1'b1   ;
                     done     = 1'b0   ;
@@ -114,7 +108,6 @@ always @ (*)begin
             BANK_B: begin
                 //if (valid_B == 1'b1 && valid_B == 1'b1 )begin
                 if (valid_B == 1'b1 )begin
-                    en       = 1'b1   ;
                     sel      = 2'd1   ;
                     Ready_B    = 1'b1   ;
                     done     = 1'b0   ;
@@ -142,7 +135,6 @@ always @ (*)begin
             BANK_C: begin
                 //if (valid_C == 1'b1 && valid_C == 1'b1 )begin
                 if (valid_C == 1'b1 )begin
-                    en       = 1'b1   ;
                     sel      = 2'd2   ;
                     Ready_C    = 1'b1   ;
                     done     = 1'b0   ;
@@ -170,7 +162,6 @@ always @ (*)begin
             BANK_D: begin
                 //if (valid_D == 1'b1 && valid_D == 1'b1 )begin
                 if (valid_D == 1'b1 )begin
-                    en       = 1'b1   ;
                     sel      = 2'd3   ;
                     Ready_D    = 1'b1   ;
                     done     = 1'b0   ;

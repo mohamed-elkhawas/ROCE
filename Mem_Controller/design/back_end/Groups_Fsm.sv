@@ -5,6 +5,7 @@ module Groups_Fsm
     input  [3:0] Req , //request from bank groups to enable each bank group fsm
     input  [3:0] Done, // acknowledge from each bank group fsm after Starting a burst from scheduler is finished
     output reg Start_A, Start_B, Start_C, Start_D,
+    output reg wr_en , 
     output reg [1:0] sel
 );
 
@@ -73,6 +74,7 @@ always @ (*)begin
     Start_B = 0 ;
     Start_C = 0 ;
     Start_D = 0 ;
+    wr_en = 1'b0;
     NS = CS ;
     case (CS)
         IDLE: begin
@@ -80,35 +82,48 @@ always @ (*)begin
                 if (ReqA == 1'b1)begin
                     //Start_A = 1'b1;
                     NS=GROUP_A;
+                    //wr_en = 1'b1;
+
                 end
                 else if (ReqB == 1'b1)begin
                     //Start_B = 1'b1;
                     NS=GROUP_B;
+                    //wr_en = 1'b1;
                 end
                 else if (ReqC == 1'b1)begin
                     //Start_C = 1'b1;
                     NS=GROUP_C;
+                    //wr_en = 1'b1;
                 end
                 else if (ReqD == 1'b1)begin
                     //Start_D = 1'b1;
                     NS=GROUP_D;
+                    //wr_en = 1'b1;
                 end
             end
         end
         GROUP_A: begin
             Start_A = 1'b1;
+            wr_en = 1'b1;
             if (ReqA == 1'b1 &&  Done_A == 1'b0 )begin
                // Start_A = 1'b1;
                 NS=GROUP_A;
+                
             end 
             else begin
                 if(flag ==1'b1) begin
-                    if (ReqB == 1'b1)
+                    if (ReqB == 1'b1)begin
                         NS=GROUP_B;
-                    else if (ReqC == 1'b1)
+                        wr_en = 1'b0;
+                    end                        
+                    else if (ReqC == 1'b1) begin
                         NS=GROUP_C;
-                    else if (ReqD == 1'b1)
+                        wr_en = 1'b0;
+                    end
+                    else if (ReqD == 1'b1)begin
                         NS=GROUP_D;
+                        wr_en = 1'b0;
+                    end
                 end
                 else if(flag  == 1'b0 )
                     NS=IDLE;
@@ -116,18 +131,26 @@ always @ (*)begin
         end
         GROUP_B: begin
             Start_B = 1'b1;
+            wr_en = 1'b1;
             if (ReqB == 1'b1 && Done_B == 1'b0 )begin
                 //Start_B = 1'b1;
                 NS=GROUP_B;
+                
             end
             else begin
                 if(flag ==1'b1) begin
-                    if (ReqC == 1'b1)
+                    if (ReqC == 1'b1)begin
                         NS=GROUP_C;
-                    else if (ReqD == 1'b1)
+                        wr_en = 1'b0;
+                    end
+                    else if (ReqD == 1'b1)begin
                         NS=GROUP_D;
-                    else if (ReqA == 1'b1)
+                        wr_en = 1'b0;
+                    end
+                    else if (ReqA == 1'b1)begin
                         NS=GROUP_A;
+                        wr_en = 1'b0;
+                    end
                 end
                 else if(flag  == 1'b0 )
                     NS=IDLE;
@@ -135,18 +158,26 @@ always @ (*)begin
         end
         GROUP_C: begin
             Start_C = 1'b1;
+            wr_en = 1'b1;
             if (ReqC == 1'b1 && Done_C == 1'b0 )begin
                 //Start_C = 1'b1;
                 NS=GROUP_C;
+                
             end 
             else begin
                 if(flag ==1'b1) begin
-                    if (ReqD == 1'b1)
+                    if (ReqD == 1'b1)begin
                         NS=GROUP_D;
-                    else if (ReqA == 1'b1)
+                        wr_en = 1'b0;
+                    end
+                    else if (ReqA == 1'b1)begin
                         NS=GROUP_A;
-                    else if (ReqB == 1'b1)
+                        wr_en = 1'b0;
+                    end
+                    else if (ReqB == 1'b1)begin
                         NS=GROUP_B;
+                        wr_en = 1'b0;
+                    end
                 end
                 else if(flag  == 1'b0 )
                     NS=IDLE;
@@ -154,18 +185,26 @@ always @ (*)begin
         end
         GROUP_D: begin
             Start_D = 1'b1;
+            wr_en = 1'b1;
             if (ReqD == 1'b1 && Done_D == 1'b0 )begin
                 //Start_D = 1'b1;
                 NS=GROUP_D;
+                
             end 
             else begin
                 if(flag ==1'b1) begin
-                    if (ReqA == 1'b1)
+                    if (ReqA == 1'b1)begin
                         NS=GROUP_B;
-                    else if (ReqB == 1'b1)
+                        wr_en = 1'b0;
+                    end
+                    else if (ReqB == 1'b1)begin
                         NS=GROUP_C;
-                    else if (ReqC == 1'b1)
+                        wr_en = 1'b0;
+                    end
+                    else if (ReqC == 1'b1)begin
                         NS=GROUP_D;
+                        wr_en = 1'b0;
+                    end
                 end
                 else if(flag  == 1'b0 )
                     NS=IDLE;

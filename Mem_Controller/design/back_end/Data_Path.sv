@@ -17,7 +17,7 @@ module Data_Path
     output reg [1:0] ba_o , bg_o    //bank address , bank group
 );
 
-localparam REQ_SIZE = DATA_BITS+RA_BITS+CA_BITS+INDEX_BITS;
+localparam REQ_SIZE = DATA_BITS+RA_BITS+CA_BITS+INDEX_BITS+1; //1 for type bit
 
 // wires for slicing each bank input data
 wire [DATA_BITS-1 :0 ] D_A3, D_A2, D_A1, D_A0;
