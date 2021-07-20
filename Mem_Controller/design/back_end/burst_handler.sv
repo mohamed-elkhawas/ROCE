@@ -227,7 +227,7 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 	else begin // reset
 		empty_bursts_counter <= 4;
 		for (int i = 0; i < no_of_bursts; i++) begin
-			burst[i].state <= empty;
+			burst[i].state <= empty; 
 			burst[i].mask <= 0;
 			out_burst_address_bank[i] <= 0;
 			out_burst_address_bg[i] <= 0;
@@ -274,6 +274,8 @@ always_comb begin
 end
 
 always_ff @(  posedge clk ) begin
+
+	returner_valid <= 0;
 	
 	if(rst_n) begin
 		
@@ -290,15 +292,11 @@ always_ff @(  posedge clk ) begin
 					burst[out_burst].mask[first_one_id] <= 0;
 
 				end
-
-				else returner_valid <= 0; 
 			end
 			
 			else begin // finished returning
 
-				returner_valid <= 0;
-				
-				burst[out_burst].state <= empty;
+				burst[out_burst].state <= empty; out_burst_state[out_burst] <= empty;
 				if (!new_burst_flag) begin
 					empty_bursts_counter <= empty_bursts_counter +1;
 				end
@@ -306,10 +304,6 @@ always_ff @(  posedge clk ) begin
 			end
 		end
 	end 
-
-	else begin // reset
-		returner_valid <= 0;
-	end
 end
 
 /*
@@ -411,7 +405,8 @@ always_ff @( clk ) begin ///////////////// memory interface
 			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd && burst_data_counter[cmd_burst_id] < burst_length) begin
 				
 				if (data_wait_counter == rd_to_data) begin
-					burst[cmd_burst_id].state <= returning_data;
+					burst[cmd_burst_id].state <= returning_data; out_burst_state[cmd_burst_id] <= returning_data;
+					//$display("here1");
 				end
 
 				ddr5_read_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
@@ -422,7 +417,8 @@ always_ff @( clk ) begin ///////////////// memory interface
 			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd && burst_data_counter[cmd_burst_id] < burst_length ) begin
 
 				if (data_wait_counter == wr_to_data) begin
-					burst[cmd_burst_id].state <= returning_data;
+					burst[cmd_burst_id].state <= returning_data; out_burst_state[cmd_burst_id] <= returning_data;
+					//$display("here2");
 				end
 
 				ddr5_write_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
@@ -468,6 +464,5 @@ always_ff @( clk ) begin ///////////////// memory interface
 		cmd_burst_id <= 0;
 	end
 end
-
 
 endmodule
