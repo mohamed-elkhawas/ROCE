@@ -81,6 +81,7 @@ initial begin
 					
 					if (op_no == 1023) begin
 						op_no = 0;
+						op_type =0;
 					end
 
 				end
