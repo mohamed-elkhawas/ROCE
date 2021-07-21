@@ -28,8 +28,8 @@ localparam
 			pre_to_act =6,
 			act_to_act_same_bank =20,
 			act_to_pre =14,
-			wr_to_data =4,/////////////////////////////////////////////////////// will be sent to the other block
-			rd_to_data =6,///////////// the real value is 11 //////////////////// will be sent to the other block
+			wr_to_data =5,/////////////////////////////////////////////////////// will be sent to the other block
+			rd_to_data =7,///////////// the real value is 11 //////////////////// will be sent to the other block
 			rd_to_pre =3,
 			wr_to_pre =6,
 
