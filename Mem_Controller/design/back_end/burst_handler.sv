@@ -361,7 +361,7 @@ endtask
 always_ff @( clk ) begin ///////////////// memory interface 
 
 	if(rst_n) begin
-		
+
 		if (in_burst_cmd == none) begin // all cmds are none
 		
 			if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
@@ -421,7 +421,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 end
 
 
-always_ff @(posedge clk ) begin
+always_ff @( clk ) begin
 	
 	if(rst_n) begin
 
