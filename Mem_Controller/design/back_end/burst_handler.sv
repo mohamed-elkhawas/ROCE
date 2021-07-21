@@ -203,57 +203,22 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 
 			if (new_burst_flag) begin
 
-				/*if ( !(return_req && first_one_in_mask == 0) ) begin // if we did not free one burst
-					empty_bursts_counter <= empty_bursts_counter -1;
-				end*/
-				
-				if (burst[older_in_burst].state == started_filling || burst[older_in_burst].state == almost_done) begin // old one is full
-					burst[older_in_burst].state <= full; // out_burst_state[older_in_burst] <= full;
-				end
-
 				new_burst_counter <= 0;
-
-				burst[in_burst].state <= started_filling; //	out_burst_state[in_burst] <= started_filling;
-				burst[in_burst].address <= in_req_address[address_width-1:4];
 
 				out_burst_address_row[in_burst] <= in_req_address.row;
 				out_burst_address_bg[in_burst] <= in_req_address.bank_group;
 				out_burst_address_bank[in_burst] <= in_req_address.bank;
 				
-				burst[in_burst].the_type <= arbiter_type; //out_burst_type[in_burst] <= arbiter_type;
-				// the column last 4 bits are the req place in the burst
-				if (arbiter_type == write) begin
-					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
-				end
-				burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
-				burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
-
 			end
 			else begin // continue filling old burst
 				new_burst_counter <= new_burst_counter +1;
-				if (new_burst_counter == 7) begin
-					burst[in_burst].state <= almost_done; //out_burst_state[in_burst] <= almost_done;
-				end
-				if (arbiter_type == write) begin
-					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
-				end
-				burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
-				burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
-			end
-
-		end
-		else begin// end the current burst // without starting new one
-			if (burst[in_burst].state == started_filling || burst[in_burst].state == almost_done) begin
-				burst[in_burst].state <= full; //out_burst_state[in_burst] <= full;
 			end
 		end
-
 	end
+	
 	else begin // reset
 		
 		for (int i = 0; i < no_of_bursts; i++) begin
-			burst[i].state <= empty; 
-			burst[i].mask <= 0;
 			out_burst_address_bank[i] <= 0;
 			out_burst_address_bg[i] <= 0;
 			out_burst_address_row[i] <= 0;
@@ -321,48 +286,16 @@ always_ff @(  posedge clk ) begin
 					returner_type <= burst[out_burst].the_type;
 					returner_index <= burst[out_burst].index[first_one_id];
 					returner_data <= burst[out_burst].data[first_one_id];
-					burst[out_burst].mask[first_one_id] <= 0;
 
 				end
-			end
-			
-			else begin // finished returning
-
-				burst[out_burst].state <= empty; //out_burst_state[out_burst] <= empty;
-				/*if (!new_burst_flag) begin
-					empty_bursts_counter <= empty_bursts_counter +1;
-				end*/
-
 			end
 		end
 	end 
 end
 
-/*
-// testing returning data to returner
-always_ff @(posedge clk ) begin
-	if (test) begin
-		for (int i = 0; i < no_of_bursts; i++) begin
-			burst_data_counter = 15;
-			burst[i].state = returning_data;
-			burst[i].mask = 0;
-			burst[i].the_type = write;
-			burst[i].index[0] = 8;
-			burst[i].index[2] = 7;
-			burst[i].index[9] = 9;
-			burst[i].mask[0] = 1;
-			burst[i].mask[2] = 1;
-			burst[i].mask[9] = 1;
-		end
-	end
-end
-*/
-
-
 //////////// important note: returning_data state will start on read after recieving data from the memory on write after writing the data
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
 
 localparam BL_bar = 1,	AP_bar = 1; //BL ->1 length =16
 
@@ -420,12 +353,10 @@ task ddr5_read_data
 	if (burst[cmd_burst_id_t].mask[counter_t]) begin
    		burst[cmd_burst_id_t].data <= DQ   ;
 	end	
-	//DQS_t_logic <= clk;
-	//DQS_c_logic <= ~clk;
+
 endtask 
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
 
 always_ff @( clk ) begin ///////////////// memory interface 
 
@@ -443,33 +374,17 @@ always_ff @( clk ) begin ///////////////// memory interface
 			
 			
 			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd && burst_data_counter[cmd_burst_id] < burst_length) begin
-				
-				if (data_wait_counter == rd_to_data) begin
-					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
-					//$display("here1");
-				end
-
-				ddr5_read_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
 				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
-			
 			end
 
 			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd && burst_data_counter[cmd_burst_id] < burst_length ) begin
-
-				if (data_wait_counter == wr_to_data) begin
-					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
-					//$display("here2");
-				end
-
-				ddr5_write_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
-				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
-			
+				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;							
 			end
 
 		end
 		else begin
 			
-			if (clk) begin // if (clk_n) begin // to make the memory interface command start at posedge 
+			if (clk) begin
 
 				burst_data_counter[in_cmd_index] <= 0;
 				data_wait_counter <= 0;
@@ -504,5 +419,100 @@ always_ff @( clk ) begin ///////////////// memory interface
 		cmd_burst_id <= 0;
 	end
 end
+
+
+always_ff @(posedge clk ) begin
+	
+	if(rst_n) begin
+
+		if (arbiter_valid) begin
+
+			if (new_burst_flag) begin
+
+				
+				if (burst[older_in_burst].state == started_filling || burst[older_in_burst].state == almost_done) begin // old one is full
+					burst[older_in_burst].state <= full;
+				end
+
+				burst[in_burst].state <= started_filling; 
+				burst[in_burst].address <= in_req_address[address_width-1:4];
+				
+				burst[in_burst].the_type <= arbiter_type; 
+				
+				if (arbiter_type == write) begin
+					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
+				end
+				burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
+				burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
+
+			end
+			else begin // continue filling old burst
+				if (new_burst_counter == 7) begin
+					burst[in_burst].state <= almost_done; 
+				end
+				if (arbiter_type == write) begin
+					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
+				end
+				burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
+				burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
+			end
+
+		end
+		else begin// end the current burst // without starting new one
+			if (burst[in_burst].state == started_filling || burst[in_burst].state == almost_done) begin
+				burst[in_burst].state <= full; 
+			end
+		end
+
+		if (return_req) begin
+
+			if (first_one_in_mask != 0) begin // didn't finish returning
+				
+				if (burst_data_counter[out_burst] >= first_one_id) begin // recieved req data or sent the write 
+					burst[out_burst].mask[first_one_id] <= 0;
+				end
+			end
+			
+			else begin // finished returning
+				burst[out_burst].state <= empty;
+			end
+		end
+
+
+		if (in_burst_cmd == none) begin // all cmds are none
+			
+			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd && burst_data_counter[cmd_burst_id] < burst_length) begin
+				
+				if (data_wait_counter == rd_to_data) begin
+					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
+				end
+
+				ddr5_read_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);			
+			
+			end
+
+			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd && burst_data_counter[cmd_burst_id] < burst_length ) begin
+
+				if (data_wait_counter == wr_to_data) begin
+					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
+				end
+
+				ddr5_write_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
+			
+			end
+
+		end
+
+	end
+	 
+	else begin // reset
+		
+		for (int i = 0; i < no_of_bursts; i++) begin
+			burst[i].state <= empty; 
+			burst[i].mask <= 0;
+		end
+	end
+end
+
 
 endmodule
