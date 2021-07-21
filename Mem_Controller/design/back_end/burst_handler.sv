@@ -86,7 +86,7 @@ logic [$clog2(no_of_bursts) -1:0] in_burst , older_in_burst , out_burst;
 
 logic new_burst_flag , return_req;
 
-logic [$clog2(no_of_bursts) -1:0][$clog2(burst_length) -1:0] burst_data_counter;
+logic [no_of_bursts -1:0][$clog2(burst_length+1) -1:0] burst_data_counter;
 
 logic [burst_length-1:0] first_one_in_mask;
 
@@ -109,6 +109,31 @@ r_type arbiter_type;
 
 
 // updating burst_storage  //dealing with arbiter // outputs burst states, address and type
+
+always_ff @(posedge clk ) begin 
+	if(rst_n) begin
+		//empty_bursts_counter <= (burst[0].state == empty) + (burst[1].state == empty) + (burst[2].state == empty) + (burst[3].state == empty) ;
+		if (new_burst_flag && !(return_req && first_one_in_mask == 0)) begin
+			empty_bursts_counter <= empty_bursts_counter -1;
+		end
+		if (!new_burst_flag && (return_req && first_one_in_mask == 0)) begin
+			empty_bursts_counter <= empty_bursts_counter +1;
+		end
+
+	end 
+	else begin
+		empty_bursts_counter <= no_of_bursts;
+	end
+end
+
+always_comb begin 
+	for (int i = 0; i < no_of_bursts; i++) begin
+		out_burst_state[i] = burst[i].state;
+		out_burst_type[i] = burst[i].the_type;
+	end
+
+end
+
 
 always_comb begin 
 	if (arbiter_type_temp == 0) begin
@@ -178,24 +203,24 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 
 			if (new_burst_flag) begin
 
-				if ( !(return_req && first_one_in_mask == 0) ) begin // if we did not free one burst
+				/*if ( !(return_req && first_one_in_mask == 0) ) begin // if we did not free one burst
 					empty_bursts_counter <= empty_bursts_counter -1;
-				end
+				end*/
 				
 				if (burst[older_in_burst].state == started_filling || burst[older_in_burst].state == almost_done) begin // old one is full
-					burst[older_in_burst].state <= full;  out_burst_state[older_in_burst] <= full;
+					burst[older_in_burst].state <= full; // out_burst_state[older_in_burst] <= full;
 				end
 
 				new_burst_counter <= 0;
 
-				burst[in_burst].state <= started_filling; 	out_burst_state[in_burst] <= started_filling;
+				burst[in_burst].state <= started_filling; //	out_burst_state[in_burst] <= started_filling;
 				burst[in_burst].address <= in_req_address[address_width-1:4];
 
 				out_burst_address_row[in_burst] <= in_req_address.row;
 				out_burst_address_bg[in_burst] <= in_req_address.bank_group;
 				out_burst_address_bank[in_burst] <= in_req_address.bank;
 				
-				burst[in_burst].the_type <= arbiter_type; out_burst_type[in_burst] <= arbiter_type;
+				burst[in_burst].the_type <= arbiter_type; //out_burst_type[in_burst] <= arbiter_type;
 				// the column last 4 bits are the req place in the burst
 				if (arbiter_type == write) begin
 					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
@@ -207,7 +232,7 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 			else begin // continue filling old burst
 				new_burst_counter <= new_burst_counter +1;
 				if (new_burst_counter == 7) begin
-					burst[in_burst].state <= almost_done; out_burst_state[in_burst] <= almost_done;
+					burst[in_burst].state <= almost_done; //out_burst_state[in_burst] <= almost_done;
 				end
 				if (arbiter_type == write) begin
 					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
@@ -219,20 +244,20 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 		end
 		else begin// end the current burst // without starting new one
 			if (burst[in_burst].state == started_filling || burst[in_burst].state == almost_done) begin
-				burst[in_burst].state <= full; out_burst_state[in_burst] <= full;
+				burst[in_burst].state <= full; //out_burst_state[in_burst] <= full;
 			end
 		end
 
 	end
 	else begin // reset
-		empty_bursts_counter <= 4;
+		
 		for (int i = 0; i < no_of_bursts; i++) begin
 			burst[i].state <= empty; 
 			burst[i].mask <= 0;
 			out_burst_address_bank[i] <= 0;
 			out_burst_address_bg[i] <= 0;
 			out_burst_address_row[i] <= 0;
-			out_burst_state[i] <= empty ;
+			//out_burst_state[i] <= empty ;
 		end
 	end
 end
@@ -240,28 +265,35 @@ end
 
 // returning data to the returner
 
-always_comb begin 
-	
-	return_req = 0;
-	
-	if (burst[0].state == returning_data) begin//choose the first returning data burst// if no_of_bursts is not 4 change here 
-		out_burst = 0; return_req = 1;
+//always_comb begin 
+always_ff @(posedge clk) begin
+
+	if (burst[out_burst].state == returning_data) begin
+		return_req = 1;
 	end
 	else begin
-		if (burst[1].state == returning_data) begin
-			out_burst = 1; return_req = 1;
+		
+		return_req = 0;
+		
+		if (burst[0].state == returning_data) begin//choose the first returning data burst// if no_of_bursts is not 4 change here 
+			out_burst = 0; return_req = 1;
 		end
 		else begin
-			if (burst[2].state == returning_data) begin
-				out_burst = 2; return_req = 1;
+			if (burst[1].state == returning_data) begin
+				out_burst = 1; return_req = 1;
 			end
 			else begin
-				if (burst[3].state == returning_data) begin
-					out_burst = 3; return_req = 1;
+				if (burst[2].state == returning_data) begin
+					out_burst = 2; return_req = 1;
+				end
+				else begin
+					if (burst[3].state == returning_data) begin
+						out_burst = 3; return_req = 1;
+					end
 				end
 			end
-		end
-	end//////////////////////////////////////////////////////////// that is enough changing ;)
+		end//////////////////////////////////////////////////////////// that is enough changing ;)
+	end
 
 	first_one_in_mask = ( ~burst[out_burst].mask +1'b1 ) & burst[out_burst].mask ;
 	
@@ -296,10 +328,10 @@ always_ff @(  posedge clk ) begin
 			
 			else begin // finished returning
 
-				burst[out_burst].state <= empty; out_burst_state[out_burst] <= empty;
-				if (!new_burst_flag) begin
+				burst[out_burst].state <= empty; //out_burst_state[out_burst] <= empty;
+				/*if (!new_burst_flag) begin
 					empty_bursts_counter <= empty_bursts_counter +1;
-				end
+				end*/
 
 			end
 		end
@@ -335,50 +367,58 @@ end
 localparam BL_bar = 1,	AP_bar = 1; //BL ->1 length =16
 
 
-task ddr5_activate_p1(cmd_burst_id);
+task ddr5_activate_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0 ;
-	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,burst[cmd_burst_id].address.row[3:0],2'b00};
+	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,burst[cmd_burst_id_t].address.row[3:0],2'b00};
 endtask 
-task ddr5_read_p1(cmd_burst_id);
+task ddr5_read_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
-	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,BL_bar,5'b11101};
+	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b11101};
 endtask 
-task ddr5_write_p1(cmd_burst_id);
+task ddr5_write_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
-	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,BL_bar,5'b01101};
+	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b01101};
 endtask 
-task ddr5_precharge_p1(cmd_burst_id);
+task ddr5_precharge_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
-	CA <= {3'b000,burst[cmd_burst_id].address.bank_group,burst[cmd_burst_id].address.bank,6'b011011};
+	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,6'b011011};
 endtask 
 
-task ddr5_activate_p2(cmd_burst_id);
+task ddr5_activate_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b1 ;
-	CA <= {1'b0,burst[cmd_burst_id].address.row[15:4]};
+	CA <= {1'b0,burst[cmd_burst_id_t].address.row[15:4]};
 endtask 
-task ddr5_read_p2(cmd_burst_id);
+task ddr5_read_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b1;
-	CA <= {3'b000,AP_bar,1'b0,burst[cmd_burst_id].address.column,1'b0,1'b1};
+	CA <= {3'b000,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0,1'b1};
 endtask 
-task ddr5_write_p2(cmd_burst_id);
+task ddr5_write_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b1;
-	CA <= {2'b00,&burst[cmd_burst_id].mask,AP_bar,1'b0,burst[cmd_burst_id].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
+	CA <= {2'b00,&burst[cmd_burst_id_t].mask,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
 endtask 
 task ddr5_precharge_p2(cmd_burst_id);
 	//no part2
 endtask 
 
-task ddr5_write_data(cmd_burst_id,counter);
-	if (burst[cmd_burst_id].mask[counter]) begin
-		DQ_logic <= burst[cmd_burst_id].data[counter];
+task ddr5_write_data
+	(
+	logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t,
+	logic [$clog2(burst_length) -1:0] counter_t
+	);
+	if (burst[cmd_burst_id_t].mask[counter_t]) begin
+		DQ_logic <= burst[cmd_burst_id_t].data[counter_t];
 	end
 	DQS_t_logic <= clk;
 	DQS_c_logic <= ~clk;
 	
 endtask 
-task ddr5_read_data(cmd_burst_id,counter);
-	if (burst[cmd_burst_id].mask[counter]) begin
-   		burst[cmd_burst_id].data <= DQ   ;
+task ddr5_read_data
+	(
+	logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t,
+	logic [$clog2(burst_length) -1:0] counter_t
+	);
+	if (burst[cmd_burst_id_t].mask[counter_t]) begin
+   		burst[cmd_burst_id_t].data <= DQ   ;
 	end	
 	//DQS_t_logic <= clk;
 	//DQS_c_logic <= ~clk;
@@ -405,7 +445,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd && burst_data_counter[cmd_burst_id] < burst_length) begin
 				
 				if (data_wait_counter == rd_to_data) begin
-					burst[cmd_burst_id].state <= returning_data; out_burst_state[cmd_burst_id] <= returning_data;
+					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
 					//$display("here1");
 				end
 
@@ -417,7 +457,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd && burst_data_counter[cmd_burst_id] < burst_length ) begin
 
 				if (data_wait_counter == wr_to_data) begin
-					burst[cmd_burst_id].state <= returning_data; out_burst_state[cmd_burst_id] <= returning_data;
+					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
 					//$display("here2");
 				end
 
@@ -431,7 +471,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 			
 			if (clk) begin // if (clk_n) begin // to make the memory interface command start at posedge 
 
-				burst_data_counter[cmd_burst_id] <= 0;
+				burst_data_counter[in_cmd_index] <= 0;
 				data_wait_counter <= 0;
 
 				cmd_burst_id <= in_cmd_index;
