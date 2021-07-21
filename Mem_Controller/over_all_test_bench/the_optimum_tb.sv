@@ -1,8 +1,9 @@
+`timescale 1 ns / 1 ps
 module the_optimum_tb ;
 
 // pragma attribute txn_controller_tb partition_module_xrt
 
-logic clk , rst_n ,RST_N ,CK_t , CK_c;
+logic clk , rst_n ,RESET_N ,CK_t , CK_c;
 
 localparam data_width = 16, address_width = 30;
 
@@ -22,12 +23,12 @@ wire ALERT_n;
 
 ////////////// signals to the memory \\\\\\\\\\\
 
-assign RST_N = rst_n;
+assign RESET_N = rst_n;
 assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
 
 memory_controller the_memory_controller (.*);
-//veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
+veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
 
 // tbx clkgen inactive_negedge
@@ -57,14 +58,29 @@ logic [address_width-1:0] the_right_data = 0;
 	
 initial begin
 
-	rst_n =1'b0;
+	//rst_n =1'b0;
 	in_valid = 0;
 
 	delay(100);
 	@(posedge clk)
 	@(posedge clk)
-	rst_n = 1'b1;
-	for (int i = 0; i < 100000; i++) begin
+	//rst_n = 1'b1;
+	@(posedge clk)
+	in_valid =1;
+	in_request_address = 2;
+	in_request_type = 1;
+	in_request_data = 10;
+	@(posedge clk)
+	in_valid =0;
+	wait (write_done == 1);
+	@(posedge clk)
+	in_valid =1;
+	in_request_address = 2;
+	in_request_type = 0;
+	@(posedge clk)
+	in_valid =0;
+
+	/*for (int i = 0; i < 100000; i++) begin
 		@(posedge clk)
 		
 		if (done_entering_flag == 0) begin
@@ -125,7 +141,7 @@ initial begin
 
 		realy_done_this_time ++;
 
-	end
+	end*/
 
 end
 

@@ -322,8 +322,8 @@ always_ff @(posedge clk) begin
 	end 
 	
 	else begin
-		burst_cmd_o = none;
-		cmd_index_o = 0;
+		burst_cmd_o <= none;
+		cmd_index_o <= 0;
 	end
 
 end

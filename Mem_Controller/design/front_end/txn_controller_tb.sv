@@ -38,12 +38,12 @@ request_done_valid,the_type,in_data,index,wd,rd,data
 // tbx clkgen inactive_negedge
 initial  begin
     clk = 0;
-    #1;
+    //#1;
     forever 
     #1 clk = ~clk;
 end
 
-XlResetGenerator #(10) resetGenerator ( clk, rst);
+//XlResetGenerator #(10) resetGenerator ( clk, rst);
 
 task delay(cycle);
 	repeat (cycle) begin
