@@ -5,7 +5,7 @@ logic clk,rst,wd,rd;
 
 logic the_type;
 logic valid;
-logic  [ 31 : 0 ] in_data;
+logic  [ 15 : 0 ] in_data ,data;
 logic  [ 5 : 0 ] index;
 
 
@@ -31,6 +31,12 @@ initial begin
 	the_type =0;
 	in_data =1;
 	index =0; /////////read with index 0
+	@(posedge clk)
+	index =1;
+	@(posedge clk)
+	index =2;
+	@(posedge clk)
+	index =3;
 	@(posedge clk)
 	valid =0;
 	in_data =10;
