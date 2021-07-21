@@ -1,3 +1,284 @@
+/*module Bank_Group_Fsm
+(   
+    input  clk, rst_n,
+    input  [3:0] valid   ,
+    output reg [1:0] sel  //bank index to drain from 
+);
+
+
+//wire  ReqD, ReqC, ReqB, ReqA ;
+//assign { ReqD, ReqC, ReqB, ReqA } = Bank_Req;
+
+wire v_D, v_C, v_B, v_A ;
+assign { v_D, v_C, v_B, v_A } = valid;
+
+enum reg [2:0] { IDLE, BANK_A, BANK_B, BANK_C, BANK_D } CS, NS;
+
+/*always @(posedge clk) begin 
+    if (!rst_n )
+        Count <= 0;
+    else
+        Count <= Count +1;
+end*/
+
+
+/*always @(*)begin //TIMEOUT_COUNT2
+    if (Count == TimeOutClockPeriods)
+        TimesUp = 1;
+    else
+        TimesUp = 0;
+end
+
+//update fsm
+always @ (posedge clk)begin
+    if (!rst_n)
+        CS <= IDLE;
+    else
+        CS <= NS;
+end
+
+
+// Compute Next State and mealy outputs
+always @ (*)begin
+    sel     = 2'd0  ;  //dont care
+    NS      = CS    ;
+    //Timeen = 0;
+    //RunTimer  = 0;
+    
+    case (CS)
+        IDLE: begin
+            if (v_A == 1'b1)begin
+                NS      = BANK_A  ;
+            end
+            else if (v_B == 1'b1)begin
+                NS      = BANK_B ;
+            end
+            else if (v_C == 1'b1)begin
+                NS      = BANK_C  ;
+            end
+            else if (v_D == 1'b1)begin
+                NS      = BANK_D  ;
+            end
+        end
+        BANK_A: begin
+            sel      = 2'd0   ;
+            if (v_A == 1'b1 )begin               
+                NS       = BANK_A ;
+            end 
+            else begin
+                if (v_B == 1'b1) begin
+                    NS   = BANK_B ;
+                end
+                else if (v_C == 1'b1)begin
+                    NS   = BANK_C ;
+                end
+                else if (v_D == 1'b1)begin
+                    NS   = BANK_D ;
+                end
+                else begin
+                    NS   = IDLE  ;
+                end
+            end
+        end
+        BANK_B: begin
+            sel      = 2'd1   ;
+            if (v_B == 1'b1 )begin
+                NS       = BANK_B ;
+            end
+            else begin
+                if (v_C == 1'b1)begin
+                    NS   = BANK_C ;
+                end
+                else if (v_D == 1'b1)begin
+                    NS   = BANK_D ;
+                end
+                else if (v_A == 1'b1)begin
+                    NS   = BANK_A ;
+                end
+                else begin
+                    NS   = IDLE ;
+                end
+            end
+        end
+        BANK_C: begin
+            sel      = 2'd2   ;
+            if (v_C == 1'b1 )begin
+                NS       = BANK_C ;
+            end 
+            else begin
+                if (v_D == 1'b1)begin
+                    NS   = BANK_D ;
+                end
+                else if (v_A == 1'b1)begin
+                    NS   = BANK_A ;
+                end
+                else if (v_B == 1'b1)begin
+                    NS   = BANK_B ;
+                end
+                else begin
+                    NS   = IDLE ;
+                end
+            end
+        end
+        BANK_D: begin
+            sel      = 2'd3   ;
+            if (v_D == 1'b1 )begin
+                NS       = BANK_D ;
+            end 
+            else begin
+                if (v_A == 1'b1)begin
+                    NS   = BANK_A ;
+                end
+                else if (v_B == 1'b1)begin
+                    NS   = BANK_B ;
+                end
+                else if (v_C == 1'b1)begin
+                    NS   = BANK_C ;
+                end
+                else begin
+                    NS   = IDLE ;
+                end
+            end
+        end
+    endcase  
+end
+
+
+// Compute Next State and mealy outputs
+always @ (*)begin
+    en      = 1'b0  ;
+    sel     = 2'd0  ;  //dont care
+    Ready_A = 4'd0  ;
+    Ready_B = 4'd0  ;
+    Ready_C = 4'd0  ;
+    Ready_D = 4'd0  ;  
+    done    = 1'b0  ;
+    NS      = CS    ;
+    case (CS)
+        IDLE: begin
+            if (valid_A == 1'b1)
+                //en      = 1'b1    ;
+                //sel     = 2'd0    ;
+                //Ready_A = 1'b1    ;
+                NS      = BANK_A  ;
+            else if (valid_B == 1'b1)
+                //en      = 1'b1    ;
+                //sel     = 2'd1    ;
+                //Ready_B   = 1'b1    ;
+                NS      = BANK_B ;    
+            else if (valid_C == 1'b1)
+                //en      = 1'b1    ;
+                //sel     = 2'd2    ;
+                //Ready_C   = 1'b1    ;
+                NS      = BANK_C  ;
+            else if (valid_D == 1'b1)
+                //en      = 1'b1    ;
+                //sel     = 2'd3    ;
+                //Ready_D = 1'b1    ;
+                NS      = BANK_D  ;
+        end
+        BANK_A: begin
+            en       = 1'b1   ;
+            sel      = 2'd0   ;
+            Ready_A  = 1'b1   ;
+            done     = 1'b0   ;
+            if (valid_A == 1'b1 )
+                NS       = BANK_A ;
+            else if (valid_B == 1'b1) begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_B ;
+            end
+            else if (valid_C == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_C ;
+            end
+            else if (valid_D == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_D ;
+            end
+            else begin
+                done = 1'b1 ; // burst is finished
+                NS   = IDLE  ;
+            end
+        end
+        BANK_B: begin
+            en       = 1'b1   ;
+            sel      = 2'd1   ;
+            Ready_B  = 1'b1   ;
+            done     = 1'b0   ;
+            NS       = BANK_B ;
+            if (valid_C == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_C ;
+            end
+            else if (valid_D == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_D ;
+            end
+            else if (valid_A == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_A ;
+            end
+            else begin
+                done = 1'b1 ; // burst is finished
+                NS   = IDLE ;
+            end
+        end
+        BANK_C: begin
+            en       = 1'b1   ;
+            sel      = 2'd2   ;
+            Ready_C  = 1'b1   ;
+            done     = 1'b0   ;
+            NS       = BANK_C ;
+            if (valid_D == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_D ;
+            end
+            else if (valid_A == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_A ;
+            end
+            else if (valid_B == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_B ;
+            end
+            else begin
+                done = 1'b1  ; // burst is finished
+                NS   = IDLE ;
+            end
+        end
+        BANK_D: begin
+            en       = 1'b1   ;
+            sel      = 2'd3   ;
+            Ready_D  = 1'b1   ;
+            done     = 1'b0   ;
+            NS       = BANK_D ;
+            if (valid_A == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_A ;
+            end
+            else if (valid_B == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_B ;
+            end
+            else if (valid_C == 1'b1)begin
+                done = 1'b1  ; // burst is finished
+                NS   = BANK_C ;
+            end
+            else begin
+                done = 1'b1  ; // burst is finished
+                NS   = IDLE ;
+            end
+        end
+    endcase  
+end
+
+
+
+
+endmodule*/
+
+
 module Bank_Group_Fsm
 (   
     input  clk, rst_n, start ,
@@ -5,7 +286,7 @@ module Bank_Group_Fsm
     input  [3:0] Valid   ,
     output reg Ready_A, Ready_B, Ready_C, Ready_D, 
     output reg [1:0] sel , //bank index to drain from 
-    output reg done,
+    output reg  en , done,
     output Req
 );
 
@@ -44,6 +325,7 @@ end
 
 // Compute Next State and mealy outputs
 always @ (*)begin
+    en      = 1'b0  ;
     sel     = 2'd0  ;  //dont care
     Ready_A = 1'b0  ;
     Ready_B = 1'b0  ;
@@ -58,21 +340,25 @@ always @ (*)begin
         case (CS)
             IDLE: begin
                 if (valid_A == 1'b1)begin
+                    en      = 1'b1    ;
                     sel     = 2'd0    ;
                     Ready_A = 1'b1    ;
                     NS      = BANK_A  ;
                 end
                 else if (valid_B == 1'b1)begin
+                    en      = 1'b1    ;
                     sel     = 2'd1    ;
                     Ready_B   = 1'b1    ;
                     NS      = BANK_B ;
                 end
                 else if (valid_C == 1'b1)begin
+                    en      = 1'b1    ;
                     sel     = 2'd2    ;
                     Ready_C   = 1'b1    ;
                     NS      = BANK_C  ;
                 end
                 else if (valid_D == 1'b1)begin
+                    en      = 1'b1    ;
                     sel     = 2'd3    ;
                     Ready_D = 1'b1    ;
                     NS      = BANK_D  ;
@@ -81,6 +367,7 @@ always @ (*)begin
             BANK_A: begin
                 //if (valid_A == 1'b1 &&  valid_A == 1'b1 )begin
                 if (valid_A == 1'b1 )begin
+                    en       = 1'b1   ;
                     sel      = 2'd0   ;
                     Ready_A  = 1'b1   ;
                     done     = 1'b0   ;
@@ -108,6 +395,7 @@ always @ (*)begin
             BANK_B: begin
                 //if (valid_B == 1'b1 && valid_B == 1'b1 )begin
                 if (valid_B == 1'b1 )begin
+                    en       = 1'b1   ;
                     sel      = 2'd1   ;
                     Ready_B    = 1'b1   ;
                     done     = 1'b0   ;
@@ -135,6 +423,7 @@ always @ (*)begin
             BANK_C: begin
                 //if (valid_C == 1'b1 && valid_C == 1'b1 )begin
                 if (valid_C == 1'b1 )begin
+                    en       = 1'b1   ;
                     sel      = 2'd2   ;
                     Ready_C    = 1'b1   ;
                     done     = 1'b0   ;
@@ -162,6 +451,7 @@ always @ (*)begin
             BANK_D: begin
                 //if (valid_D == 1'b1 && valid_D == 1'b1 )begin
                 if (valid_D == 1'b1 )begin
+                    en       = 1'b1   ;
                     sel      = 2'd3   ;
                     Ready_D    = 1'b1   ;
                     done     = 1'b0   ;
@@ -321,7 +611,6 @@ end
         end
     endcase  
 end
-
 */
 assign Req = |{valid_A, valid_B, valid_C, valid_D};
 

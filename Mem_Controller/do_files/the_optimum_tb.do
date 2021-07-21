@@ -34,6 +34,7 @@ add wave -noupdate -color Gold -itemcolor Gold /the_optimum_tb/the_memory_contro
 add wave -noupdate -color Gold -itemcolor Gold /the_optimum_tb/the_memory_controller/the_front_end/t_o
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/t_o}
 add wave -noupdate -color Gold /the_optimum_tb/the_memory_controller/the_back_end/burst_type
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/valid_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/burst_address_bank
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/burst_address_bg
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/burst_address_row
@@ -55,7 +56,6 @@ add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/write_don
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/read_done
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/data_out
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/ready
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/valid_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/dq_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/idx_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/ra_o
@@ -140,114 +140,64 @@ add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/push}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/pop}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/burst_i}
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/data_i
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/idx_i
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/row_i
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/col_i
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/t_i
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/bank_sel
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/group_sel
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/data_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/idx_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/row_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/col_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/t_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/ba_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/bg_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_A3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_A2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_A1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_A0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_B3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_B2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_B1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_B0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_C3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_C2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_C1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_C0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_D3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_D2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_D1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D_D0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_A3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_A2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_A1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_A0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_B3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_B2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_B1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_B0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_C3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_C2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_C1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_C0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_D3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_D2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_D1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/I_D0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_A3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_A2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_A1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_A0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_B3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_B2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_B1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_B0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_C3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_C2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_C1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_C0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_D3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_D2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_D1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/R_D0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_A3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_A2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_A1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_A0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_B3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_B2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_B1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_B0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_C3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_C2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_C1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_C0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_D3
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_D2
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_D1
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C_D0
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_A3
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_A2
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_A1
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_A0
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_B3
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_B2
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_B1
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_B0
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_C3
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_C2
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_C1
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_C0
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_D3
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_D2
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_D1
-add wave -noupdate -color Magenta -itemcolor Blue /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/T_D0
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/BA_A
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/BA_B
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/BA_C
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/BA_D
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/sel_D
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/sel_C
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/sel_B
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/sel_A
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/A
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/B
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/C
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/D_path/D
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/clk
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/rst_n
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/flag
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Req
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Start_A
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Start_B
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Start_C
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Start_D
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/sel
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqD
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqC
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqB
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqA
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_D
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_C
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_B
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_A
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/CS
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/NS
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/clk}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/rst_n}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/start}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Valid}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_A}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_B}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_C}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_D}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/sel}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/en}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/done}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Req}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_D}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_C}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_B}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_A}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/CS}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/NS}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/clk}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/rst_n}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/start}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/Valid}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/Ready_A}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/Ready_B}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/Ready_C}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/Ready_D}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/sel}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/en}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/done}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/Req}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/valid_D}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/valid_C}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/valid_B}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/valid_A}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/CS}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/NS}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16 ns} 0}
+WaveRestoreCursors {{Cursor 1} {48 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 516
 configure wave -valuecolwidth 100
@@ -263,4 +213,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ns} {57 ns}
+WaveRestoreZoom {15 ns} {72 ns}
