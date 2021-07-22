@@ -183,14 +183,13 @@ always_comb begin
 						if (burst[3].state == empty) begin
 							in_burst = 3;
 						end
-						else  in_burst = older_in_burst; 
 					end
 				end
 			end//////////////////////////////////////////////////////////// that is enough changing ;)
 		end	
-		else begin new_burst_flag =0; in_burst = older_in_burst; end
+		else new_burst_flag =0;
 	end
-	else begin new_burst_flag =0; in_burst = older_in_burst; end
+	else new_burst_flag =0;
 end
 
 always_ff @(posedge clk) begin // handels storage input states and requests indices 
@@ -222,7 +221,6 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 			out_burst_address_bank[i] <= 0;
 			out_burst_address_bg[i] <= 0;
 			out_burst_address_row[i] <= 0;
-			//out_burst_state[i] <= empty ;
 		end
 	end
 end
@@ -425,58 +423,63 @@ always_ff @( clk ) begin
 	
 	if(rst_n) begin
 
-		if (arbiter_valid) begin
-
-			if (new_burst_flag) begin
-
-				
-				if (burst[older_in_burst].state == started_filling || burst[older_in_burst].state == almost_done) begin // old one is full
-					burst[older_in_burst].state <= full;
-				end
-
-				burst[in_burst].state <= started_filling; 
-				burst[in_burst].address <= in_req_address[address_width-1:4];
-				
-				burst[in_burst].the_type <= arbiter_type; 
-				
-				if (arbiter_type == write) begin
-					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
-				end
-				burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
-				burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
-
-			end
-			else begin // continue filling old burst
-				if (new_burst_counter == 7) begin
-					burst[in_burst].state <= almost_done; 
-				end
-				if (arbiter_type == write) begin
-					burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
-				end
-				burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
-				burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
-			end
-
-		end
-		else begin// end the current burst // without starting new one
-			if (burst[in_burst].state == started_filling || burst[in_burst].state == almost_done) begin
-				burst[in_burst].state <= full; 
-			end
-		end
-
-		if (return_req) begin
-
-			if (first_one_in_mask != 0) begin // didn't finish returning
-				
-				if (burst_data_counter[out_burst] >= first_one_id) begin // recieved req data or sent the write 
-					burst[out_burst].mask[first_one_id] <= 0;
-				end
-			end
+		if (clk) begin
 			
-			else begin // finished returning
-				burst[out_burst].state <= empty;
+			if (arbiter_valid) begin
+
+				if (new_burst_flag) begin
+
+					
+					if (burst[older_in_burst].state == started_filling || burst[older_in_burst].state == almost_done) begin // old one is full
+						burst[older_in_burst].state <= full;
+					end
+
+					burst[in_burst].state <= started_filling; 
+					burst[in_burst].address <= in_req_address[address_width-1:4];
+					
+					burst[in_burst].the_type <= arbiter_type; 
+					
+					if (arbiter_type == write) begin
+						burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
+					end
+					burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
+					burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
+
+				end
+				else begin // continue filling old burst
+					if (new_burst_counter == 7) begin
+						burst[in_burst].state <= almost_done; 
+					end
+					if (arbiter_type == write) begin
+						burst[in_burst].data[in_req_address.column[3:0]] <= arbiter_data; 
+					end
+					burst[in_burst].index[in_req_address.column[3:0]] <= arbiter_index;
+					burst[in_burst].mask[in_req_address.column[3:0]] <= 1;
+				end
+
+			end
+			else begin// end the current burst // without starting new one
+				if (burst[in_burst].state == started_filling || burst[in_burst].state == almost_done) begin
+					burst[in_burst].state <= full; 
+				end
+			end
+
+			if (return_req) begin
+
+				if (first_one_in_mask != 0) begin // didn't finish returning
+					
+					if (burst_data_counter[out_burst] >= first_one_id) begin // recieved req data or sent the write 
+						burst[out_burst].mask[first_one_id] <= 0;
+					end
+				end
+				
+				else begin // finished returning
+					burst[out_burst].state <= empty;
+				end
 			end
 		end
+
+		
 
 
 		if (in_burst_cmd == none) begin // all cmds are none
