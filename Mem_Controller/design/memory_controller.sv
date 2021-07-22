@@ -84,29 +84,6 @@ back_end #(.no_of_bursts(4),.IDX(IDX),.RA(RA),.CA_(CA_),.DQ_(DQ_))the_back_end
 	.CS_n,.CA,.CAI,.DM_n,.DQ,.DQS_t,.DQS_c,.ALERT_n // memory ports
 );
 
-	/*.clk(clk),
-	.rst_n(rst_n),
-	.in_valid(in_valid),
-	.in_request_type(t),
-  	.in_request_data(in_request.data),
-  	.in_request_address(in_request.address),
-	.out_busy(out_busy),
-	.request_done_valid(request_done_valid),
-	.the_type(the_type),
-	.data_in(in_data),
-	.index(index),
-	.write_done(write_done),
-	.read_done(read_done),
-	.data_out(data_out),
-    .ready(ready),
-	.valid_o(valid_o),
-	.dq_o(dq_o),
-	.idx_o(idx_o),
-	.ra_o(ra_o),
-	.ca_o(ca_o),
-	.t_o(t_o)*/
-
-
 endmodule
 
 //veloce request format

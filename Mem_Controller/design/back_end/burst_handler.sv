@@ -356,7 +356,7 @@ endtask
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-always_ff @( clk ) begin ///////////////// memory interface 
+always @( posedge clk or negedge clk ) begin ///////////////// memory interface 
 
 	if(rst_n) begin
 
@@ -419,7 +419,7 @@ always_ff @( clk ) begin ///////////////// memory interface
 end
 
 
-always_ff @( clk ) begin
+always @( posedge clk or negedge clk ) begin
 	
 	if(rst_n) begin
 

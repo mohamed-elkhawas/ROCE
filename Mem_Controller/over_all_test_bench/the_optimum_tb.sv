@@ -28,8 +28,23 @@ assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
 
 memory_controller the_memory_controller (.*);
-veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
+//veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
+/*veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory
+(
+  .RESET_N(RESET_N),          // Asynchronous reset           -> active low
+  .CK_t(CK_t),             // Clock (diff pair)
+  .CK_c(CK_c),             // ~Clock (diff pair)
+  .CS_n(CS_n),             // Chip Select                  -> active low
+  .CA(CA),               // Command / Address Port 
+  .CAI(CAI),              // Command / Address inversion  -> active high
+  .DM_n(DM_n),             // Data Mask  -> byte based     -> active low 
+  .DQ(DQ),               // Data Port 
+  .DQS_t(DQS_t),            // Data Strobes (diff pair)
+  .DQS_c(DQS_c),            // ~Data Strobes (diff pair)   
+  .ALERT_n(ALERT_n)          // CRC/Parity error flag   
+
+);*/
 
 // tbx clkgen inactive_negedge
 initial  begin
