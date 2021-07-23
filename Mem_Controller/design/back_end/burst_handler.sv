@@ -231,13 +231,12 @@ end
 //always_comb begin 
 always_ff @(posedge clk) begin
 
-	out_burst = 0;
-
 	if (burst[out_burst].state == returning_data && burst[out_burst].mask != 0) begin
 		return_req = 1;
 	end
 	else begin
-		
+
+		out_burst = 0;
 		return_req = 0;
 		
 		if (burst[0].state == returning_data  && burst[0].mask != 0) begin//choose the first returning data burst// if no_of_bursts is not 4 change here 
