@@ -113,10 +113,10 @@ r_type arbiter_type;
 always_ff @(posedge clk ) begin 
 	if(rst_n) begin
 		//empty_bursts_counter <= (burst[0].state == empty) + (burst[1].state == empty) + (burst[2].state == empty) + (burst[3].state == empty) ;
-		if (new_burst_flag && !(return_req && first_one_in_mask == 0)) begin
+		if (new_burst_flag && !(burst[out_burst].state == returning_data && first_one_in_mask == 0)) begin
 			empty_bursts_counter <= empty_bursts_counter -1;
 		end
-		if (!new_burst_flag && (return_req && first_one_in_mask == 0)) begin
+		if ((!new_burst_flag) && (burst[out_burst].state == returning_data && first_one_in_mask == 0)) begin
 			empty_bursts_counter <= empty_bursts_counter +1;
 		end
 
@@ -231,26 +231,28 @@ end
 //always_comb begin 
 always_ff @(posedge clk) begin
 
-	if (burst[out_burst].state == returning_data) begin
+	out_burst = 0;
+
+	if (burst[out_burst].state == returning_data && burst[out_burst].mask != 0) begin
 		return_req = 1;
 	end
 	else begin
 		
 		return_req = 0;
 		
-		if (burst[0].state == returning_data) begin//choose the first returning data burst// if no_of_bursts is not 4 change here 
+		if (burst[0].state == returning_data  && burst[0].mask != 0) begin//choose the first returning data burst// if no_of_bursts is not 4 change here 
 			out_burst = 0; return_req = 1;
 		end
 		else begin
-			if (burst[1].state == returning_data) begin
+			if (burst[1].state == returning_data  && burst[1].mask != 0) begin
 				out_burst = 1; return_req = 1;
 			end
 			else begin
-				if (burst[2].state == returning_data) begin
+				if (burst[2].state == returning_data  && burst[2].mask != 0) begin
 					out_burst = 2; return_req = 1;
 				end
 				else begin
-					if (burst[3].state == returning_data) begin
+					if (burst[3].state == returning_data  && burst[3].mask != 0) begin
 						out_burst = 3; return_req = 1;
 					end
 				end
@@ -465,7 +467,7 @@ always @( posedge clk or negedge clk ) begin
 				end
 			end
 
-			if (return_req) begin
+			if (burst[out_burst].state == returning_data) begin
 
 				if (first_one_in_mask != 0) begin // didn't finish returning
 					
