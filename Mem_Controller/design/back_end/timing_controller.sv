@@ -50,6 +50,8 @@ localparam
 
 //////////////////////////////// declarations \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+localparam max_refresh_time = 1000, wait_after_refresh = 20; // max_refresh_time = the max refresh interval - (burst flow time + cmd to data )
+
 // b for bank , bg for bank group
 
 command [no_of_bursts-1:0]  burst_cmd_temp;
@@ -80,6 +82,9 @@ end
 
 logic [$clog2(no_of_bursts)-1:0] start_index;
 logic [no_of_bursts-1:0] round_roubin_in, round_roubin_temp, round_roubin_out;
+
+logic [$clog2(wait_after_refresh)-1:0] refresh_done_count;
+logic [$clog2(max_refresh_time)-1:0] refresh_interval_count;
 
 
 //////////////////////////////////////////////// the state of art \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -136,7 +141,9 @@ always_ff @(posedge clk) begin
 						b_counter_pre[i] <= b_counter_pre[i] +1 ;
 					end
 				end
-
+				if (burst_cmd == refresh_all) begin
+					b_active_row_valid <= 0;  
+				end
 			end
 			else begin
 				if (b_counter_act[i] != act_to_act_same_bank-1) begin
@@ -184,27 +191,50 @@ always_ff @(posedge clk) begin
 				global_counter_wr <= global_counter_wr +1 ;
 			end
 		end
+		if (burst_cmd == refresh_all) begin
+			refresh_done_count <= 0;
+		end
+		else begin
+			if (refresh_done_count != wait_after_refresh-1) begin
+				refresh_done_count <= refresh_done_count +1 ;
+			end
+		end
+		if (burst_cmd == refresh_all) begin
+			refresh_interval_count <= 0;
+		end
+		else begin
+			if (refresh_interval_count != max_refresh_time-1) begin
+				refresh_interval_count <= refresh_interval_count +1 ;
+			end
+		end
 
 	end 
 
 	else begin // reset
 
 		for (int i = 0; i < banks_no; i++) begin
-			b_counter_act[i] <=  0;
-			b_counter_rd[i] <=  0;
-			b_counter_wr[i] <=  0;
-			b_counter_pre[i] <=  0;
+			b_counter_act[i] <=  act_to_act_same_bank-1;
+			b_counter_rd[i] <=  rd_to_data-1;
+			b_counter_wr[i] <=  wr_to_pre-1;
+			b_counter_pre[i] <=  pre_to_act-1;
+			
 			b_active_row_valid[i] <= 0;
+			b_active_row[i] <= 0;
 		end
+
 		for (int i = 0; i < bank_group_no; i++) begin
-			bg_counter_act[i] <= 0;
+			bg_counter_act[i] <= act_to_act_diff_bank-1;
 		end
-		global_counter_rd <= 0;
-		global_counter_wr <= 0;
+		
+		global_counter_rd <= burst_time+rd_to_data+rd_to_wr-1;
+		global_counter_wr <= burst_time+wr_to_data+wr_to_rd-1;
 
 		start_index <= 0;
 		b_active_row_valid <= 0;
 		last_cmd_type <= read;
+
+		refresh_done_count <= wait_after_refresh-1;
+		refresh_interval_count <= 0;
 		
 	end
 	
@@ -219,67 +249,67 @@ always_comb begin
 
 	if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
 		
-		for (int i = 0; i < no_of_bursts; i++) begin 
+		if (refresh_done_count > wait_after_refresh-2) begin // refresh is done and memory is ready again
+
+			if (max_refresh_time-2 > refresh_interval_count) begin // interval time is done need to refresh
 				
-			if (in_burst_state[i] != empty && in_burst_state[i] != returning_data) begin //  there is requests to be sent
+				for (int i = 0; i < no_of_bursts; i++) begin 
+						
+					if (in_burst_state[i] != empty && in_burst_state[i] != returning_data) begin //  there is requests to be sent
 
-				if ( b_active_row_valid[burst_bank_id[i]] == 1 ) begin // there is active row
+						if ( b_active_row_valid[burst_bank_id[i]] == 1 ) begin // there is active row
 
-					if (b_active_row[burst_bank_id[i]] == in_burst_address_row[i]) begin // same active row
+							if (b_active_row[burst_bank_id[i]] == in_burst_address_row[i]) begin // same active row
 
-						if (in_burst_type[i] == last_cmd_type  ||  ( ( last_cmd_type == read && global_counter_rd > rd_to_wr-2 ) || ( last_cmd_type == write && global_counter_wr > wr_to_rd-2 ) ) ) begin // same type or rd_to_wr delays are done
+								if (in_burst_type[i] == last_cmd_type  ||  ( ( last_cmd_type == read && global_counter_rd > rd_to_wr-2 ) || ( last_cmd_type == write && global_counter_wr > wr_to_rd-2 ) ) ) begin // same type or rd_to_wr delays are done
 
-							if ( global_counter_rd > burst_time + rd_to_data + col_to_col-2 && global_counter_wr > burst_time + wr_to_data + col_to_col-2 ) begin // column to column time
+									if ( global_counter_rd > burst_time + rd_to_data + col_to_col-2 && global_counter_wr > burst_time + wr_to_data + col_to_col-2 ) begin // column to column time
 
-								if (b_counter_act[burst_bank_id[i]] > act_to_col-2 ) begin // activate to read or write time passed
-									
-									if (in_burst_type[i] == read) begin
-										
-										if (in_burst_state[i] == almost_done || in_burst_state[i] == full ) begin
-											round_roubin_in[i] = 1;
-											burst_cmd_temp[i] = read_cmd ;
+										if (b_counter_act[burst_bank_id[i]] > act_to_col-2 ) begin // activate to read or write time passed
+											
+											if (in_burst_type[i] == read) begin
+												
+												if (in_burst_state[i] == almost_done || in_burst_state[i] == full ) begin
+													round_roubin_in[i] = 1;
+													burst_cmd_temp[i] = read_cmd ;
+												end										
+											end
+											else begin
+												
+												if (in_burst_state[i] == full ) begin
+													round_roubin_in[i] = 1;
+													burst_cmd_temp[i] = write_cmd ;
+												end										
+											end
 										end
-									
 									end
-									else begin
-										
-										if (in_burst_state[i] == full ) begin
-											round_roubin_in[i] = 1;
-											burst_cmd_temp[i] = write_cmd ;
-										end
-									
-									end
+								end	
+							end
+							
+							else begin  // diff active row
+
+								if (b_counter_act[burst_bank_id[i]] > act_to_pre-2 && b_counter_rd[burst_bank_id[i]] > rd_to_pre-2  && b_counter_wr[burst_bank_id[i]] > wr_to_pre-2 ) begin
+									round_roubin_in[i] = 1;
+									burst_cmd_temp[i] = precharge ;
 								end
 							end
-						end	
-					end
-					
-					else begin  // diff active row
-
-						if (b_counter_act[burst_bank_id[i]] > act_to_pre-2 && b_counter_rd[burst_bank_id[i]] > rd_to_pre-2  && b_counter_wr[burst_bank_id[i]] > wr_to_pre-2 ) begin
-							round_roubin_in[i] = 1;
-							burst_cmd_temp[i] = precharge ;
 						end
+						else begin // no active row
+							
+							if (b_counter_pre[burst_bank_id[i]] > pre_to_act-2 && bg_counter_act[in_burst_address_bg[i]] > act_to_act_diff_bank-2  && b_counter_act[burst_bank_id[i]] > act_to_act_same_bank-2 ) begin
+								round_roubin_in[i] = 1;
+								burst_cmd_temp[i] = activate ;
+							end
+						end					
 					end
 				end
-				else begin // no active row
-					
-					if (b_counter_pre[burst_bank_id[i]] > pre_to_act-2 && bg_counter_act[in_burst_address_bg[i]] > act_to_act_diff_bank-2  && b_counter_act[burst_bank_id[i]] > act_to_act_same_bank-2 ) begin
-						round_roubin_in[i] = 1;
-						burst_cmd_temp[i] = activate ;
-					end
-				end
-				
+			end
+			else begin
+				round_roubin_in[0] = 1;
+				burst_cmd_temp[0] = refresh_all ;
 			end
 		end
 	end
-
-	else begin
-		for (int i = 0; i < no_of_bursts; i++) begin
-			burst_cmd_temp[i] = none;		
-		end
-	end
-
 end
 
 //////////////////////////////////////////////////// made by : mohamed khaled mohamed elkhawas \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
