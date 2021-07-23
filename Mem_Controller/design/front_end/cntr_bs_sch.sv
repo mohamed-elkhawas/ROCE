@@ -153,7 +153,7 @@ always @(*) begin
                     NS = EMPTY ;
                 else if( &rd_empty == 1'b0 ) begin // at least one read fifo is not empty
                     NS = WAITING;
-                    valid_o  = 1'b1 ;
+                    //valid_o  = 1'b1 ;
                     //rd_start = 1'b1 ; 
                 end
             end
@@ -162,7 +162,7 @@ always @(*) begin
                     NS = EMPTY ;
                 else if( &wr_empty == 1'b0 ) begin // at least one write fifo is not empty
                     NS = WAITING;
-                    valid_o  = 1'b1 ;
+                    //valid_o  = 1'b1 ;
                     //wr_start = 1'b1 ;  
                 end
             end

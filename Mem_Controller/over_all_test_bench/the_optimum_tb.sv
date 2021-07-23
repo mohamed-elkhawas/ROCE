@@ -73,13 +73,13 @@ logic [address_width-1:0] the_right_data = 0;
 	
 initial begin
 
-	//rst_n =1'b0;
+	rst_n =1'b0;
 	in_valid = 0;
 
 	delay(100);
 	@(posedge clk)
 	@(posedge clk)
-	//rst_n = 1'b1;
+	rst_n = 1'b1;
 	@(posedge clk)
 	in_valid =1;
 	in_request_address = 2;
