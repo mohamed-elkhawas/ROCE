@@ -113,10 +113,10 @@ r_type arbiter_type;
 always_ff @(posedge clk ) begin 
 	if(rst_n) begin
 		//empty_bursts_counter <= (burst[0].state == empty) + (burst[1].state == empty) + (burst[2].state == empty) + (burst[3].state == empty) ;
-		if (new_burst_flag && !(return_req && first_one_in_mask == 0)) begin
+		if (new_burst_flag && !(burst[out_burst].state == returning_data && first_one_in_mask == 0)) begin
 			empty_bursts_counter <= empty_bursts_counter -1;
 		end
-		if (!new_burst_flag && (return_req && first_one_in_mask == 0)) begin
+		if ((!new_burst_flag) && (burst[out_burst].state == returning_data && first_one_in_mask == 0)) begin
 			empty_bursts_counter <= empty_bursts_counter +1;
 		end
 
@@ -231,26 +231,27 @@ end
 //always_comb begin 
 always_ff @(posedge clk) begin
 
-	if (burst[out_burst].state == returning_data) begin
+	if (burst[out_burst].state == returning_data && burst[out_burst].mask != 0) begin
 		return_req = 1;
 	end
 	else begin
-		
+
+		out_burst = 0;
 		return_req = 0;
 		
-		if (burst[0].state == returning_data) begin//choose the first returning data burst// if no_of_bursts is not 4 change here 
+		if (burst[0].state == returning_data  && burst[0].mask != 0) begin//choose the first returning data burst// if no_of_bursts is not 4 change here 
 			out_burst = 0; return_req = 1;
 		end
 		else begin
-			if (burst[1].state == returning_data) begin
+			if (burst[1].state == returning_data  && burst[1].mask != 0) begin
 				out_burst = 1; return_req = 1;
 			end
 			else begin
-				if (burst[2].state == returning_data) begin
+				if (burst[2].state == returning_data  && burst[2].mask != 0) begin
 					out_burst = 2; return_req = 1;
 				end
 				else begin
-					if (burst[3].state == returning_data) begin
+					if (burst[3].state == returning_data  && burst[3].mask != 0) begin
 						out_burst = 3; return_req = 1;
 					end
 				end
@@ -314,6 +315,10 @@ task ddr5_precharge_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
 	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,6'b011011};
 endtask 
+task ddr5_refresh_all_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
+	CS_n <= 1'b0;
+	CA <= {14'b00000000010011};
+endtask 
 
 task ddr5_activate_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b1 ;
@@ -326,9 +331,6 @@ endtask
 task ddr5_write_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b1;
 	CA <= {2'b00,&burst[cmd_burst_id_t].mask,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
-endtask 
-task ddr5_precharge_p2(cmd_burst_id);
-	//no part2
 endtask 
 
 task ddr5_write_data
@@ -395,6 +397,7 @@ always @( posedge clk or negedge clk ) begin ///////////////// memory interface
 					read_cmd:ddr5_read_p1(cmd_burst_id);
 					write_cmd:ddr5_write_p1(cmd_burst_id);
 					precharge:ddr5_precharge_p1(cmd_burst_id);
+					refresh_all:ddr5_refresh_all_p1(cmd_burst_id);
 				endcase
 			end
 
@@ -404,7 +407,6 @@ always @( posedge clk or negedge clk ) begin ///////////////// memory interface
 					activate:ddr5_activate_p2(cmd_burst_id);
 					read_cmd:ddr5_read_p2(cmd_burst_id);
 					write_cmd:ddr5_write_p2(cmd_burst_id);
-					precharge:ddr5_precharge_p2(cmd_burst_id);
 				endcase
 
 			end 
@@ -464,7 +466,7 @@ always @( posedge clk or negedge clk ) begin
 				end
 			end
 
-			if (return_req) begin
+			if (burst[out_burst].state == returning_data) begin
 
 				if (first_one_in_mask != 0) begin // didn't finish returning
 					
