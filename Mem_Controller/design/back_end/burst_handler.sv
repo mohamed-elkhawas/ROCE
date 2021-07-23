@@ -217,6 +217,7 @@ always_ff @(posedge clk) begin // handels storage input states and requests indi
 	
 	else begin // reset
 		
+		older_in_burst <= 0;
 		for (int i = 0; i < no_of_bursts; i++) begin
 			out_burst_address_bank[i] <= 0;
 			out_burst_address_bg[i] <= 0;
