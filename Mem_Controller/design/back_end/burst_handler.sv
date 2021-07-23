@@ -53,8 +53,8 @@ assign DQ = DQ_logic;
 assign DQS_t = DQS_t_logic;
 assign DQS_c = DQS_c_logic;
 assign ALERT_n = ALERT_n_logic;
-
-
+assign CAI = 1 ; 
+assign DM_n= 3'b111 ;
 parameter wr_to_data =8, // on clk not posedge clk
 		  rd_to_data =11,
 		  burst_length = 16;
@@ -342,8 +342,8 @@ task ddr5_write_data
 	if (burst[cmd_burst_id_t].mask[counter_t]) begin
 		DQ_logic <= burst[cmd_burst_id_t].data[counter_t];
 	end
-	DQS_t_logic <= clk;
-	DQS_c_logic <= ~clk;
+	DQS_t_logic <= DQS_t_logic+1 ;
+	DQS_c_logic <= DQS_t_logic-1;
 	
 endtask 
 task ddr5_read_data
@@ -415,6 +415,8 @@ always @( posedge clk or negedge clk ) begin ///////////////// memory interface
 		end			
 	end 
 	else begin
+		DQS_t_logic <= 0 ;
+		DQS_c_logic <= 3'b111;
 		burst_data_counter <= 0;
 		data_wait_counter <= 0;
 		cmd_burst_id <= 0;

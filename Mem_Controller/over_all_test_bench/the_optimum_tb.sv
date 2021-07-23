@@ -28,7 +28,7 @@ assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
 
 memory_controller the_memory_controller (.*);
-//veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
+veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
 /*veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory
 (
@@ -56,9 +56,11 @@ end
 
 //XlResetGenerator #(10) resetGenerator ( clk, rst);
 
+logic a ;
 task delay(cycle);
 	repeat (cycle) begin
-		@(posedge clk);
+		@(posedge clk)
+		a = 0 ;
 	end
 endtask 
 
@@ -80,7 +82,7 @@ initial begin
 	@(posedge clk)
 	@(posedge clk)
 	rst_n = 1'b1;
-	@(posedge clk)
+	/*@(posedge clk)
 	in_valid =1;
 	in_request_address = 2;
 	in_request_type = 1;
@@ -93,10 +95,29 @@ initial begin
 	in_request_address = 2;
 	in_request_type = 0;
 	@(posedge clk)
-	in_valid =0;
+	in_valid =0;*/
 
-	/*for (int i = 0; i < 100000; i++) begin
+
+	/*for (int i = 0; i < 16; i++) begin
 		@(posedge clk)
+		in_valid =1;
+		in_request_address = i;
+		in_request_type = 1;
+		in_request_data = i;
+	end
+	for (int i = 0; i < 16; i++) begin
+		@(posedge clk)
+		in_valid =1;
+		in_request_address = i;
+		in_request_type = 0;
+		in_request_data = i;
+	end
+	@(posedge clk)
+	in_valid =0;*/
+
+
+	for (int i = 0; i < 100000; i++) begin
+		@(negedge clk)
 		
 		if (done_entering_flag == 0) begin
 			if (!out_busy) begin
@@ -156,7 +177,7 @@ initial begin
 
 		realy_done_this_time ++;
 
-	end*/
+	end
 
 end
 
