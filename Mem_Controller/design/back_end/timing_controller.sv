@@ -50,7 +50,7 @@ localparam
 
 //////////////////////////////// declarations \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-localparam max_refresh_time = 1000, wait_after_refresh = 20;
+localparam max_refresh_time = 1000, wait_after_refresh = 20; // max_refresh_time = the max refresh interval - (burst flow time + cmd to data )
 
 // b for bank , bg for bank group
 
@@ -213,17 +213,21 @@ always_ff @(posedge clk) begin
 	else begin // reset
 
 		for (int i = 0; i < banks_no; i++) begin
-			b_counter_act[i] <=  0;
-			b_counter_rd[i] <=  0;
-			b_counter_wr[i] <=  0;
-			b_counter_pre[i] <=  0;
+			b_counter_act[i] <=  act_to_act_same_bank-1;
+			b_counter_rd[i] <=  rd_to_data-1;
+			b_counter_wr[i] <=  wr_to_pre-1;
+			b_counter_pre[i] <=  pre_to_act-1;
+			
 			b_active_row_valid[i] <= 0;
+			b_active_row[i] <= 0;
 		end
+
 		for (int i = 0; i < bank_group_no; i++) begin
-			bg_counter_act[i] <= 0;
+			bg_counter_act[i] <= act_to_act_diff_bank-1;
 		end
-		global_counter_rd <= 0;
-		global_counter_wr <= 0;
+		
+		global_counter_rd <= burst_time+rd_to_data+rd_to_wr-1;
+		global_counter_wr <= burst_time+wr_to_data+wr_to_rd-1;
 
 		start_index <= 0;
 		b_active_row_valid <= 0;
@@ -243,11 +247,11 @@ always_comb begin
 
 	round_roubin_in = 4'b0;
 
-	if (max_refresh_time-2 > refresh_interval_count) begin
+	if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
+		
+		if (refresh_done_count > wait_after_refresh-2) begin // refresh is done and memory is ready again
 
-		if (refresh_done_count > wait_after_refresh-2) begin
-			
-			if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
+			if (max_refresh_time-2 > refresh_interval_count) begin // interval time is done need to refresh
 				
 				for (int i = 0; i < no_of_bursts; i++) begin 
 						
@@ -299,12 +303,12 @@ always_comb begin
 						end					
 					end
 				end
-			end	
+			end
+			else begin
+				round_roubin_in[0] = 1;
+				burst_cmd_temp[0] = refresh_all ;
+			end
 		end
-	end
-	else begin
-		round_roubin_in[0] = 1;
-		burst_cmd_temp[0] = refresh_all ;
 	end
 end
 
