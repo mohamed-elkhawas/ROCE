@@ -314,6 +314,10 @@ task ddr5_precharge_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
 	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,6'b011011};
 endtask 
+task ddr5_refresh_all_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
+	CS_n <= 1'b0;
+	CA <= {14'b00000000010011};
+endtask 
 
 task ddr5_activate_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b1 ;
@@ -326,9 +330,6 @@ endtask
 task ddr5_write_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b1;
 	CA <= {2'b00,&burst[cmd_burst_id_t].mask,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
-endtask 
-task ddr5_precharge_p2(cmd_burst_id);
-	//no part2
 endtask 
 
 task ddr5_write_data
@@ -395,6 +396,7 @@ always @( posedge clk or negedge clk ) begin ///////////////// memory interface
 					read_cmd:ddr5_read_p1(cmd_burst_id);
 					write_cmd:ddr5_write_p1(cmd_burst_id);
 					precharge:ddr5_precharge_p1(cmd_burst_id);
+					refresh_all:ddr5_refresh_all_p1(cmd_burst_id);
 				endcase
 			end
 
@@ -404,7 +406,6 @@ always @( posedge clk or negedge clk ) begin ///////////////// memory interface
 					activate:ddr5_activate_p2(cmd_burst_id);
 					read_cmd:ddr5_read_p2(cmd_burst_id);
 					write_cmd:ddr5_write_p2(cmd_burst_id);
-					precharge:ddr5_precharge_p2(cmd_burst_id);
 				endcase
 
 			end 
