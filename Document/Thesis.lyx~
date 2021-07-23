@@ -957,6 +957,16 @@ literal "false"
 \end_inset
 
 
+\begin_inset CommandInset nomenclature
+LatexCommand nomenclature
+prefix "A"
+symbol "FSM"
+description "Finite State Machine"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1202,11 +1212,17 @@ FCFS
 \end_layout
 
 \begin_layout Section
-Arbitration Flow
+Bank Arbitration 
 \end_layout
 
 \begin_layout Subsection
-hi
+Idea Behind Arbiter Design
+\end_layout
+
+\begin_layout Standard
+Before we discuss in such a deep way into design, we should show some important
+ timing constraints in the new DDR5 technology.
+ First, 
 \end_layout
 
 \begin_layout Standard
