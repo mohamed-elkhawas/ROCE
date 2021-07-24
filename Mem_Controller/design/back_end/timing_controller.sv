@@ -22,12 +22,12 @@ localparam
 
 			//////////////////////////////same bank \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 			
-			act_to_col  =12,
+			act_to_col  =3,
 			pre_to_act =12,
 			act_to_act_same_bank =40,
 			act_to_pre =28,
-			wr_to_data =10,/////////////////////////////////////////////////////// will be sent to the other block
-			rd_to_data =11,///////////// the real value is 11 //////////////////// will be sent to the other block
+			wr_to_data =22,/////////////////////////////////////////////////////// will be sent to the other block
+			rd_to_data =23,///////////// the real value is 11 //////////////////// will be sent to the other block
 			rd_to_pre =6,
 			wr_to_pre =12,
 

@@ -27,7 +27,7 @@ wire ALERT_n;
 assign RESET_N = rst_n;
 assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
-assign DQ = DQ_l ;
+//assign DQ = DQ_l ;
 memory_controller the_memory_controller (.*);
 veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
@@ -131,23 +131,25 @@ initial begin
 	@(posedge clk)
 	@(posedge clk)
 	rst_n =1'b1;
-	for (int i = 0; i < 16; i++) begin
+	for (int i = 0; i < 15; i++) begin
 		@(posedge clk)
 		in_valid =1;
-		in_request_address = i;
+		in_request_address = 30'b000000000001000000000010000000 +i;
 		in_request_type = 1;
 		in_request_data = i;
 	end
-	for (int i = 0; i < 16; i++) begin
+	for (int i = 0; i < 15; i++) begin
 		@(posedge clk)
 		in_valid =1;
-		in_request_address = i;
+		in_request_address = 30'b000000000001000000000010000000 +i;
 		in_request_type = 0;
 		in_request_data = i;
 	end
 	@(posedge clk)
 	in_valid =0;
 
+	//row 10 col 20 
+	// write column 0x20
 
 	/*for (int i = 0; i < 100000; i++) begin
 		@(negedge clk)

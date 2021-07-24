@@ -57,8 +57,8 @@ assign DQ = (sending_flag)? DQ_logic : 16'hzzzz ; // data_width == 16 here
 //assign ALERT_n = ALERT_n_logic;
 assign CAI = 0 ; 
 
-parameter wr_to_data =17, // on half clk not posedge clk
-		  rd_to_data =23,
+parameter wr_to_data =42, // on half clk not posedge clk
+		  rd_to_data =44,
 		  burst_length = 16;
 
 typedef struct packed {
@@ -299,7 +299,7 @@ end
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-localparam BL_bar = 1,	AP_bar = 1; //BL ->1 length =16
+localparam BL_bar = 1,	AP_bar = 0; //BL ->1 length =16
 
 
 task ddr5_activate_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
@@ -329,11 +329,14 @@ task ddr5_activate_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 endtask 
 task ddr5_read_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
-	CA <= {3'b000,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0,1'b1};
+	CA <= {3'b000,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0,1'b0};
+	//CA <= 0;
 endtask 
 task ddr5_write_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
-	CA <= {2'b00,&burst[cmd_burst_id_t].mask,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
+	CA <= {2'b00,&burst[cmd_burst_id_t].mask,1'b1,1'b0,1'b0,burst[cmd_burst_id_t].address.column,1'b0,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
+	//CA <= {2'b00,&burst[cmd_burst_id_t].mask,1'b1,1'b0,burst[cmd_burst_id_t].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
+	$display("%b" , burst[cmd_burst_id_t].address.column);
 endtask 
 task ddr5_precharge_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
@@ -391,7 +394,7 @@ always @( posedge clk ) begin ///////////////// memory interface
 				CS_n <= 1;		
 			
 				cmd_2nd_p <= 0;
-				case (in_burst_cmd)
+				case (cmd_to_send)
 					activate:ddr5_activate_p2(cmd_burst_id);
 					read_cmd:ddr5_read_p2(cmd_burst_id);
 					write_cmd:ddr5_write_p2(cmd_burst_id);
@@ -425,6 +428,7 @@ always @( posedge clk ) begin ///////////////// memory interface
 		DQS_t_logic <= 0 ;
 		DQS_c_logic <= 3'b111;
 		cmd_burst_id <= 0;
+		CA <= 0 ;
 	end
 end
 
@@ -444,8 +448,11 @@ always @( posedge clk or negedge clk) begin
 					end
 
 					burst[in_burst].state <= started_filling; 
-					burst[in_burst].address <= in_req_address[address_width-1:4];
-					
+					burst[in_burst].address.row <= in_req_address.row;
+					burst[in_burst].address.bank <= in_req_address.bank;
+					burst[in_burst].address.bank_group <= in_req_address.bank_group;
+					burst[in_burst].address.column <= in_req_address.column[9:4];
+
 					burst[in_burst].the_type <= arbiter_type; 
 					
 					if (arbiter_type == write) begin
