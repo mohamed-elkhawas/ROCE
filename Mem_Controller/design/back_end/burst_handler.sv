@@ -539,6 +539,7 @@ always @( posedge clk or negedge clk) begin
 		else begin
 			burst_data_counter[in_cmd_index] <= 0;
 			data_wait_counter <= 0;
+
 		end
 
 	end
@@ -546,6 +547,7 @@ always @( posedge clk or negedge clk) begin
 	else begin // reset
 		burst_data_counter <= 0;
 		data_wait_counter <= 0;
+		sending_flag <= 0;
 
 		for (int i = 0; i < no_of_bursts; i++) begin
 			burst[i].state <= empty; 
