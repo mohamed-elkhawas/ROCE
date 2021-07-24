@@ -363,7 +363,7 @@ end
 endmodule
 
 
-/* // double speed
+/* // same speed
 module timing_controller import types_def::*;
 	
 	#( parameter no_of_bursts  = 4 )
