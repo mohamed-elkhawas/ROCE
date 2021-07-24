@@ -17,7 +17,8 @@ logic CS_n;
 logic [13:0] CA;              
 logic CAI;          
 logic [2:0] DM_n;          
-wire [data_width-1:0] DQ;          
+wire [data_width-1:0] DQ ; 
+logic [data_width-1:0] DQ_l ;          
 wire [2:0] DQS_t , DQS_c ;
 wire ALERT_n;
 
@@ -26,7 +27,7 @@ wire ALERT_n;
 assign RESET_N = rst_n;
 assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
-
+assign DQ = DQ_l ;
 memory_controller the_memory_controller (.*);
 veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
@@ -77,13 +78,41 @@ initial begin
 
 	rst_n =1'b0;
 	in_valid = 0;
-
+	/*@(posedge clk)
+	CS_n = 1 ;
+	CA   = 0 ;
+	DQ_l = 1 ;
 	delay(100);
 	@(posedge clk)
 	@(posedge clk)
 	rst_n = 1'b1;
-	/*@(posedge clk)
-	in_valid =1;
+	@(posedge clk)
+	CS_n = 0 ;
+	CA = 14'h5 ; // write register 
+	CAI = 0 ;
+	@(posedge clk)
+	CS_n = 1 ;
+	CA = 0 ;
+	@(posedge clk)
+	@(posedge clk)
+	@(posedge clk)
+	@(posedge clk)
+	@(posedge clk)
+	@(posedge clk)
+	@(posedge clk)
+	CS_n = 0 ;
+	CA = 14'h10 ; //activate
+	@(posedge clk)
+	CS_n = 1 ;
+	CA = 0 ;
+	delay(10);
+	CS_n = 0 ;
+	CA = 14'h2c ;
+	@(posedge clk) 
+	CS_n = 1 ;
+	CA = 0 ;*/
+
+	/*in_valid =1;
 	in_request_address = 2;
 	in_request_type = 1;
 	in_request_data = 10;
@@ -98,7 +127,11 @@ initial begin
 	in_valid =0;*/
 
 
-	/*for (int i = 0; i < 16; i++) begin
+	@(posedge clk)
+	@(posedge clk)
+	@(posedge clk)
+	rst_n =1'b1;
+	for (int i = 0; i < 16; i++) begin
 		@(posedge clk)
 		in_valid =1;
 		in_request_address = i;
@@ -113,10 +146,10 @@ initial begin
 		in_request_data = i;
 	end
 	@(posedge clk)
-	in_valid =0;*/
+	in_valid =0;
 
 
-	for (int i = 0; i < 100000; i++) begin
+	/*for (int i = 0; i < 100000; i++) begin
 		@(negedge clk)
 		
 		if (done_entering_flag == 0) begin
@@ -177,7 +210,7 @@ initial begin
 
 		realy_done_this_time ++;
 
-	end
+	end*/
 
 end
 
