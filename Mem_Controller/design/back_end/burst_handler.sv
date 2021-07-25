@@ -325,7 +325,7 @@ endtask
 
 task ddr5_activate_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
-	CA <= {1'b00,burst[cmd_burst_id_t].address.row[15:4]};
+	CA <= {2'b00,burst[cmd_burst_id_t].address.row[15:4]};
 endtask 
 task ddr5_read_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
