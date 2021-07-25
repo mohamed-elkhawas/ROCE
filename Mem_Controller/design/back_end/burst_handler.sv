@@ -299,44 +299,42 @@ end
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-localparam BL_bar = 1,	AP_bar = 0; //BL ->1 length =16
+localparam BL_bar = 1,	AP_bar = 1; //BL ->1 length =16
 
 
 task ddr5_activate_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0 ;
-	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,burst[cmd_burst_id_t].address.row[3:0],2'b00};
+	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,burst[cmd_burst_id_t].address.row[3:0],2'b00};
 endtask 
 task ddr5_read_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
-	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b11101};
+	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b11101};
 endtask 
 task ddr5_write_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
-	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b01101};
+	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b01101};
 endtask 
 task ddr5_precharge_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
-	CA <= {3'b000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,6'b011011};
+	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,6'b011011};
 endtask 
 task ddr5_refresh_all_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	CS_n <= 1'b0;
-	CA <= {14'b00000000010011};
+	CA <= {14'b00001000010011};
 endtask 
 
 task ddr5_activate_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
-	CA <= {1'b0,burst[cmd_burst_id_t].address.row[15:4]};
+	CA <= {1'b00,burst[cmd_burst_id_t].address.row[15:4]};
 endtask 
 task ddr5_read_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
-	CA <= {3'b000,AP_bar,1'b0,burst[cmd_burst_id_t].address.column,1'b0,1'b0};
+	CA <= {3'b000,AP_bar,2'b00,burst[cmd_burst_id_t].address.column,2'b00};
 	//CA <= 0;
 endtask 
 task ddr5_write_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
 	CA <= {2'b00,&burst[cmd_burst_id_t].mask,1'b1,1'b0,1'b0,burst[cmd_burst_id_t].address.column,1'b0,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
-	//CA <= {2'b00,&burst[cmd_burst_id_t].mask,1'b1,1'b0,burst[cmd_burst_id_t].address.column,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
-	$display("%b" , burst[cmd_burst_id_t].address.column);
 endtask 
 task ddr5_precharge_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
 	//CS_n <= 1'b1;
