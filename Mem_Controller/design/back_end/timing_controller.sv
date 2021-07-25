@@ -140,7 +140,7 @@ always_ff @(posedge clk) begin
 					end
 				end
 				if (burst_cmd == refresh_all) begin
-					b_active_row_valid <= 0;  
+					refresh_done_count <= 0;  
 				end
 			end
 			else begin
