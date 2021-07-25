@@ -29,10 +29,10 @@ module cntr_bs_sel
    valid_i, // Input valid bit from txn controller/bank scheduler fifo
    ra_i,    // Input row address from txn controller/bank scheeduler fifo
    t_i,     // Input type from txn controller/bank scheeduler fifo
-   last_ra, // Output last row addresses from all bank scheduler fifos
-   full,    // Output full signals of scheduler fifos
-   mid,     // Output mid signals of scheduler fifos
-   empty,   // Output empty signals of scheduler fifos
+   last_ra, // Input last row addresses from all bank scheduler fifos
+   full,    // Input full signals of scheduler fifos
+   mid,     // Input mid signals of scheduler fifos
+   empty,   // Input empty signals of scheduler fifos
    push     // Output push signals for all fifos
 );
 
@@ -47,10 +47,10 @@ module cntr_bs_sel
   input wire                               valid_i; // Input valid bit from txn controller/bank scheduler fifo
   input wire  [RA       -1 : 0]            ra_i;    // Input row address from txn controller/bank scheeduler fifo
   input wire                               t_i;     // Input type from txn controller/bank scheeduler fifo
-  input wire [FIFO_NUM -1 : 0][RA -1 : 0] last_ra;  // output last row addresses from all bank scheduler fifosoutput reg [DQ       -1 : 0] dq_o;    // Output data from txn controller/bank scheeduler fifos
-  input wire [FIFO_NUM -1 : 0] full ;               // Output full signals of scheduler fifos
-  input wire [FIFO_NUM -1 : 0] mid ;                // Output mid signals of scheduler fifos
-  input wire [FIFO_NUM -1 : 0] empty ;              // Output empty signals of scheduler fifos
+  input wire [FIFO_NUM -1 : 0][RA -1 : 0] last_ra;  // Input last row addresses from all bank scheduler fifosoutput reg [DQ       -1 : 0] dq_o;    // Output data from txn controller/bank scheeduler fifos
+  input wire [FIFO_NUM -1 : 0] full ;               // Input full signals of scheduler fifos
+  input wire [FIFO_NUM -1 : 0] mid ;                // Input mid signals of scheduler fifos
+  input wire [FIFO_NUM -1 : 0] empty ;              // Input empty signals of scheduler fifos
   output reg [FIFO_NUM -1 : 0] push;                // Output push signals for all fifos
 
 //*****************************************************************************
