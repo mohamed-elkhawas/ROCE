@@ -114,10 +114,6 @@ RDMA over Converged Ethernet
 \end_layout
 
 \begin_layout Author
-Sherif Badran, Rami Rasheedi, Zeyad Madbouly, et al.
-\begin_inset Newline newline
-\end_inset
-
 Computer and Systems Department
 \begin_inset Newline newline
 \end_inset
@@ -155,7 +151,7 @@ Ain Shams University, Faculty of Engineering
 
 \begin_layout Standard
 \align center
-Electronics and Communications Engineering Department
+Computer and Systems Engineering Department
 \end_layout
 
 \begin_layout Standard
@@ -183,7 +179,7 @@ RDMA over Converged Ethernet
 
 \size large
 A Report Submitted in Partial Fulfillment of the Requirements of the Degree
- of Bachelor of Science in Electronics and Communications Engineering 
+ of Bachelor of Science in Computer and Systems Engineering 
 \series bold
 
 \begin_inset VSpace vfill
@@ -386,15 +382,11 @@ Declaration
 
 \begin_layout Standard
 We hereby certify that this project submitted as part of our partial fulfillment
- of BSc in Electronics and Communications Engineering is entirely our own
- work, that we have exercised reasonable care to ensure its originality,
- and does not to the best of our knowledge breach any copyrighted materials,
- and have not been taken from the work of others and to the extent that
- such work has been cited and acknowledged within the text of our work.
-\end_layout
-
-\begin_layout Standard
-Signed
+ of BSc in Computer and Systems Engineering is entirely our own work, that
+ we have exercised reasonable care to ensure its originality, and does not
+ to the best of our knowledge breach any copyrighted materials, and have
+ not been taken from the work of others and to the extent that such work
+ has been cited and acknowledged within the text of our work.
 \end_layout
 
 \begin_layout Standard
@@ -443,7 +435,7 @@ Mohammed Hussien Mostafa
 \begin_inset Graphics
 	filename images/Hussien_sig.jpg
 	lyxscale 10
-	scale 10
+	scale 8
 
 \end_inset
 
@@ -498,6 +490,13 @@ Christine Magdy Gad El-Rab Samuel
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Graphics
+	filename images/christine_sig.jpg
+	lyxscale 10
+	scale 7
+
+\end_inset
+
 
 \end_layout
 
@@ -520,6 +519,13 @@ Martina Fadi Fouad farag
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Graphics
+	filename images/martina_sig.jpg
+	lyxscale 5
+	scale 5
+
+\end_inset
+
 
 \end_layout
 
@@ -542,6 +548,13 @@ Maryham melad Gerges Michael
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Graphics
+	filename images/maryham_sig.jpg
+	lyxscale 10
+	scale 5
+
+\end_inset
+
 
 \end_layout
 
@@ -596,7 +609,10 @@ Acknowledgments
 \end_layout
 
 \begin_layout Standard
-Thank and acknowledge your advisor, family and friends.
+We would like to express our gratitude to our advisor Eng Rasha El-Atfy,
+ Eng Alaa Shawky, Eng Maha E;-Beheiry, and Eng Samy Adel for their continual
+ support of our project and dedicating their time, and effort to help us
+ achieve the target of our project.
 \end_layout
 
 \begin_layout Standard
@@ -720,18 +736,6 @@ LatexCommand tableofcontents
 \end_layout
 
 \begin_layout Standard
-\begin_inset FloatList algorithm
-
-\end_inset
-
-
-\begin_inset Newpage newpage
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
 \begin_inset CommandInset nomencl_print
 LatexCommand printnomenclature
 set_width "custom"
@@ -793,16 +797,6 @@ literal "false"
 \begin_inset CommandInset nomenclature
 LatexCommand nomenclature
 prefix "A"
-symbol "HCA"
-description "Host Channel Adapter"
-literal "false"
-
-\end_inset
-
-
-\begin_inset CommandInset nomenclature
-LatexCommand nomenclature
-prefix "A"
 symbol "API"
 description "Apllication Programming Interface"
 literal "false"
@@ -825,16 +819,6 @@ LatexCommand nomenclature
 prefix "A"
 symbol "WOE"
 description "Work Queue Element"
-literal "false"
-
-\end_inset
-
-
-\begin_inset CommandInset nomenclature
-LatexCommand nomenclature
-prefix "A"
-symbol "CQE"
-description "Completion Queue Element"
 literal "false"
 
 \end_inset
@@ -1073,36 +1057,6 @@ literal "false"
 \begin_inset CommandInset nomenclature
 LatexCommand nomenclature
 prefix "A"
-symbol "WQE "
-description "Work Queue Element\\\\"
-literal "false"
-
-\end_inset
-
-
-\begin_inset CommandInset nomenclature
-LatexCommand nomenclature
-prefix "A"
-symbol "CQE"
-description "Completion Queue Element\\\\"
-literal "false"
-
-\end_inset
-
-
-\begin_inset CommandInset nomenclature
-LatexCommand nomenclature
-prefix "A"
-symbol "HCA"
-description "Host Channel Adapter\\\\"
-literal "false"
-
-\end_inset
-
-
-\begin_inset CommandInset nomenclature
-LatexCommand nomenclature
-prefix "A"
 symbol "FIFO"
 description "First-in First-out"
 literal "false"
@@ -1290,6 +1244,13 @@ In traditional sockets networks, applications request network resources
 \end_layout
 
 \begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 (RDMA) provides low latency through stack bypass and copy avoidance, reduces
  (CPU) utilization, reduces memory bandwidth bottlenecks and provides high
  bandwidth utilization.
@@ -1403,6 +1364,9 @@ Traditional memory access topology
 \end_layout
 
 \begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
 In our proposal, applications can directly access each other’s memory with
  no operating system intervention.
  Thus, minimizing CPU utilization in memory read/writes and minimizing CPU
@@ -1480,6 +1444,41 @@ The (iWARP) protocol defines how to perform (RDMA) over a connection-oriented
 \end_layout
 
 \begin_layout Subsection
+InfiniBand 
+\end_layout
+
+\begin_layout Standard
+It is a high-speed, low latency, low CPU overhead, highly efficient and
+ scalable server and storage interconnect technology.
+ One of the key capabilities of InfiniBand is its sup- port for native Remote
+ Direct Memory Access (RDMA).
+ InfiniBand enables data transfer between servers and between server and
+ storage without the involvement of the host CPU in the data path.
+\end_layout
+
+\begin_layout Standard
+InfiniBand uses (I/O) channels for data communication (up to 16 million
+ per host), where each channel provides the semantics of a virtualized (NIC)
+ or (HCA) (security, isolations etc).
+ InfiniBand provides various technology or solution speeds ranging from
+ 10Gb/s (SDR) up to 56Gb/s (FDR) per port, using copper and optical fiber
+ connections.
+ InfiniBand efficiency and scalability have made it the optimal performance
+ and cost/performance interconnect solution for the world's leading high-perform
+ance computing, cloud, Web 2.0, storage, database and financial data centers
+ and applications.
+ InfiniBand is a standard technology, defined and specified by the IBTA
+ organization.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
 RoCE
 \end_layout
 
@@ -1502,14 +1501,14 @@ cture.
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
 	filename images/ch1_4.png
 	lyxscale 50
-	scale 40
+	scale 28
 
 \end_inset
 
@@ -1587,6 +1586,13 @@ status collapsed
 
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
 \end_inset
 
 
@@ -1709,7 +1715,7 @@ The Opcode field identifies the type of request or response packet.The DestQP
  This permits the recipient to detect missing packets.
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 How packets are built
 \end_layout
 
@@ -1737,18 +1743,88 @@ The frame size of a standard Ethernet frame (defined by RFC 894) is the
  configured.
 \end_layout
 
+\begin_layout Section
+Comparison of RDMA Technologies
+\end_layout
+
+\begin_layout Standard
+Currently, there are three technologies that support RDMA:
+\end_layout
+
+\begin_layout Standard
+InfiniBand, Ethernet RoCE and Ethernet iWARP.
+ All three technologies share a common user (API) which is defined in this
+ document, but have different physical and link layers.
+ Rev 1.7 Mellanox Technologies 15 When it comes to the Ethernet solutions,
+ (RoCE) has clear performance advantages over (iWARP) both for latency,
+ throughput and CPU overhead.
+ RoCE is supported by many leading solu- tions, and is incorporated within
+ Windows Server software (as well as InfiniBand).
+ (RDMA) technologies are based on networking concepts found in a traditional
+ network but there are differences them and their counterparts in IP networks.
+ The key difference is that (RDMA) pro- vides a messaging service which
+ applications can use to directly access the virtual memory on remote computers.
+\end_layout
+
+\begin_layout Standard
+(RDMA) provides low latency through stack bypass and copy avoidance, reduces
+ (CPU) utilization, reduces memory bandwidth bottlenecks and provides high
+ bandwidth utilization.
+ The key bene- fits that (RDMA) delivers accrue from the way that the (RDMA)
+ messaging service is presented to the application and the underlying technologi
+es used to transport and deliver those messages.
+ (RDMA) provides Channel based (IO).
+ This channel allows an application using an (RDMA) device to directly read
+ and write remote virtual memory.
+ In traditional sockets networks, applications request network resources
+ from the operating system through an (API) which conducts the transaction
+ on their behalf.
+ However (RDMA) use the OS to establish a channel and then allows applications
+ to directly exchange messages without further (OS) intervention.
+ A message can be an RDMA Read, an RDMA Write operation or a Send/Receive
+ operation.
+\end_layout
+
+\begin_layout Standard
+IB and (RoCE) also support Multicast transmission.
+ The IB Link layer offers features such as a credit based flow control mechanism
+ for congestion control.
+ It also allows the use of Virtual Lanes (VLs) which allow simplification
+ of the higher layer level protocols and advanced Quality of Service.
+ It guarantees strong ordering within the VL along a given path.
+ The IB Transport layer provides reliability and delivery guarantees.
+ The Network Layer used by (IB) has features which make it simple to transport
+ messages directly between applications' virtual memory even if the applications
+ are physically located on different servers.
+ Thus the combination of IB Transport layer with the Software Transport
+ Interface is bet- ter thought of as a (RDMA) message transport service.
+ The entire stack, including the Software Transport Interface comprises
+ the IB messaging service.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Project Architecture
+\end_layout
+
 \begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
 	filename images/ch1_8.png
 	lyxscale 30
-	scale 40
+	scale 50
 
 \end_inset
 
@@ -1774,10 +1850,6 @@ Overall Architecture
 \end_inset
 
 
-\end_layout
-
-\begin_layout Section
-Project Architecture
 \end_layout
 
 \begin_layout Standard
@@ -1842,114 +1914,7 @@ The memory controller which has local buffer storage and special purpose
  (PCIe) endpoint device memory and the local buffer storage of our controller.
  Hence, ensuring speedy data transmission and minimal (CPU) utilization
  required in the data transfer process.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float algorithm
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Anything
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{algorithmic}[1]
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-Require{$
-\backslash
-rho 
-\backslash
-geq 1$}
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-Ensure{$X_k$}
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-While{not converged}
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-State{Solve $X_{k+1}=
-\backslash
-min_{X} L(X,Y_k, 
-\backslash
-mu_k)$}
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-State{$Y_{k+1}=Y_k+
-\backslash
-mu_k h(X_{k+1})$}
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-State{$
-\backslash
-mu_{k+1}=
-\backslash
-rho 
-\backslash
-mu_k$}
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-EndWhile
-\end_layout
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{algorithmic}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
+\begin_inset Newpage newpage
 \end_inset
 
 
@@ -1981,6 +1946,82 @@ In (RDMA) we setup data channels using a kernel driver.
 \end_layout
 
 \begin_layout Subsection
+(RDMA) offloading
+\end_layout
+
+\begin_layout Itemize
+(RoCE) drivers are different from the conventional known driver.
+ Traditionally, when a user desires to perform an operation that can be
+ done only through kernel, user drivers interface with kernel drivers who
+ accomplish the required task.
+ However, in (RoCE), we have used certain intermediate libraries (libibverbs
+ and uverbs) that act as an intermediate layers between user-level and kernel-le
+vel drivers to enable the user to access the memory directly bypassing the
+ kernel drivers required before.
+ Therefore, user level drivers now have access to memory and address space
+ directly.
+\end_layout
+
+\begin_layout Itemize
+The aim to have a vendor specific user-level driver is that verbs exposes
+ directly the HCA's hardware registers to the userspace and each (HCA) has
+ a different set of registers, then the need for an intermediate userspace
+ layer.
+ The fact that (RDMA) devices can translate virtual addresses on their own
+ means that the userspace library does not have to go through the kernel
+ in order to obtain the physical address of the buffer when creating entries
+ in the work queues.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/unico/Downloads/MicrosoftTeams-image (3).png
+	lyxscale 30
+	scale 35
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Soft RoCE Stack
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+These ibverbs and uverbs libraries implement the user-kernel communication.
+ Some operations cannot be done entirely in userspace, e.g.
+ registering memory or opening/closing device contexts, and those are transparen
+tly passed to the kernel module by libibverbs.
+ uverbs module maintains idr tables that are used to translate between kernel
+ pointers and opaque userspace handles.
+ Kernel can then keep track of which resources are attached to a given userspace
+ context.This also allows the kernel to clean up when a process exits and
+ prevent one process from touching another process's resources.
+\end_layout
+
+\begin_layout Subsection
 Queue Pairs 
 \end_layout
 
@@ -2007,6 +2048,28 @@ A user places instructions on its work queues that tell the (HCA) what buffers
  the data is moved.
  Once the transaction completes a Completion Queue Element (CQE) is created
  and placed on the Completion Queue (CQ). We call a (CQE) a “COOKIE”.
+\end_layout
+
+\begin_layout Standard
+A Completion Queue is an object which contains the completed work requests
+ which were posted to the Work Queues (WQ).
+ Every completion says that a specific WR was completed (both successfully
+ completed WRs and unsuccessfully completed WRs).
+ A Completion Queue is a mechanism to notify the application about information
+ of ended Work Requests (status, opcode, size, source).
+ CQs have n Completion Queue Entries (CQE).
+ The number of CQEs is specified when the CQ is created.
+ When a CQE is polled it is removed from the CQ.
+ CQ is a FIFO of CQEs.
+ CQ can service send queues, receive queues, or both.
+ Work queues from multiple QPs can be associated with a single CQ.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -2153,6 +2216,10 @@ When the data movement completes the (HCA) will create a (CQE) “COOKIE”.
  second system’s CQ.
  A CQE is always generated even if there was an error.
  The (CQE) will contain field indicating the status of the transaction.
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -2248,6 +2315,10 @@ RDMA Read
 \end_inset
 
 
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
@@ -2292,10 +2363,6 @@ RDMA Write
 \end_inset
 
 
-\begin_inset Newpage newpage
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section
@@ -2319,7 +2386,11 @@ RC: reliable connection where packets are delivered in order and each (QP)
 \end_layout
 
 \begin_layout Enumerate
-UC: unreliable connection as packets may be lost.
+UC: A Queue Pair is associated with only one other (QP).
+ The connection is not reliable so packets may be lost.
+ Messages with errors are not retried by the transport, and error handling
+ must be provided by a higher level protocol.
+ 
 \end_layout
 
 \begin_layout Enumerate
@@ -2327,10 +2398,6 @@ UD: unreliable datagram where one (QP) may send or receive from any other
  UD (QP) since no actual connection is formed between queue pairs.
  Packets aren’t ordered during delivery and maybe lost.
  This mode is similar to UDP connection.
-\end_layout
-
-\begin_layout Enumerate
-RD: reliable datagram [not supported by API library].
 \end_layout
 
 \begin_layout Chapter
@@ -2403,7 +2470,7 @@ Now we decided that we are going to break up the file into chunks, and write
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2433,6 +2500,13 @@ Client server sequence diagram
 
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
 \end_inset
 
 
@@ -2592,17 +2666,62 @@ Coming to the soft (RoCE )application, we started by setting up soft (RoCE)
  on QEMU host system.
  This phase required intensive understanding of linux commands to be able
  to build the (RoCE) module and install the required libraries in the process.
- After this, we started executing the (RDMA) application.
- This application represents a simple addition operation to be done on to
- numbers sent from the client side to be added at the server side and return
- back the summation result.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/unico/Downloads/MicrosoftTeams-image.png
+	lyxscale 30
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Setting up soft (RoCE)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This snapshot shows the steps of loading RDMA in the server qemu then executing
+ the server.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2642,6 +2761,52 @@ Snapshot of client.c execution
 This snapshot shows the execution of client code using ” ./client “ command
  and specifying the ip address of the server “10.0.2.19” then it sends the
  two numbers “123”&”456” that are required to be added using the server.
+\end_layout
+
+\begin_layout Standard
+After this, we started executing the (RDMA) application.
+ This application represents a simple addition operation to be done on to
+ numbers sent from the client side to be added at the server side and return
+ back the summation result.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/unico/Downloads/MicrosoftTeams-image (2).png
+	lyxscale 50
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Application
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -2711,6 +2876,13 @@ The sequence starts by sending “connect request” from the client to the
  client will send “ready to use packet” announcing that it’s ready to send
  or receive data packets to and from the server.
  
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -2877,7 +3049,10 @@ rdma_get_cm_event
 \begin_layout Itemize
 Waits for the RDMA_CM_EVENT_DISCONNECTED event.
  rdma_ack_cm_event Acknowledges the event.
- 
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \end_deeper
@@ -3062,7 +3237,7 @@ Releases the event channel.
 
 \end_deeper
 \begin_layout Chapter
-PCIe End Point Memory Management
+Memory Management
 \end_layout
 
 \begin_layout Section
@@ -3374,7 +3549,30 @@ A Driver is required for the communication between the kernel and any connected
  Therefore, (CPU) resources can be allocated and system-memory accessed
  independent on the type of endpoint connected.
  So, we should know how the kernel’s role can be split into the following
- different parts, and how to use the PCIe endpoint: 
+ different parts, and how to use the PCIe endpoint.
+ 
+\end_layout
+
+\begin_layout Subsection
+Kernel
+\end_layout
+
+\begin_layout Standard
+is the core part of Linux, It is responsible for all major activities of
+ this operating system, It consists of various modules.
+ It provides the required abstraction to hide low level hardware details
+ to system or application programs.
+ It interacts directly with hardware, provides low level services to upper
+ layer components.
+ It is part of the multitasking system responsible for the management of
+ memory communication between them.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3408,33 +3606,14 @@ Linux Architecture
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
-\begin_layout Subsection
-Kernel
-\end_layout
-
-\begin_layout Standard
-is the core part of Linux, It is responsible for all major activities of
- this operating system, It consists of various modules.
- It provides the required abstraction to hide low level hardware details
- to system or application programs.
- It interacts directly with hardware, provides low level services to upper
- layer components.
- It is part of the multitasking system responsible for the management of
- memory communication between them.
-\end_layout
-
 \begin_layout Standard
 In a Linux system, several concurrent processes attend to different tasks.
- Each process asks for system resources, be it computing power, memory,
+ Each process asks for system resources, it can be computing power, memory,
  network connectivity, or some other resource.
  The kernel is the big chunk of executable code in charge of handling all
  such requests.
@@ -3715,8 +3894,13 @@ The Subsystem ID (SSID) and the Subsystem Vendor ID (SVID): They differentiat
 \end_layout
 
 \begin_layout Enumerate
-The Base Address Register: • BARs are the starting address of a contiguous
- mapped address in system memory or I/O space.
+The Base Address Register
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+BARs are the starting address of a contiguous mapped address in system memory
+ or I/O space.
  In PCIe, an Endpoint requests a size of contiguous memory (or I/O space),
  which is then mapped by the upstream device’s memory manager, and the Base
  Address Register is programmed with the base address for that Endpoint’s
@@ -3726,21 +3910,110 @@ The Base Address Register: • BARs are the starting address of a contiguous
  the start address of BAR0.
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 They represent memory windows as seen by the host system (CPUs) to talk
  to the device.
  The device doesn't write into that window but answers (TLPs) requests (MRd*,
  MWr*).
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 So, (BAR) is basically the device's way to tell the host how much memory
  it needs, and of what type.
  For each (BAR), the system will read the size of the required memory window
- and allocate a physical address range for access to that window.  On the
- user side, we typically get signals indicating which BAR was active (which
- address window was used for this transaction).  we then need to decode this
- information to decide what to do with the transaction.
+ and allocate a physical address range for access to that window.
+ On the user side, we typically get signals indicating which BAR was active
+ (which address window was used for this transaction).
+ we then need to decode this information to decide what to do with the transacti
+on.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+PCIe Configuration Space Parameters Code Example: 
+\end_layout
+
+\begin_layout Standard
+VENDOR_ID = 16'h14AB //Mentor Graphics Vendor ID 
+\end_layout
+
+\begin_layout Standard
+DEVICE_ID = 16'h1029 // 82559 card 
+\end_layout
+
+\begin_layout Standard
+DEVICE_CLASS = 8'h02 // Network Device 
+\end_layout
+
+\begin_layout Standard
+DEVICE_SUBCLASS = 8'h00 // Network Device 
+\end_layout
+
+\begin_layout Standard
+PROGRAM_IF = 8'h00 
+\end_layout
+
+\begin_layout Standard
+REVISION_ID = 8'h00 
+\end_layout
+
+\begin_layout Standard
+F0_BAR0_DEC = 32'hFFFFF00C 
+\end_layout
+
+\begin_layout Standard
+F0_BAR1_DEC = 32'hFFFFFFFF 
+\end_layout
+
+\begin_layout Standard
+If these parameters match the table id of a driver, the endpoint is claimed
+ by that driver: 
+\end_layout
+
+\begin_layout Standard
+e100 code snippet – table id 
+\end_layout
+
+\begin_layout Standard
+static struct pci_device_id e100_id_table[] = { 
+\end_layout
+
+\begin_layout Standard
+INTEL_8255X_ETHERNET_DEVICE(0x1029, 0), 
+\end_layout
+
+\begin_layout Standard
+INTEL_8255X_ETHERNET_DEVICE(0x1030, 0), 
+\end_layout
+
+\begin_layout Standard
+..
+ 
+\end_layout
+
+\begin_layout Standard
+..
+ 
+\end_layout
+
+\begin_layout Standard
+INTEL_8255X_ETHERNET_DEVICE(0x27DC, 7), 
+\end_layout
+
+\begin_layout Standard
+{ 0, }}; 
+\end_layout
+
+\begin_layout Standard
+MODULE_DEVICE_TABLE(pci, e100_id_table); 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -3798,8 +4071,21 @@ The goal of Memory Offloading
 \begin_layout Standard
 There are a number of reasons to be interested in the memory offloading
  which means replacing the system memory with PCIe endpoint memory to save
- system resources, and register PCIe endpoint memory.
- 
+ system resources.
+ Using Soft RoCe, the application uses external memory management separated
+ from system memory to avoid time consuming and access memory locally.
+ That means the application pins PCIe endpoint memory instead of system
+ memory.
+\end_layout
+
+\begin_layout Subsection
+To register RDMA Memory conventionally
+\end_layout
+
+\begin_layout Itemize
+The application requests a memory registration.
+ It sends to the OS the virtual address and the length of the contiguous
+ data.
 \end_layout
 
 \begin_layout Standard
@@ -3811,7 +4097,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename images/ch4_6.png
+	filename /home/unico/Documents/1.png
 	lyxscale 30
 	scale 70
 
@@ -3824,7 +4110,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Soft RoCE Stack
+Memory Registration Step1
 \end_layout
 
 \end_inset
@@ -3842,59 +4128,246 @@ Soft RoCE Stack
 \end_layout
 
 \begin_layout Itemize
-RoCE drivers are different from the conventional known driver.
- Traditionally, when a user desires to perform an operation that can be
- done only through kernel, user drivers interface with kernel drivers who
- accomplish the required task.
- However, in RoCE, we have used certain intermediate libraries (libibverbs
- and uverbs) that act as an intermediate layers between user-level and kernel-le
-vel drivers to enable the user to access the memory directly bypassing the
- kernel drivers required before.
- Therefore, user level drivers now have access to memory and address space
- directly.
+During the registration, the OS checks the permissions of the memory region
+ to register.
+ Then, it pins the region into physical memory (using mlock() ), and translates
+ virtual to physical mapping.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/unico/Documents/2.png
+	lyxscale 30
+	scale 70
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memory Registration Step2
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
-The aim to have a vendor specific user-level driver is that verbs exposes
- directly the HCA's hardware registers to the userspace and each (HCA) has
- a different set of registers, then the need for an intermediate userspace
- layer.
- The fact that RDMA devices can translate virtual addresses on their own
- means that the userspace library does not have to go through the kernel
- in order to obtain the physical address of the buffer when creating entries
- in the work queues.
+The physical address table is transmitted and written to the network adapter.A
+ handle is issued by the network card.
+ It is composed of a pair of keys : The local, remote key (l_key, r_key)
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+l-keys used by local HCA to access local memory, for example during a receive
+ operation.
 \end_layout
 
 \begin_layout Itemize
-These ibverbs and uverbs libraries implement the user-kernel communication.
- Some operations cannot be done entirely in userspace, e.g.
- registering memory or opening/closing device contexts, and those are transparen
-tly passed to the kernel module by libibverbs.
- uverbs module maintains idr tables that are used to translate between kernel
- pointers and opaque userspace handles.
- Kernel can then keep track of which resources are attached to a given userspace
- context.This also allows the kernel to clean up when a process exits and
- prevent one process from touching another process's resources.
+r-keys required by remote HCA to allow remote process to access the main
+ memory during RDMA operations.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/unico/Documents/3.png
+	lyxscale 30
+	scale 70
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/unico/Documents/4.png
+	lyxscale 30
+	scale 65
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memory Registration Step3 / Step4
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Finally, the handle is returned to the application.
+\end_layout
+
+\begin_layout Subsection
+Therefore, External memory is separated from system memory and is used to
 \end_layout
 
 \begin_layout Itemize
-Also, we should realize that the necessity of memory registration is that
- the PCIe device allows the host to access a small sized memory block of
- the device's memory, which prevents the host from accessing the rest of
- the device's memory.
- And It is often desirable for the host to access the full memory space
- of an endpoint device for debugging, configuration or other purposes, while
- avoiding reserving a large memory space in the host memory, like Allocate
- memory, Read memory, Write memory, Mapping memory (indicate the regions
- of memory or memory mapped IO to the endpoint via configuration space (BAR)
- registers), and all (DMA) operations functions.
- 
+Access memory locally.
 \end_layout
 
-\begin_layout Chapter
-Introduction to Memory systems
+\begin_layout Itemize
+Reduce PCIe latency.
 \end_layout
 
+\begin_layout Itemize
+Handle hardware side faster than software one.
+\end_layout
+
+\begin_layout Itemize
+Also, When the number of registered buffers exceeds this limit in the convention
+al system, the application needs to deregister memory and free resources
+ on the NIC, which involves the unpinning of the memory region and remove
+ the entry from the table.
+ Memory registration and deregistration are time-consuming operations.
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+To register PCIe Endpoint Memory, we use additional functions to driver
+\end_layout
+
+\begin_layout Itemize
+Memory allocation primitives
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+They reserve a partial or complete portion of host memory for the execution
+ of programs and processes.
+\end_layout
+
+\begin_layout Itemize
+Programs and services are assigned with a specific memory as per their requireme
+nts when they are executed.
+ Once the program has finished its operation or is idle, the memory is released
+ and allocated to another program or merged within the primary memory.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+mmap() which is a linux system call that
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Creates a new mapping in the virtual address space of the calling process.
+\end_layout
+
+\begin_layout Itemize
+Maps files into memory that is used for memory-mapped file I/O.
+\end_layout
+
+\begin_layout Itemize
+Brings in the optimization of lazy loading or demand paging such that the
+ I/O or reading file doesn’t happen when the memory allocation is done,
+ but when the memory is accessed.
+\end_layout
+
+\begin_layout Itemize
+Cleared with munmap call.
+\end_layout
+
+\begin_layout Itemize
+Therefore, Memory-mapping is a mechanism that maps a portion of a file,
+ or an entire file, on disk to a range of addresses within an application's
+ address space.
+ The application can then access files on disk in the same way it accesses
+ dynamic memory.
+ It means the translation between the logical address space and the physical
+ memory.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Read & Write functions to endpoint
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Most important transactions types supported by PCIe controllers are : Memory
+ read, Memory write, Configuration Read and Configuration Write.
+  There are others such as 'Messages', Memory read and write with Lock.
+ There are some more transaction types related to PCIe internal layers (transact
+ion layer) such as Completion etc.
+\end_layout
+
+\begin_layout Itemize
+When the processors (either host or End Point) read or write data from/into
+ the PCIe address space.
+\end_layout
+
+\begin_layout Itemize
+PCIe controller gets hold of this operation and creates the PCIe read/write
+ transaction on to the other side (destination) with the other side's memory
+ address.
+\end_layout
+
+\begin_layout Itemize
+PCIe transaction message contains the other side address, transaction type
+ and data to be written, if it is write operation.
+\end_layout
+
+\begin_layout Itemize
+In case of read operation, there would be one more message that comes from
+ other side with the data.All this happens automatically.
+\end_layout
+
+\begin_layout Itemize
+As far as the processor is concerned, it thinks that it is reading and writing
+ into some address (in this case PCIe address) same way as it read and writes
+ from normal memory.
+\end_layout
+
+\begin_layout Itemize
+Internally PCIe transaction would be created.
+  Normally PCIe controllers have something called 'Address Translation Registers
+'.
+  Corresponding to each PCIe address space range, original memory address
+ of other side is stored.
+  This is normally done whenever other side gives the memory ranges to be
+ mapped.
+  That is how PCIe controller knows the memory address to be put in the
+ read/write transactions.  
+\end_layout
+
+\end_deeper
 \begin_layout Chapter
 The DDR5 Technology
 \end_layout
@@ -3902,17 +4375,93 @@ The DDR5 Technology
 \begin_layout Standard
 To make sure we fully understand the memory controller we will review the
  ddr5 dram system.
- 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/khawas_3.png
+	lyxscale 20
+	scale 80
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+DRAM Structure Unit
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/khawas_2.png
+	lyxscale 10
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+DRAM Bank Grid
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Enumerate
 The memory consists of no.of bank groups in each bank group there is no.of
- banks which is the grid of cells containing the data.
+ banks each bank consist of 16 grid of cells each cell consists of transistandor
+ and capacitor containing the data.
 \end_layout
 
 \begin_layout Enumerate
-Every command between the controller and the request must be in bursts (16
- column next to each other in the same row).
+Every command between the controller and the memory must be in bursts (16
+ memory column next to each other in the same row) and the burst address
+ is fixed (we can't start the burst from where we want).
+ 
 \end_layout
 
 \begin_layout Enumerate
@@ -4032,7 +4581,7 @@ Row policy
 \end_layout
 
 \begin_layout Standard
-There are three types of the row management police:
+There are three types of the row management policy:
 \end_layout
 
 \begin_layout Enumerate
@@ -4119,12 +4668,140 @@ So we finally decided to choose the open page policy because our expected
 DDR5 Controller Architecture
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/khawas_5.png
+	lyxscale 50
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Controller Architecture
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Front-end 
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/khawas_6.png
+	lyxscale 50
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Front-end Architecture
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+It Applies the mapping scheme for every request (to make sure that we use
+ every timing constraints in our advantage).
+\end_layout
+
+\begin_layout Itemize
+Applying the scheduling algorithm to send as many requests we can in one
+ burst and as many bursts in one row.
+\end_layout
+
+\begin_layout Itemize
+And giving every request special index to return the requested data in order.
+ 
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Transaction controller
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/khawas_7.png
+	lyxscale 50
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Transaction controller Architecture
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -4141,33 +4818,28 @@ Mapper
 Applies mapping scheme and gives every request special index.
 \end_layout
 
-\begin_layout Standard
-1.
- It takes the input address, data and request type from the user if the
- valid port is active.
+\begin_layout Enumerate
+It takes the input address, data and request type from the user if the valid
+ port is active.
 \end_layout
 
-\begin_layout Standard
-2.
- then it calculates where to place it inside the memory according to the
+\begin_layout Enumerate
+then it calculates where to place it inside the memory according to the
  mapping scheme to make sure the data fetching is as fast as possible.
 \end_layout
 
-\begin_layout Standard
-3.
- then it add a unique index to every request inside the memory controller
+\begin_layout Enumerate
+then it add a unique index to every request inside the memory controller
  to make sure the returner can but the requests the right order.
 \end_layout
 
-\begin_layout Standard
-4.
- then send it to the request saver without the (bank or bank group) bits
+\begin_layout Enumerate
+then send it to the request saver without the (bank or bank group) bits
  to lower the overall controller internal memory storage.
 \end_layout
 
-\begin_layout Standard
-5.
- And it activate the busy port if there is no storage left in the controller
+\begin_layout Enumerate
+And it activate the busy port if there is no storage left in the controller
  or no unique indices to be added to the new requests.
 \end_layout
 
@@ -4207,11 +4879,15 @@ Overflow stopper
 
 \begin_layout Standard
 It make sure that there are no two requests in the memory controller having
- the same index as each other By sending stop_reading or stop_writing signals
- to the mapper to prevent it from issuing new index to other requests and
- telling the user stop sending requests by activating the busy port until
- there is new indices available (until request is done from the memory with
- the same type as the indices we don’t have) 
+ the same index as each other.
+\end_layout
+
+\begin_layout Standard
+By sending stop_reading or stop_writing signals to the mapper to prevent
+ it from issuing new index to other requests and telling the user stop sending
+ requests by activating the busy port until there is new indices available
+ (until request is done from the memory with the same type as the indices
+ we don’t have) 
 \end_layout
 
 \begin_layout Subsubsection
@@ -4219,10 +4895,11 @@ Request saver
 \end_layout
 
 \begin_layout Standard
-it make sure to store the request sent by the mapper in case of the target
- bank modified FIFO’s storage if the FIFO has empty place to store the request
- then it forward the request if the FIFO is full it will store the request
- in internal storage until the bank FIFO is ready to receive the request
+It make sure to store the request sent by the mapper in case of the target
+ bank modified FIFO’s storage.
+ If the FIFO has empty place to store the request then it forward the request
+ if the FIFO is full it will store the request in internal storage until
+ the bank FIFO is ready to receive the request.
  
 \end_layout
 
@@ -4235,9 +4912,12 @@ It has two FIFOs buffer inside one for the write request’s data which has
  low entries number and another for the common parts between the read and
  write request (type, address and index) with high entries number so it
  can store the read and write requests in order without increasing the internal
- storage by making the all the stored request with the data bits It allows
- the read request to use the empty write buffer instead of making all of
- the memory controller stops receiving requests due to lack of internal
+ storage by making the all the stored request with the data bits.
+\end_layout
+
+\begin_layout Standard
+It allows the read request to use the empty write buffer instead of making
+ all of the memory controller stops receiving requests due to lack of internal
  storage It saves and assign the request’s data to it’s FIFO buffer if it’s
  write request only 
 \end_layout
@@ -4246,54 +4926,147 @@ It has two FIFOs buffer inside one for the write request’s data which has
 Bank scheduler (per bank) 
 \end_layout
 
+\begin_layout Standard
+Will be mentioned below.
+\end_layout
+
 \begin_layout Section
 Back-end
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename images/khawas_8.png
+	lyxscale 50
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Back-end Architecture
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Choosing requests from different bank groups as possible and with the same
+ request type to decrease the bus switching timing constraints.
+\end_layout
+
+\begin_layout Enumerate
+Avoiding breaking the memory timing constraints.
+\end_layout
+
+\begin_layout Enumerate
+Collecting every request in the same burst together then sending the burst
+ to memory then collecting the incoming data then send it to the front end
+ with its index.
+\end_layout
+
 \begin_layout Subsection
-Arbiter 
+Arbiter
+\end_layout
+
+\begin_layout Standard
+Will be mentioned below.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
 Timing controller
 \end_layout
 
-\begin_layout Standard
-2.2 timing controller: 1.
- it stores the active row address in each bank if it exists to decided the
+\begin_layout Itemize
+It stores the active row address in each bank if it exists to decided the
  command to send if there is burst to send in that bank and it updates the
- active rows addresses on issuing the activate and precharge commands 2.
- Then it takes the state of each burst storage in the burst handler and
- it’s bank, bank group and row address 3.
- Then if there is requests to be sent stored in any burst storage it start
- checking the necessary commands to be sent for each bust storage 4.
- If any command is sent it make it’s counter zero then on the next time
- there is other command ready to be sent it checks the commands counters
- to make sure there is no timing constraints violation before sending the
- next command 5.
- Then it chooses which one of the ready bursts commands to be sent based
- on round robin algorithm 6.
- It makes sure to send refresh command to the memory every while to prevent
- the destruction of the stored data 
+ active rows addresses on issuing the activate and precharge commands.
+\end_layout
+
+\begin_layout Itemize
+Then it takes the state of each burst storage in the burst handler and it’s
+ bank, bank group and row address.
+\end_layout
+
+\begin_layout Itemize
+Then if there is requests to be sent stored in any burst storage it start
+ checking the necessary commands to be sent for each bust storage.
+\end_layout
+
+\begin_layout Itemize
+If any command is sent it make it’s counter zero then on the next time there
+ is other command ready to be sent it checks the commands counters to make
+ sure there is no timing constraints violation before sending the next command.
+\end_layout
+
+\begin_layout Itemize
+Then it chooses which one of the ready bursts commands to be sent based
+ on round robin algorithm.
+\end_layout
+
+\begin_layout Itemize
+It makes sure to send refresh command to the memory every while to prevent
+ the destruction of the stored data.
+ 
 \end_layout
 
 \begin_layout Subsection
 Burst handler 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 It tell the arbiter to send a new burst if there is empty burst storage
- inside it by activating the start_new_burst_flag It stores the incoming
- requests in the right burst storage by deciding if the requests belongs
- to the current burst or it’s a new burst to store It sends the bursts states
- to the timing controller then it takes the commands from the timing controller
- and convert it to DDR5 command based on the burst data stored inside then
- send it to memory It receives the data that came from the memory after
- sending the read command and stores the needed data in a special storage
- element to send it back to the returner afterwards It mappes the requested
- data to it’s indices then ii sends them together to the returner to order
- it and send it back to the user or just the requests indices for the write
- requests 
+ inside it by activating the start_new_burst_flag.
+\end_layout
+
+\begin_layout Itemize
+It stores the incoming requests in the right burst storage by deciding if
+ the requests belongs to the current burst or it’s a new burst to store.
+\end_layout
+
+\begin_layout Itemize
+It sends the bursts states to the timing controller then it takes the commands
+ from the timing controller and convert it to DDR5 command based on the
+ burst data stored inside then send it to memory.
+\end_layout
+
+\begin_layout Itemize
+It receives the data that came from the memory after sending the read command
+ and stores the needed data in a special storage element to send it back
+ to the returner afterwards.
+\end_layout
+
+\begin_layout Itemize
+It mappes the requested data to it’s indices then ii sends them together
+ to the returner to order it and send it back to the user or just the requests
+ indices for the write requests.
+ 
 \end_layout
 
 \begin_layout Chapter
@@ -4655,7 +5428,7 @@ We found the following trade-offs mentioned below:
 \begin_inset Float table
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -4792,7 +5565,7 @@ high
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Request Scheduling Trad-offs
+Request Scheduling Trade-offs
 \end_layout
 
 \end_inset
@@ -5548,327 +6321,6 @@ This architecture has high flexibilty to edit and add features such as timeout,
 \begin_layout Standard
 Scalability of this design is also a key factor of it, it can be expanded
  to support more bank groups according to memory chip of the system.
-\end_layout
-
-\begin_layout Chapter
-Emulation Results
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Memorysystems,hdlchipdesign"
-literal "false"
-
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "mauerer2010professional"
-literal "false"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Tabular
-<lyxtabular version="3" rows="5" columns="6">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-edgdf
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-gfgf
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-fgfgfg
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-dfgd
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-dfgf
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-fgdggfgdg
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-fgf
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-gfgf
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-gfgf
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-gf
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-fg
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-gf
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-fgf
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-gfg
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Chapter
-Conclusions and Future Work
 \end_layout
 
 \begin_layout Standard
