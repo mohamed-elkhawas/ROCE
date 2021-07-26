@@ -3,7 +3,7 @@
 
 
 
-## Tech
+## Project Overview
 
 Our project implements remote direct memory access over converged Ethernet. Our project proposes a methodology to support speedy data transmission between hosts enabling them to directly access the memory as input/output operations without CPU interference through DMA directly. Hence, minimizing latency and maximizing the processing speed. RDMA allows direct access of memory of one computer into the other’s memory without involving any OS. This is very useful nowadays in the distributed systems where individual computers are connected together and are communicating together easily to facilitate efficient data transfer and parallel processing and resource sharing to appear as one integrated system.
 
