@@ -9,7 +9,8 @@ Our project implements remote direct memory access over converged Ethernet. Our 
 
 Our project supports RoCE V.2 protocol for RDMA implementation. This is an internet protocol which allows accessing memory between different hosts across multiple domains through gateways over an Ethernet network while providing congestion control mechanisms to deal with traffic congestions.
 
-Our project aims at implementing an efficient programmable memory controller inside a PCIe endpoint connected to our host system. The controller will access the external shareable DDR5 DRAM of the endpoint and handle all incoming memory requests from other hosts there while offloading the host system memory. This approach helps in minimizing the latency gap difference between local and remote memory access. CPU power is used to perform other system operations requiring high processing in parallel to the handled memory operations by the controller. Our implementation code and all simulation and emulation results are ellaborated on in details in our document.
+Our project aims at implementing an efficient programmable memory controller inside a PCIe endpoint connected to our host system. The controller will access the external shareable DDR5 DRAM of the endpoint and handle all incoming memory requests from other hosts there while offloading the host system memory. This approach helps in minimizing the latency gap difference between local and remote memory access. CPU power is used to perform other system operations requiring high processing in parallel to the handled memory operations by the controller. 
+Our implementation code and all simulation and emulation results are ellaborated on in details in our document.
 
 
 
