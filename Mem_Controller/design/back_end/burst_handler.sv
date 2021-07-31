@@ -52,13 +52,13 @@ logic [2:0] DQS_t_logic , DQS_c_logic  ;
 logic ALERT_n_logic;
 
 assign DQ = (sending_flag)? DQ_logic : 16'hzzzz ; // data_width == 16 here
-//assign DQS_t = DQS_t_logic;
-//assign DQS_c = DQS_c_logic;
-//assign ALERT_n = ALERT_n_logic;
+//assign DQS_t = (sending_flag)? DQS_t_logic : 3'hz;
+//assign DQS_c = (sending_flag)? DQS_c_logic : 3'hz;
+//assign ALERT_n = ALERT_n_logic;s
 assign CAI = 0 ; 
 
-parameter wr_to_data =42, // on half clk not posedge clk
-		  rd_to_data =44,
+parameter wr_to_data =10,//42 // on half clk not posedge clk
+		  rd_to_data =12,//44
 		  burst_length = 16;
 
 typedef struct packed {
@@ -96,9 +96,9 @@ logic [$clog2(burst_length)-1:0] first_one_id;
 
 logic [$clog2(rd_to_data+1)-1:0] data_wait_counter;
 
-logic [$clog2(no_of_bursts) -1:0] cmd_burst_id;
+logic [$clog2(no_of_bursts) -1:0] cmd_burst_id , cmd_burst_id_data;
 
-command cmd_to_send;
+command cmd_to_send , cmd_to_send_data;
 
 logic [$clog2(no_of_bursts) :0]  empty_bursts_counter;
 
@@ -232,9 +232,8 @@ end
 // returning data to the returner
 
 always_comb begin 
-//always_ff @(posedge clk) begin
 
-	if (burst[out_burst].state == returning_data && burst[out_burst].mask != 0) begin
+	if (burst[out_burst].state == returning_data) begin // && burst[out_burst].mask != 0) begin
 		return_req = 1;
 	end
 	else begin
@@ -275,6 +274,10 @@ end
 always_ff @(  posedge clk ) begin
 
 	returner_valid <= 0;
+
+	returner_type <= read;
+	returner_data <= 0;
+	returner_index <= 0;
 	
 	if(rst_n) begin
 		
@@ -349,7 +352,7 @@ task ddr5_write_data
 	logic [$clog2(burst_length) -1:0] counter_t
 	);
 
-	sending_flag = 1;
+	sending_flag <= 1;
 	if (burst[cmd_burst_id_t].mask[counter_t]) begin
 		DQ_logic <= burst[cmd_burst_id_t].data[counter_t];
 	end
@@ -409,6 +412,11 @@ always @( posedge clk ) begin ///////////////// memory interface
 			cmd_to_send <= in_burst_cmd;
 			cmd_2nd_p <= 1;
 
+			if (in_burst_cmd == read_cmd || in_burst_cmd == write_cmd) begin
+				cmd_burst_id_data <= in_cmd_index;
+				cmd_to_send_data <= in_burst_cmd;
+			end
+
 			case (in_burst_cmd)
 				activate:ddr5_activate_p1(in_burst_cmd);
 				read_cmd:ddr5_read_p1(in_burst_cmd);
@@ -426,6 +434,7 @@ always @( posedge clk ) begin ///////////////// memory interface
 		DQS_t_logic <= 0 ;
 		DQS_c_logic <= 3'b111;
 		cmd_burst_id <= 0;
+		cmd_burst_id_data <= 0;
 		CA <= 0 ;
 	end
 end
@@ -498,10 +507,14 @@ always @( posedge clk or negedge clk) begin
 
 			if (cmd_2nd_p == 1) begin	
 				
-				data_wait_counter <= 0;
+				if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
+					
+					burst[cmd_burst_id].state <= waiting;
+					data_wait_counter <= 0;
+				end
 			end
 
-			if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
+			if (cmd_to_send_data == read_cmd || cmd_to_send_data == write_cmd) begin
 				
 				if (data_wait_counter != rd_to_data +1 ) begin
 					data_wait_counter <= data_wait_counter +1;
@@ -509,31 +522,31 @@ always @( posedge clk or negedge clk) begin
 
 			end
 
-			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd && burst_data_counter[cmd_burst_id] < burst_length) begin
-				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;				
+			if (data_wait_counter >= rd_to_data && cmd_to_send_data == read_cmd && burst_data_counter[cmd_burst_id_data] < burst_length) begin
+				burst_data_counter[cmd_burst_id_data] <= burst_data_counter[cmd_burst_id_data] +1;				
 			end
 
-			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd && burst_data_counter[cmd_burst_id] < burst_length ) begin
-				burst_data_counter[cmd_burst_id] <= burst_data_counter[cmd_burst_id] +1;							
+			if (data_wait_counter >= wr_to_data && cmd_to_send_data == write_cmd && burst_data_counter[cmd_burst_id_data] < burst_length ) begin
+				burst_data_counter[cmd_burst_id_data] <= burst_data_counter[cmd_burst_id_data] +1;							
 			end
 			
-			if (data_wait_counter >= rd_to_data && cmd_to_send == read_cmd && burst_data_counter[cmd_burst_id] < burst_length) begin
+			if (data_wait_counter >= rd_to_data && cmd_to_send_data == read_cmd && burst_data_counter[cmd_burst_id_data] < burst_length) begin
 				
 				if (data_wait_counter == rd_to_data) begin
-					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
+					burst[cmd_burst_id_data].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
 				end
 
-				ddr5_read_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);			
+				ddr5_read_data(cmd_burst_id_data,burst_data_counter[cmd_burst_id_data]);			
 			
 			end
 
-			if (data_wait_counter >= wr_to_data && cmd_to_send == write_cmd && burst_data_counter[cmd_burst_id] < burst_length ) begin
+			if (data_wait_counter >= wr_to_data && cmd_to_send_data == write_cmd && burst_data_counter[cmd_burst_id_data] < burst_length ) begin
 
 				if (data_wait_counter == wr_to_data) begin
-					burst[cmd_burst_id].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
+					burst[cmd_burst_id_data].state <= returning_data; //out_burst_state[cmd_burst_id] <= returning_data;
 				end
 
-				ddr5_write_data(cmd_burst_id,burst_data_counter[cmd_burst_id]);
+				ddr5_write_data(cmd_burst_id_data,burst_data_counter[cmd_burst_id_data]);
 			
 			end
 			else begin
@@ -542,11 +555,11 @@ always @( posedge clk or negedge clk) begin
 
 		end
 		else begin
-			burst_data_counter[in_cmd_index] <= 0;
-			data_wait_counter <= 0;
-
+			if (in_burst_cmd == read_cmd || in_burst_cmd == write_cmd) begin
+				burst_data_counter[in_cmd_index] <= 0;
+				data_wait_counter <= 0;
+			end
 		end
-
 	end
 	 
 	else begin // reset
