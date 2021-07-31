@@ -22,29 +22,29 @@ localparam
 
 			//////////////////////////////same bank \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 			
-			act_to_col  =3,
-			pre_to_act =12,
-			act_to_act_same_bank =40,
-			act_to_pre =28,
-			wr_to_data =22,/////////////////////////////////////////////////////// will be sent to the other block
-			rd_to_data =23,///////////// the real value is 11 //////////////////// will be sent to the other block
-			rd_to_pre =6,
-			wr_to_pre =12,
+			act_to_col  =6,
+			pre_to_act =6,
+			act_to_act_same_bank =21,
+			act_to_pre =15,
+			wr_to_data =5,//22/////////////////////////////////////////////////////// will be sent to the other block
+			rd_to_data =6,//23/////////////////////////////////////////////////////// will be sent to the other block
+			rd_to_pre =4,
+			wr_to_pre =6,
 
 			////////////////////////////// bank Group \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-			act_to_act_diff_bank =6,
+			act_to_act_diff_bank =4,
 			
 			// there is col_to_col_same bank group
 			// there is wr_to_rd_same bank group
 
 			//////////////////////////////any bank \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-			rd_to_wr =10,	
-			wr_to_rd =18,	
+			rd_to_wr =7,	
+			wr_to_rd =13,	
 			col_to_col =4,
 
-			burst_time = 16;
+			burst_time = 8;
 
 //////////////////////////////// declarations \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -246,8 +246,14 @@ always_comb begin
 	round_roubin_in = 4'b0;
 
 	if (burst_cmd_o == none) begin
-
-		if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
+		
+		// the next condition if we want to wait until data is sent 
+		//if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
+		
+		// the next 2 condition if we want to send other cmds between cmd and data
+		if (global_counter_rd > burst_time + rd_to_data-2 +1|| global_counter_rd < rd_to_data-2) begin
+		if (global_counter_wr > burst_time + wr_to_data-2 +1|| global_counter_wr < wr_to_data-2) begin
+				
 			
 			if (refresh_done_count > wait_after_refresh-2) begin // refresh is done and memory is ready again
 
@@ -255,7 +261,7 @@ always_comb begin
 					
 					for (int i = 0; i < no_of_bursts; i++) begin 
 							
-						if (in_burst_state[i] != empty && in_burst_state[i] != returning_data) begin //  there is requests to be sent
+						if (in_burst_state[i] != empty && in_burst_state[i] != returning_data && in_burst_state[i] != waiting) begin //  there is requests to be sent
 
 							if ( b_active_row_valid[burst_bank_id[i]] == 1 ) begin // there is active row
 
@@ -305,10 +311,13 @@ always_comb begin
 					end
 				end
 				else begin
-					round_roubin_in[0] = 1;
-					burst_cmd_temp[0] = refresh_all ;
+					if (global_counter_wr > burst_time + wr_to_data-2 +1) begin
+						round_roubin_in[0] = 1;
+						burst_cmd_temp[0] = refresh_all ;
+					end
 				end
 			end
+		end
 		end
 	end	
 end
