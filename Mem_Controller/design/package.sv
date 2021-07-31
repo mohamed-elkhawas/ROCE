@@ -44,6 +44,6 @@ package types_def;
 
   typedef enum logic [2:0] {activate , read_cmd , write_cmd  ,  precharge , none , refresh_all} command ;
   
-  typedef enum logic [2:0] {started_filling , almost_done, full , empty , returning_data} burst_states_type ;
+  typedef enum logic [2:0] {started_filling , almost_done, full , empty , returning_data , waiting} burst_states_type ;
 
 endpackage
