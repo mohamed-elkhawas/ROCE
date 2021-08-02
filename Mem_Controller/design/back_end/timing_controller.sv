@@ -272,7 +272,9 @@ always_comb begin
 										if ( global_counter_rd > burst_time + rd_to_data + col_to_col-2 && global_counter_wr > burst_time + wr_to_data + col_to_col-2 ) begin // column to column time
 
 											if (b_counter_act[burst_bank_id[i]] > act_to_col-2 ) begin // activate to read or write time passed
-												
+
+												if (global_counter_rd > 8-2 +1 && global_counter_wr > 8-2 +1 ) begin // no data collision //8 here is half burst time
+
 												if (in_burst_type[i] == read) begin
 													
 													if (in_burst_state[i] == almost_done || in_burst_state[i] == full ) begin
@@ -286,7 +288,7 @@ always_comb begin
 														round_roubin_in[i] = 1;
 														burst_cmd_temp[i] = write_cmd ;
 													end										
-												end
+												end end
 											end
 										end
 									end	
