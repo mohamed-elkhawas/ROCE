@@ -46,27 +46,24 @@ module cntr_bs_sch
 //*****************************************************************************  
   localparam FIFO_NUM = RD_FIFO_NUM + WR_FIFO_NUM ;
   localparam FIFOS_BITS = $clog2(FIFO_NUM);
+
 //*****************************************************************************
 // Ports declarations                                                             
 //*****************************************************************************    
-  input wire                   clk;      // Input clock
-  input wire                   rst_n;    // Synchronous reset                                                    -> active low                               
-  input wire                   ready;    // Input Ready signal from arbiter                                      -> active high        
-  input wire                   mode;     // Input controller mode to switch memory interface bus into write mode
-  input wire [FIFO_NUM -1 : 0][BURST -1 : 0] burst_i;     // Input burst addresses
-  input wire [FIFO_NUM -1 : 0] empty;    // Input empty signals from fifos                           
-  output reg [FIFO_NUM -1 : 0] pop;      // Output pop signals to fifos
-  output reg                   valid_o;  // Output valid for arbiter
-
-
+  input wire                                 clk;      // Input clock
+  input wire                                 rst_n;    // Synchronous reset                                                    -> active low                               
+  input wire                                 ready;    // Input Ready signal from arbiter                                      -> active high        
+  input wire                                 mode;     // Input controller mode to switch memory interface bus into write mode
+  input wire [FIFO_NUM -1 : 0][BURST -1 : 0] burst_i;  // Input burst addresses
+  input wire [FIFO_NUM -1 : 0]               empty;    // Input empty signals from fifos                           
+  output reg [FIFO_NUM -1 : 0]               pop;      // Output pop signals to fifos
+  output reg                                 valid_o;  // Output valid for arbiter
 
 //*****************************************************************************
 // Internal signals declarations                                                             
 //*****************************************************************************
-  //reg  [$clog2(RD_FIFO_NUM) -1 : 0] rd_idx;        // read counter index
-  //reg  [$clog2(RD_FIFO_NUM) -1 : 0] wr_idx;        // write counter index
-  wire [RD_FIFO_NUM -1         : 0] rd_empty  ;
-  wire [WR_FIFO_NUM -1         : 0] wr_empty  ;
+  wire [RD_FIFO_NUM -1         : 0] rd_empty ;
+  wire [WR_FIFO_NUM -1         : 0] wr_empty ;
   //wire                              rd_start  ;
   //wire                              wr_start  ;
   //reg  [1                      : 0] start;          // Start signals to index counters    
@@ -80,6 +77,8 @@ module cntr_bs_sch
   // FSM states
   enum reg [2:0] { EMPTY, WAITING, FINISH, WR_BURST, RD_BURST } CS, NS;
   reg [BURST -1 : 0] CB , NB; //CB-> current burst address ----- NB-> next burst
+  reg [$clog2(RD_FIFO_NUM) -1 : 0] CRD , NRD   ;       // read counter index
+  reg [$clog2(WR_FIFO_NUM) -1 : 0] CWR , NWR   ;       // write counter index
 
 //*****************************************************************************
 // Functions declarations                                                             
@@ -129,10 +128,14 @@ always @(posedge clk)begin
     if(!rst_n) begin
         CS <= EMPTY;
         CB <= {BURST{1'b0}};
+        CRD <= 0 ;
+        CWR <= 0 ;
     end
     else begin
         CS  <= NS ;
-        CB  <= NB ; 
+        CB  <= NB ;
+        CRD <= NRD ;
+        CWR <= NWR ; 
     end
 end
 
@@ -141,7 +144,9 @@ end
 //***************************************************************************** 
 always @(*) begin
     NS = CS ;
-    NB = CB ;  
+    NB = CB ;
+    NRD = CRD ;
+    NWR = CWR ;   
     valid_o = 1'b0 ; 
     pop = {FIFO_NUM{1'b0}};
     //rd_start = 1'b0;
@@ -183,8 +188,15 @@ always @(*) begin
                 if(mode == READ)begin
                     NS = RD_BURST ;
                     valid_o = 1'b1;
-                    pop[get_index(~empty,READ)] = 1'b1;
-                    NB = burst_i[get_index(~empty,READ)] ;
+                    if (rd_empty[CRD] == 1'b0) begin
+                        pop[get_index(~empty,READ)] = 1'b1;
+                        NB = burst_i[get_index(~empty,READ)] ;
+                    end
+                    else begin
+                        pop[CRD] = 1'b1;
+                        NB  = burst_i[CRD] ;                       
+                    end
+                    NRD = CRD + 1 ;
                     //$display("hi iam at ready = 1'b1 , mode = read ");
                     //pop[rd_idx] = 1'b1;
                     //NB = rd_i[rd_idx] ;  
@@ -192,8 +204,15 @@ always @(*) begin
                 else if(mode == WRITE)begin
                     NS = WR_BURST ;
                     valid_o = 1'b1;
-                    pop[get_index(~empty,WRITE)] = 1'b1;
-                    NB = burst_i[get_index(~empty,WRITE)] ;
+                    if (wr_empty[CWR] == 1'b0) begin
+                        pop[get_index(~empty,WRITE)] = 1'b1;
+                        NB = burst_i[get_index(~empty,WRITE)] ;
+                    end
+                    else begin
+                        pop[CWR] = 1'b1;
+                        NB = burst_i[CWR] ; 
+                    end
+                    NWR = CWR + 1 ;
                     //$display("hi iam at ready = 1'b1 , mode = write ");
                     //pop[wr_idx] = 1'b1;
                     //NB = wr_i[wr_idx] ;   

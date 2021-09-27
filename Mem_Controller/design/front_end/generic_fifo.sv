@@ -220,7 +220,7 @@ module generic_fifo
    end
 
    assign data_o = FIFO_REGISTERS[Pop_Pointer_CS];
-   assign last_addr = FIFO_REGISTERS[Push_Pointer_CS][RA_POS +: RA_BITS] ;////////////////////
+   assign last_addr = (Push_Pointer_CS != 0 )?FIFO_REGISTERS[Push_Pointer_CS-1][RA_POS +: RA_BITS] : FIFO_REGISTERS[DATA_DEPTH-1][RA_POS +: RA_BITS];////////////////////
   
   always_comb//////////////////////////
    begin
