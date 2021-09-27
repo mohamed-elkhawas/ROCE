@@ -212,7 +212,7 @@ always @(*) begin
                         pop[CWR] = 1'b1;
                         NB = burst_i[CWR] ; 
                     end
-                    NWR = CWR + 1 ;
+                    NWR = CWR + 1 ;////////////////////////
                     //$display("hi iam at ready = 1'b1 , mode = write ");
                     //pop[wr_idx] = 1'b1;
                     //NB = wr_i[wr_idx] ;   
