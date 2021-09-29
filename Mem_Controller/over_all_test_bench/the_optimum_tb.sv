@@ -29,7 +29,7 @@ assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
 //assign DQ = DQ_l ;
 memory_controller the_memory_controller (.*);
-//veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
+veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
 /*veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory
 (
