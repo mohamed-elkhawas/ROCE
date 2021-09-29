@@ -84,6 +84,7 @@ logic [no_of_bursts-1:0] round_roubin_in, round_roubin_temp, round_roubin_out;
 logic [$clog2(wait_after_refresh)-1:0] refresh_done_count;
 logic [$clog2(max_refresh_time)-1:0] refresh_interval_count;
 
+logic [1:0] cmd_3rd_p;
 
 //////////////////////////////////////////////// the state of art \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -92,6 +93,15 @@ logic [$clog2(max_refresh_time)-1:0] refresh_interval_count;
 always_ff @(posedge clk) begin
 
 	if(rst_n) begin // updating counters and 
+
+		if (cmd_3rd_p != 0) begin
+			cmd_3rd_p <= cmd_3rd_p -1;
+		end
+		else begin
+			if (burst_cmd != none) begin
+				cmd_3rd_p <= 2;
+			end
+		end
 
 		for (int i = 0; i < banks_no; i++) begin
 
@@ -233,6 +243,7 @@ always_ff @(posedge clk) begin
 
 		refresh_done_count <= wait_after_refresh-1;
 		refresh_interval_count <= 0;
+		cmd_3rd_p <= 0;
 		
 	end
 	
@@ -245,14 +256,17 @@ always_comb begin
 
 	round_roubin_in = 4'b0;
 
-	if (burst_cmd_o == none) begin
+	if (burst_cmd_o == none && cmd_3rd_p == 0) begin //wait for the second and third part of the cmd
 		
 		// the next condition if we want to wait until data is sent 
-		//if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
+		if (global_counter_rd > burst_time + rd_to_data-2 && global_counter_wr > burst_time + wr_to_data-2 ) begin /// the bus is free	
 		
 		// the next 2 condition if we want to send other cmds between cmd and data
-		if (global_counter_rd > burst_time + rd_to_data-2 +1|| global_counter_rd < rd_to_data-2) begin
-		if (global_counter_wr > burst_time + wr_to_data-2 +1|| global_counter_wr < wr_to_data-2) begin
+		//if (global_counter_rd > burst_time + rd_to_data-2 +1|| global_counter_rd < rd_to_data-2) begin
+		//if (global_counter_wr > burst_time + wr_to_data-2 +1|| global_counter_wr < wr_to_data-2) begin
+
+		// to avoid data collision i must keep all the data bursts timing not just the last one so i will need more conditions than the two above
+
 				
 			
 			if (refresh_done_count > wait_after_refresh-2) begin // refresh is done and memory is ready again
@@ -319,7 +333,7 @@ always_comb begin
 					end
 				end
 			end
-		end
+		//end
 		end
 	end	
 end
