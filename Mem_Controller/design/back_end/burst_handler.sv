@@ -88,7 +88,7 @@ logic [$clog2(no_of_bursts) -1:0] in_burst , older_in_burst , out_burst;
 
 logic new_burst_flag , return_req;
 
-logic [no_of_bursts -1:0][$clog2(burst_length+1) -1:0] burst_data_counter;
+logic [no_of_bursts -1:0][$clog2(burst_length+1) -1:0] burst_data_counter; // will be reduced if the data collision problem solved
 
 logic [burst_length-1:0] first_one_in_mask;
 
@@ -374,6 +374,7 @@ endtask
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 logic cmd_2nd_p;
+logic cmd_3rd_p;
 always @( posedge clk ) begin ///////////////// memory interface 
 
 	if(rst_n) begin
@@ -386,7 +387,7 @@ always @( posedge clk ) begin ///////////////// memory interface
 				init_flag <= 0;
 			end
 			else begin 
-				if (cmd_2nd_p == 0) begin
+				if (cmd_2nd_p == 0 && cmd_3rd_p == 0) begin
 					CS_n <= 1; CA <= 0;
 				end 
 			end
@@ -402,15 +403,19 @@ always @( posedge clk ) begin ///////////////// memory interface
 					precharge:ddr5_precharge_p2(cmd_burst_id);
 					refresh_all:ddr5_refresh_all_p2(cmd_burst_id);
 				endcase
-
 			end 
-
+			else begin
+				if (cmd_3rd_p == 1) begin	
+					cmd_3rd_p <= 0;
+				end 
+			end
 		end
 		else begin
 
 			cmd_burst_id <= in_cmd_index;
 			cmd_to_send <= in_burst_cmd;
 			cmd_2nd_p <= 1;
+			cmd_3rd_p <= 1;
 
 			if (in_burst_cmd == read_cmd || in_burst_cmd == write_cmd) begin
 				cmd_burst_id_data <= in_cmd_index;
@@ -430,6 +435,7 @@ always @( posedge clk ) begin ///////////////// memory interface
 	else begin
 		init_flag <= 1;
 		cmd_2nd_p <= 0;
+		cmd_3rd_p <= 0;
 		CS_n <= 1'b1;
 		DQS_t_logic <= 0 ;
 		DQS_c_logic <= 3'b111;
@@ -505,7 +511,7 @@ always @( posedge clk or negedge clk) begin
 
 		if (in_burst_cmd == none) begin // all cmds are none
 
-			if (cmd_2nd_p == 1) begin	
+			if (cmd_2nd_p == 1 || cmd_3rd_p == 1) begin	
 				
 				if (cmd_to_send == read_cmd || cmd_to_send == write_cmd) begin
 					
