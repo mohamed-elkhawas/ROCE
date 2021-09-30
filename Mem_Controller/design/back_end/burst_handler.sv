@@ -57,8 +57,8 @@ assign DQ = (sending_flag)? DQ_logic : 16'hzzzz ; // data_width == 16 here
 //assign ALERT_n = ALERT_n_logic;s
 assign CAI = 0 ; 
 
-parameter wr_to_data =10,//42 // on half clk not posedge clk
-		  rd_to_data =12,//44
+parameter wr_to_data =44,//42 // on half clk not posedge clk
+		  rd_to_data =50,//44
 		  burst_length = 16;
 
 typedef struct packed {
@@ -367,7 +367,7 @@ task ddr5_read_data
 	logic [$clog2(burst_length) -1:0] counter_t
 	);
 	if (burst[cmd_burst_id_t].mask[counter_t]) begin
-   		burst[cmd_burst_id_t].data <= DQ;
+   		burst[cmd_burst_id_t].data[counter_t] <= DQ;
 	end	
 
 endtask 
