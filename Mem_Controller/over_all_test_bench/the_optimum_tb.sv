@@ -29,7 +29,7 @@ assign CK_t = clk;
 assign CK_c = ~clk; // or 0 not sure
 
 memory_controller the_memory_controller (.*);
-veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
+//veloce_ddr5_sm #(.DENSITY(1),.DQ_SIZE(data_width)) the_memory (.*);
 
 
 // tbx clkgen inactive_negedge
@@ -41,14 +41,6 @@ initial  begin
 end
 
 //XlResetGenerator #(10) resetGenerator ( clk, rst);
-
-logic a ;
-task delay(cycle);
-	repeat (cycle) begin
-		@(posedge clk)
-		a = 0 ;
-	end
-endtask 
 
 	
 logic done_entering_flag = 0;
@@ -74,27 +66,26 @@ initial begin
 		
 		if (done_entering_flag == 0) begin
 			if (!out_busy) begin
+				
 				in_valid =1;
 				in_request_address = op_no;
-				if (op_type == 1 ) begin
-					
-					in_request_type = 1;
-					in_request_data = op_no;
-					op_no++;
-					
-					if (op_no == 1024) begin
+				in_request_type = op_type;
+				in_request_data = op_no;
+
+				if (op_no == 1024) begin
+
+					if (op_type == 1 ) begin
 						op_no = 0;
 						op_type =0;
 					end
-				end
-				else begin
-					
-					in_request_type = 0;
-					
-					if (op_no == 1024) begin
+					else begin
 						done_entering_flag =1;
 					end
 				end
+				else begin
+					op_no++;
+				end
+
 			end
 			else begin
 				in_valid =0;
