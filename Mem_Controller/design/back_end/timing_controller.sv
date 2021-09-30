@@ -26,8 +26,8 @@ localparam
 			pre_to_act =6,
 			act_to_act_same_bank =21,
 			act_to_pre =15,
-			wr_to_data =20+2,//22/////////////////////////////////////////////////////// will be sent to the other block
-			rd_to_data =22+2,//23/////////////////////////////////////////////////////// will be sent to the other block
+			wr_to_data =22+2,//22/////////////////////////////////////////////////////// will be sent to the other block
+			rd_to_data =25+2,//23/////////////////////////////////////////////////////// will be sent to the other block
 			rd_to_pre =4,
 			wr_to_pre =6,
 
