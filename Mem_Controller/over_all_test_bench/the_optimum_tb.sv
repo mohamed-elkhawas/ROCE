@@ -259,7 +259,7 @@ initial begin
 	in_request_address = 2;
 	in_request_type = 0;
 	@(posedge clk)
-	in_valid =0;*/
+	in_valid =0;
 
 
 	@(posedge clk)
