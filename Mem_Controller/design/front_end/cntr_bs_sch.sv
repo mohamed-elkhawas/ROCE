@@ -209,8 +209,8 @@ always @(*) begin
                         NB = burst_i[get_index(~empty,WRITE)] ;
                     end
                     else begin
-                        pop[CWR] = 1'b1;
-                        NB = burst_i[CWR] ; 
+                        pop[CWR+WR_FIFO_NUM] = 1'b1;
+                        NB = burst_i[CWR+WR_FIFO_NUM] ; 
                     end
                     NWR = CWR + 1 ;////////////////////////
                     //$display("hi iam at ready = 1'b1 , mode = write ");
