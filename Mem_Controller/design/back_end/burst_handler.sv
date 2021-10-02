@@ -423,11 +423,11 @@ always @( posedge clk ) begin ///////////////// memory interface
 			end
 
 			case (in_burst_cmd)
-				activate:ddr5_activate_p1(in_burst_cmd);
-				read_cmd:ddr5_read_p1(in_burst_cmd);
-				write_cmd:ddr5_write_p1(in_burst_cmd);
-				precharge:ddr5_precharge_p1(in_burst_cmd);
-				refresh_all:ddr5_refresh_all_p1(in_burst_cmd);
+				activate:ddr5_activate_p1(in_cmd_index);
+				read_cmd:ddr5_read_p1(in_cmd_index);
+				write_cmd:ddr5_write_p1(in_cmd_index);
+				precharge:ddr5_precharge_p1(in_cmd_index);
+				refresh_all:ddr5_refresh_all_p1(in_cmd_index);
 			endcase
 		
 		end			
