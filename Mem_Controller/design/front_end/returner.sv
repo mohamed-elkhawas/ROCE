@@ -19,8 +19,8 @@ module returner  import types_def::*;
 	);
 
 
-logic [read_entries_log:0]	read_counter;
-logic [write_entries_log:0]	write_counter;
+logic [read_entries_log -1:0]	read_counter;
+logic [write_entries_log -1:0]	write_counter;
 
 
 //		valid + data

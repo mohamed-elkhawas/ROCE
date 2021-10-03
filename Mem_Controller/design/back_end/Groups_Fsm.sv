@@ -156,11 +156,11 @@ always @ (*)begin
             else begin
                 if(flag ==1'b1) begin
                     if (ReqA == 1'b1)
-                        NS=GROUP_B;
+                        NS=GROUP_A;
                     else if (ReqB == 1'b1)
-                        NS=GROUP_C;
+                        NS=GROUP_B;
                     else if (ReqC == 1'b1)
-                        NS=GROUP_D;
+                        NS=GROUP_C;
                 end
                 else if(flag  == 1'b0 )
                     NS=IDLE;
