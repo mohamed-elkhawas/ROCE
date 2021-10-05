@@ -10,11 +10,11 @@
 //                in a round robin style, not in a FCFS way.
 
 //                -The rules applied for draining new requests:
-//                      1) Read is processed before writes (read first) unless the “write first” mode is triggered (with high water mark).
+//                      1) Read is processed before writes (read first) unless the write first mode is triggered (with high water mark).
 //                      2) When the write queue is about to be full (high watermark), process writes before reads until the
 //                          write queue reach (low watermark).
-//                      3) When at “read mode”, issue next arrays after last fifo index accessed last time.
-//                      4) When at “write mode”, issue next arrays after last fifo index accessed last time.
+//                      3) When at read mode, issue next arrays after last fifo index accessed last time.
+//                      4) When at write mode, issue next arrays after last fifo index accessed last time.
 //    
 // Modifications: Any change is ok except editing othe total number of fifos.
 //                Changing number of fifos requires editing signals width in both functions,
@@ -188,7 +188,7 @@ always @(*) begin
                 if(mode == READ)begin
                     NS = RD_BURST ;
                     valid_o = 1'b1;
-                    if (rd_empty[CRD] == 1'b0) begin
+                    if (rd_empty[CRD] == 1'b1) begin
                         pop[get_index(~empty,READ)] = 1'b1;
                         NB = burst_i[get_index(~empty,READ)] ;
                     end
@@ -196,7 +196,7 @@ always @(*) begin
                         pop[CRD] = 1'b1;
                         NB  = burst_i[CRD] ;                       
                     end
-                    NRD = CRD + 1 ;
+                    NRD = CRD + 2'd1;
                     //$display("hi iam at ready = 1'b1 , mode = read ");
                     //pop[rd_idx] = 1'b1;
                     //NB = rd_i[rd_idx] ;  
@@ -204,15 +204,15 @@ always @(*) begin
                 else if(mode == WRITE)begin
                     NS = WR_BURST ;
                     valid_o = 1'b1;
-                    if (wr_empty[CWR] == 1'b0) begin
+                    if (wr_empty[CWR] == 1'b1) begin
                         pop[get_index(~empty,WRITE)] = 1'b1;
                         NB = burst_i[get_index(~empty,WRITE)] ;
                     end
                     else begin
-                        pop[CWR+WR_FIFO_NUM] = 1'b1;
-                        NB = burst_i[CWR+WR_FIFO_NUM] ; 
+                        pop[CWR+RD_FIFO_NUM] = 1'b1;//////////////////////WR_FIFO_NUM
+                        NB = burst_i[CWR+RD_FIFO_NUM] ; /////////////////////////WR_FIFO_NUM
                     end
-                    NWR = CWR + 1 ;////////////////////////
+                    NWR = (CWR == 2'd2)? 2'd0 : CWR + 2'd1 ;////////////////////////
                     //$display("hi iam at ready = 1'b1 , mode = write ");
                     //pop[wr_idx] = 1'b1;
                     //NB = wr_i[wr_idx] ;   
@@ -270,7 +270,6 @@ end
    .valid(valid_i),  // Input valid signals to help choose proper next out 
    .idx(wr_idx)      // Output idx value
 );
-
 cntr_bs_sch_rc rd_cnt(   
    .clk(clk),        // Input clock
    .rst_n(rst_n),    // Synchronous reset                                    -> active low

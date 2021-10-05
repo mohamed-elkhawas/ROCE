@@ -44,7 +44,6 @@ module generic_fifo
    logic [DATA_WIDTH-1:0]          FIFO_REGISTERS[DATA_DEPTH-1:0];
    integer                         i;
 
-
    assign clk_gated = clk;
 
 

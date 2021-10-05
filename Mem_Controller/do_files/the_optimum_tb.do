@@ -21,35 +21,20 @@ add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/DQ
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/DQS_t
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/DQS_c
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/ALERT_n
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_A}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_B}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_C}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_D}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_D}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_C}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_B}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_A}
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/data_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/idx_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/row_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/col_o
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/t_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/ba_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/bg_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/t_o
 add wave -noupdate -color Magenta -itemcolor Magenta /the_optimum_tb/the_memory_controller/the_back_end/wr_en
 add wave -noupdate -color Gold -itemcolor Gold /the_optimum_tb/the_memory_controller/the_back_end/the_handler/arbiter_type_temp
 add wave -noupdate -color Gold -itemcolor Gold /the_optimum_tb/the_memory_controller/the_back_end/burst_state
 add wave -noupdate -color Gold -itemcolor Gold /the_optimum_tb/the_memory_controller/the_front_end/t_o
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/t_o}
 add wave -noupdate -color Gold /the_optimum_tb/the_memory_controller/the_back_end/burst_type
-add wave -noupdate -color Coral -itemcolor Coral /the_optimum_tb/the_memory_controller/the_front_end/valid_o
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqD
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqC
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqB
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqA
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/flag
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/CS
-add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/NS
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_front_end/valid_o
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/burst_address_bank
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/burst_address_bg
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/burst_address_row
@@ -157,6 +142,7 @@ add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/burst_i}
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/clk
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/rst_n
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/flag
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Req
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Start_A
@@ -164,18 +150,32 @@ add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Ba
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Start_C
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Start_D
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/sel
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqD
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqC
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqB
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/ReqA
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_D
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_C
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_B
 add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/Done_A
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/CS
+add wave -noupdate /the_optimum_tb/the_memory_controller/the_back_end/arbiter/Bank_Groups/NS
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/clk}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/rst_n}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/start}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Valid}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_A}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_B}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_C}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Ready_D}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/sel}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/en}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/done}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/Req}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_D}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_C}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_B}
+add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/valid_A}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/CS}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[0]/Bank/NS}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/clk}
@@ -196,15 +196,10 @@ add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/g
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/valid_A}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/CS}
 add wave -noupdate {/the_optimum_tb/the_memory_controller/the_back_end/arbiter/genblk1[1]/Bank/NS}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/bs_dp/genblk2[6]/wr_fifo/CS}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/bs_dp/genblk2[5]/wr_fifo/CS}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/bs_dp/genblk2[4]/wr_fifo/CS}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/scheduler/CS}
-add wave -noupdate {/the_optimum_tb/the_memory_controller/the_front_end/genblk1[0]/BankScheduler/scheduler/pop}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {722000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {48 ns} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 599
+configure wave -namecolwidth 516
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
@@ -218,4 +213,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {696300 ps} {747701 ps}
+WaveRestoreZoom {15 ns} {72 ns}

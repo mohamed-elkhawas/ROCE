@@ -57,14 +57,14 @@ end
 
 always_ff @(posedge clk  ) begin 
 
-	if (diff_read_counter == read_entries -1 +1 ) begin // +1 for the over flow
+	if (diff_read_counter >= read_entries -1) begin // +1 for the over flow
 		stop_reading = 1;
 	end	
 	else begin
 		stop_reading = 0;
 	end
 
-	if (diff_write_counter == write_entries -1 +1 ) begin // +1 for the over flow
+	if (diff_write_counter >= write_entries -1) begin // +1 for the over flow
 		stop_writing = 1;
 	end	
 	else begin
@@ -75,3 +75,4 @@ end
 
 
 endmodule
+

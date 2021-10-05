@@ -164,9 +164,9 @@ always_comb begin
 
 	in_burst = older_in_burst;
 	
-	if (arbiter_valid) begin
+	if (arbiter_valid) begin 
 
-		if ( burst[in_burst].state == full || empty_bursts_counter == 4  || burst[in_burst].address != in_req_address[address_width-1:4] || burst[in_burst].the_type != arbiter_type  ) begin /////////////////// 	new burst 
+		if ( ( burst[in_burst].state != started_filling && burst[in_burst].state != almost_done )|| empty_bursts_counter == 4  || burst[in_burst].address != in_req_address[address_width-1:4] || burst[in_burst].the_type != arbiter_type  ) begin /////////////////// 	new burst 
 
 			new_burst_flag =1;
 
@@ -302,49 +302,7 @@ end
 
 //////////////////////////////// ddr5 commands\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-localparam BL_bar = 1,	AP_bar = 1; //BL ->1 length =16
-
-
-task ddr5_activate_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	CS_n <= 1'b0 ;
-	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,burst[cmd_burst_id_t].address.row[3:0],2'b00};
-endtask 
-task ddr5_read_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	CS_n <= 1'b0;
-	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b11101};
-endtask 
-task ddr5_write_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	CS_n <= 1'b0;
-	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,BL_bar,5'b01101};
-endtask 
-task ddr5_precharge_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	CS_n <= 1'b0;
-	CA <= {4'b0000,burst[cmd_burst_id_t].address.bank_group,burst[cmd_burst_id_t].address.bank,6'b011011};
-endtask 
-task ddr5_refresh_all_p1(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	CS_n <= 1'b0;
-	CA <= {14'b00001000010011};
-endtask 
-
-task ddr5_activate_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	//CS_n <= 1'b1;
-	CA <= {2'b00,burst[cmd_burst_id_t].address.row[15:4]};
-endtask 
-task ddr5_read_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	//CS_n <= 1'b1;
-	CA <= {3'b000,AP_bar,2'b00,burst[cmd_burst_id_t].address.column,2'b00};
-	//CA <= 0;
-endtask 
-task ddr5_write_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	//CS_n <= 1'b1;
-	CA <= {2'b00,&burst[cmd_burst_id_t].mask,1'b1,1'b0,1'b0,burst[cmd_burst_id_t].address.column,1'b0,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
-endtask 
-task ddr5_precharge_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	//CS_n <= 1'b1;
-endtask 
-task ddr5_refresh_all_p2(logic [$clog2(no_of_bursts) -1:0] cmd_burst_id_t);
-	//CS_n <= 1'b1;
-endtask 
+logic  BL_bar = 1,	AP_bar = 1; //BL ->1 length =16
 
 task ddr5_write_data
 	(
@@ -397,11 +355,11 @@ always @( posedge clk ) begin ///////////////// memory interface
 			
 				cmd_2nd_p <= 0;
 				case (cmd_to_send)
-					activate:ddr5_activate_p2(cmd_burst_id);
-					read_cmd:ddr5_read_p2(cmd_burst_id);
-					write_cmd:ddr5_write_p2(cmd_burst_id);
-					precharge:ddr5_precharge_p2(cmd_burst_id);
-					refresh_all:ddr5_refresh_all_p2(cmd_burst_id);
+					activate:CA <= {2'b00,burst[cmd_burst_id].address.row[15:4]};
+					read_cmd:CA <= {3'b000,AP_bar,2'b00,burst[cmd_burst_id].address.column,2'b00};
+					write_cmd:CA <= {2'b00,&burst[cmd_burst_id].mask,1'b1,1'b0,1'b0,burst[cmd_burst_id].address.column,1'b0,1'b0}; //wrp_bar = &burst[cmd_burst_id].mask
+					precharge:CA <= 0;
+					refresh_all:CA <= 0;
 				endcase
 			end 
 			else begin
@@ -423,12 +381,14 @@ always @( posedge clk ) begin ///////////////// memory interface
 			end
 
 			case (in_burst_cmd)
-				activate:ddr5_activate_p1(in_cmd_index);
-				read_cmd:ddr5_read_p1(in_cmd_index);
-				write_cmd:ddr5_write_p1(in_cmd_index);
-				precharge:ddr5_precharge_p1(in_cmd_index);
-				refresh_all:ddr5_refresh_all_p1(in_cmd_index);
+				activate:CA <= {4'b0000,burst[in_cmd_index].address.bank_group,burst[in_cmd_index].address.bank,burst[in_cmd_index].address.row[3:0],2'b00};
+				read_cmd:CA <= {4'b0000,burst[in_cmd_index].address.bank_group,burst[in_cmd_index].address.bank,BL_bar,5'b11101};
+				write_cmd:CA <= {4'b0000,burst[in_cmd_index].address.bank_group,burst[in_cmd_index].address.bank,BL_bar,5'b01101};
+				precharge:CA <= {4'b0000,burst[in_cmd_index].address.bank_group,burst[in_cmd_index].address.bank,6'b011011};
+				refresh_all:CA <= {14'b00001000010011};
 			endcase
+
+			CS_n <= 1'b0;
 		
 		end			
 	end 
